@@ -1,4 +1,230 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye;
 
-public class Config {}
+import abbaye.logs.GameLogger;
+import abbaye.logs.JulLogger;
+import abbaye.logs.NoopLogger;
+import abbaye.logs.StdoutLogger;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
+/** General config class */
+public final class Config {
+  private static final int SCR_WIDTH = 640;
+  private static final int SCR_HEIGHT = 480;
+  //  private static final float PLAYER_DECEL = 0.008f;
+
+  private static final String DEFAULT_CONFIG_RESOURCE = "/abbaye.properties";
+  private static Config instance = null;
+
+  private final Properties properties;
+  private int level = 1;
+  private int highScore = 0;
+  private GameLogger logger = null;
+
+  /** Empty properties constructor */
+  private Config() {
+    properties = new Properties();
+  }
+
+  /**
+   * Constructor that loads properties from a resource.
+   *
+   * @param resourcePath
+   */
+  private Config(String resourcePath) {
+    properties = new Properties();
+    try (InputStream input = Config.class.getResourceAsStream(resourcePath)) {
+      properties.load(input);
+    } catch (IOException ex) {
+      System.err.println("Error reading the configuration file: " + ex.getMessage());
+    }
+  }
+
+  /**
+   * Constructor that loads properties from a filesystem path.
+   *
+   * @param filePath
+   */
+  private Config(Path filePath) {
+    properties = new Properties();
+    try (InputStream input = Files.newInputStream(filePath)) {
+      properties.load(input);
+    } catch (IOException ex) {
+      System.err.println("Error reading the configuration file: " + ex.getMessage());
+    }
+  }
+
+  public static synchronized Config config(Optional<String> oFilePath) {
+    if (instance != null) {
+      throw new IllegalStateException("Config is already set");
+    }
+    if (oFilePath.isEmpty()) {
+      instance = new Config(DEFAULT_CONFIG_RESOURCE);
+    } else {
+      instance = new Config(Path.of(oFilePath.get()));
+    }
+
+    return instance;
+  }
+
+  public static synchronized Config config() {
+    if (instance == null) {
+      instance = new Config(DEFAULT_CONFIG_RESOURCE);
+    }
+    return instance;
+  }
+
+  // Mutation methods
+
+  public void resetLevel() {
+    level = 1;
+  }
+
+  public void setHighScore(int score) {
+    if (score > highScore) {
+      highScore = score;
+    }
+  }
+
+  // Getters for mutable state
+
+  public int getLevel() {
+    return level;
+  }
+
+  public int getHighScore() {
+    return highScore;
+  }
+
+  public GameLogger getLogger() {
+    if (logger == null) {
+      var levelStr = getString("loglevel", "info");
+      var sinkStr = getString("logsink", "noop");
+      logger =
+          switch (sinkStr) {
+            case "stdout" -> new StdoutLogger(GameLogger.LogLevel.of(levelStr));
+            case "noop" -> new NoopLogger();
+            case "jul" -> new JulLogger(levelStr);
+            default -> new StdoutLogger(GameLogger.LogLevel.DEBUG);
+          };
+    }
+    return logger;
+  }
+
+  // Config getters
+
+  public int getScreenWidth() {
+    return getInt("width", SCR_WIDTH);
+  }
+
+  public int getScreenHeight() {
+    return getInt("height", SCR_HEIGHT);
+  }
+
+  public boolean getFullscreen() {
+    return getBoolean("fullscreen", false);
+  }
+
+  public float getBulletRepeat() {
+    // FIXME This should be dependent on the timers resolution
+    return 50.0f;
+  }
+
+  /**
+   * Get the value for a key as an integer
+   *
+   * @param key
+   * @param defaultValue
+   * @return
+   */
+  public int getInt(String key, int defaultValue) {
+    for (var tryLevel = level; tryLevel > 0; tryLevel -= 1) {
+      var tryKey = key + (level > 1 ? ".level" + tryLevel : "");
+      String value = properties.getProperty(tryKey);
+      if (value != null) {
+        try {
+          //          getLogger().info("Found "+ key +" at level" + level);
+          return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+          getLogger().error("Invalid integer value for key: " + key);
+        }
+      }
+    }
+
+    return defaultValue;
+  }
+
+  /**
+   * Get the value for a key as a double
+   *
+   * @param key
+   * @param defaultValue
+   * @return
+   */
+  public double getNumber(String key, double defaultValue) {
+    for (var tryLevel = level; tryLevel > 0; tryLevel -= 1) {
+      var tryKey = key + (level > 1 ? ".level" + tryLevel : "");
+      String value = properties.getProperty(tryKey);
+      if (value != null) {
+        try {
+          return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+          System.err.println("Invalid integer value for key: " + key);
+        }
+      }
+    }
+    return defaultValue;
+  }
+
+  /**
+   * Get the value for a key as a boolean
+   *
+   * @param key
+   * @param defaultValue
+   * @return
+   */
+  public boolean getBoolean(String key, boolean defaultValue) {
+    for (var tryLevel = level; tryLevel > 0; tryLevel -= 1) {
+      var tryKey = key + (level > 1 ? ".level" + tryLevel : "");
+
+      String value = properties.getProperty(tryKey);
+      if (value != null) {
+        return Boolean.parseBoolean(value);
+      }
+    }
+    return defaultValue;
+  }
+
+  /**
+   * Get the value for a key as a String
+   *
+   * @param key
+   * @return
+   */
+  public String getString(String key, String defaultValue) {
+    for (var tryLevel = level; tryLevel > 0; tryLevel -= 1) {
+      var tryKey = key + (level > 1 ? ".level" + tryLevel : "");
+      String value = properties.getProperty(tryKey);
+      if (value != null) {
+        return value;
+      }
+    }
+    return defaultValue;
+  }
+
+  // Low-level methods for debug
+
+  Set<String> getAllKeys() {
+    return properties.stringPropertyNames();
+  }
+
+  Properties getProperties() {
+    return properties;
+  }
+}
