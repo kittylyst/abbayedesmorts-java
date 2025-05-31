@@ -13,11 +13,13 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import java.util.Optional;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.GL11;
 
 public class AbbayeMain {
   private static ObjectMapper mapper;
   private static volatile boolean glEnabled = true;
 
+  private volatile boolean done = false;
   private boolean fullscreen = false;
   private final String windowTitle = "Abbaye Des Mortes";
   private Layer layers[] = new Layer[2];
@@ -62,7 +64,37 @@ public class AbbayeMain {
     main.run();
   }
 
-  void run() {}
+  /** Main game loop method */
+  public void run() {
+    try {
+      while (!done) {
+        Keyboard.poll();
+
+        if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
+          done = true;
+        }
+        if (Display.isCloseRequested()) {
+          done = true;
+        }
+        Clock.updateTimer();
+
+        // Update Layers
+        if (!gameDialog.isActive()) {
+          for (var i = 0; i < layers.length; i += 1) {
+            layers[i].update();
+          }
+        }
+
+        // Now Render
+        render();
+        Display.update();
+      }
+      cleanup();
+    } catch (Exception e) {
+      e.printStackTrace();
+      System.exit(2);
+    }
+  }
 
   void init() {
     try {
@@ -102,12 +134,40 @@ public class AbbayeMain {
     gameDialog.reset();
   }
 
-  private void initGL() {}
+  private void initGL() {
+    GL11.glEnable(GL11.GL_TEXTURE_2D);
+    GL11.glShadeModel(GL11.GL_SMOOTH);
+    GL11.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
+    GL11.glClearDepth(1.0f);
+
+    var config = Config.config();
+    GL11.glMatrixMode(GL11.GL_PROJECTION);
+    GL11.glLoadIdentity();
+    GL11.glOrtho(0, config.getScreenWidth(), config.getScreenHeight(), 0, -100, 100);
+    GL11.glMatrixMode(GL11.GL_MODELVIEW);
+    GL11.glDisable(GL11.GL_DEPTH_TEST);
+  }
 
   private void createWindow() throws Exception {
     Display.setTitle(windowTitle);
     Display.setLocation(0, 0);
     Display.setFullscreen(false);
     Display.create(); // windowTitle, 10, 10, 640, 480, 16, 0, 8, 0);
+  }
+
+  private void render() {
+    GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+    GL11.glLoadIdentity();
+
+    for (int i = 0; i < layers.length; i += 1) {
+      layers[i].render();
+    }
+
+    gameDialog.render();
+  }
+
+  private static void cleanup() {
+    Keyboard.destroy();
+    Display.destroy();
   }
 }

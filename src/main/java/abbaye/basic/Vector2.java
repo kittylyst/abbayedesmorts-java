@@ -2,6 +2,8 @@
 package abbaye.basic;
 
 public record Vector2(float x, float y) {
+  public static final Vector2 ORIGIN = new Vector2(0, 0);
+
   public float magnitude() {
     return (float) Math.sqrt(x * x + y * y);
   }

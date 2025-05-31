@@ -27,6 +27,8 @@ public class GameDialog {
 
   public void reset() {}
 
+  public void render() {}
+
   //////////////////
 
   public void setPlayer(Player player) {
@@ -35,5 +37,9 @@ public class GameDialog {
 
   public void setFont(OGLFont font) {
     this.font = font;
+  }
+
+  public boolean isActive() {
+    return false;
   }
 }

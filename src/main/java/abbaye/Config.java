@@ -131,11 +131,6 @@ public final class Config {
     return getBoolean("fullscreen", false);
   }
 
-  public float getBulletRepeat() {
-    // FIXME This should be dependent on the timers resolution
-    return 50.0f;
-  }
-
   /**
    * Get the value for a key as an integer
    *
