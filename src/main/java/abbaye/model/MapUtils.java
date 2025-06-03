@@ -5,6 +5,16 @@ public class MapUtils {
 
   private MapUtils() {}
 
+  private static Stage stage;
+
+  public static synchronized Stage getStage() {
+    if (stage == null) {
+      stage = new Stage();
+      stage.load();
+    }
+    return stage;
+  }
+
   //    void loaddata(uint stagedata[][22][32],int enemydata[][7][15]) {
   //
   //        FILE *datafile = NULL;
