@@ -5,11 +5,15 @@ import java.io.*;
 
 /** The stage shows the layout of the furniture of the current screen */
 public class Stage {
-  private int[][][] stagedata;
+  private static final int NUM_SCREENS = 24;
+  private static final int NUM_COLUMNS = 32;
+  private static final int NUM_ROWS = 22;
+
+  private int[][][] stagedata = new int[NUM_SCREENS][NUM_ROWS][NUM_COLUMNS];
 
   /** Loads stage screens from default location */
   public void load() {
-    load("/data/map.txt");
+    load("/map/map.txt");
   }
 
   /**
@@ -18,29 +22,32 @@ public class Stage {
    * @param mapResource
    */
   public void load(String mapResource) {
-    try (BufferedReader br =
-        new BufferedReader(
-            new InputStreamReader(Stage.class.getClassLoader().getResourceAsStream(mapResource)))) {
+    var input = Stage.class.getResourceAsStream(mapResource);
+    try (BufferedReader br = new BufferedReader(new InputStreamReader(input))) {
       String line;
 
       // Skip two header lines
       br.readLine();
-      br.readLine();
+      //      br.readLine();
 
-      for (int i = 0; i <= 24; i++) {
-        for (int j = 0; j <= 21; j++) {
+      for (int i = 0; i < NUM_SCREENS; i++) {
+        for (int j = 0; j < NUM_ROWS; j++) {
           line = br.readLine();
-          for (int k = 0; k <= 31; k++) {
+          for (int k = 0; k < NUM_COLUMNS; k++) {
             // Extract 3 characters, parse as int
             String temp = line.substring(k * 4, k * 4 + 3);
             stagedata[i][j][k] = Integer.parseInt(temp.trim());
           }
         }
-        br.readLine(); // Skip separator line
+        line = br.readLine(); // Skip separator line
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public int[][] getLevel(int level) {
+    return stagedata[level];
   }
 
   //        FILE *datafile = NULL;
