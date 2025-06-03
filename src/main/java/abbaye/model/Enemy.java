@@ -9,18 +9,31 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
 
 public final class Enemy implements Actor {
-  @Override
-  public BoundingBox2 getBB() {
-    return null;
-  }
-
-  @Override
-  public void render() {}
 
   public static class EnemySerializer extends JsonSerializer<Enemy> {
     @Override
     public void serialize(
         Enemy enemy, JsonGenerator generator, SerializerProvider serializerProvider)
         throws IOException {}
+  }
+
+  @Override
+  public BoundingBox2 getBB() {
+    return null;
+  }
+
+  @Override
+  public void init() {
+    Actor.super.init();
+  }
+
+  @Override
+  public boolean render() {
+    return false;
+  }
+
+  @Override
+  public boolean update() {
+    return Actor.super.update();
   }
 }

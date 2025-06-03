@@ -4,17 +4,21 @@ package abbaye.model;
 import abbaye.Config;
 import abbaye.TextureMap;
 import abbaye.basic.Actor;
+import abbaye.basic.Renderable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.lwjgl.util.Renderable;
 
 public class Layer {
   private final List<Renderable> misc = new ArrayList<>();
 
   private Optional<Player> oPlayer = Optional.empty();
 
-  public void init() {}
+  public void init() {
+    for (var gObj : getRenderables()) {
+      gObj.init();
+    }
+  }
 
   private List<Renderable> getRenderables() {
     var renderables = new ArrayList<Renderable>();

@@ -5,7 +5,6 @@ import abbaye.AbbayeMain;
 import abbaye.model.Enemy;
 import abbaye.model.Player;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.lwjgl.util.Renderable;
 
 /**
  * The interface defining core game actors that can interact with each other and participate in the

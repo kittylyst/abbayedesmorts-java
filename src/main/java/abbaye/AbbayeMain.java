@@ -131,7 +131,7 @@ public class AbbayeMain {
 
     gameDialog.setPlayer(p);
     gameDialog.setFont(font);
-    gameDialog.reset();
+    //    gameDialog.reset();
   }
 
   private void initGL() {
