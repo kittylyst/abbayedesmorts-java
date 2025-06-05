@@ -5,9 +5,11 @@ import java.io.*;
 
 /** The stage shows the layout of the furniture of the current screen */
 public class Stage {
-  private static final int NUM_SCREENS = 24;
-  private static final int NUM_COLUMNS = 32;
-  private static final int NUM_ROWS = 22;
+  public static final int SCREENS_X = 5;
+  public static final int SCREENS_Y = 5;
+  public static final int NUM_SCREENS = SCREENS_X * SCREENS_Y;
+  public static final int NUM_COLUMNS = 32;
+  public static final int NUM_ROWS = 22;
 
   private int[][][] stagedata = new int[NUM_SCREENS][NUM_ROWS][NUM_COLUMNS];
 
@@ -46,7 +48,7 @@ public class Stage {
     }
   }
 
-  public int[][] getLevel(int level) {
+  public int[][] getScreen(int level) {
     return stagedata[level];
   }
 

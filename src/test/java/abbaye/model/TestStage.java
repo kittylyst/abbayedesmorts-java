@@ -11,7 +11,7 @@ public class TestStage {
   public void loadMap() {
     var stage = new Stage();
     stage.load();
-    var level0 = stage.getLevel(0);
+    var level0 = stage.getScreen(0);
     assertEquals(22, level0.length);
   }
 }
