@@ -6,6 +6,7 @@ import abbaye.basic.OGLFont;
 import abbaye.model.Enemy;
 import abbaye.model.Layer;
 import abbaye.model.Player;
+import abbaye.model.Stage;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -22,7 +23,8 @@ public class AbbayeMain {
   private volatile boolean done = false;
   private boolean fullscreen = false;
   private final String windowTitle = "Abbaye Des Mortes";
-  private Layer layers[] = new Layer[2];
+  private Stage stage = new Stage();
+  private Layer layer = new Layer();
   private GameDialog gameDialog;
 
   public static boolean isGlEnabled() {
@@ -80,9 +82,7 @@ public class AbbayeMain {
 
         // Update Layers
         if (!gameDialog.isActive()) {
-          for (var i = 0; i < layers.length; i += 1) {
-            layers[i].update();
-          }
+          layer.update();
         }
 
         // Now Render
@@ -98,6 +98,7 @@ public class AbbayeMain {
 
   void init() {
     try {
+      stage.load();
       createWindow();
       Keyboard.create();
     } catch (Exception e) {
@@ -110,24 +111,22 @@ public class AbbayeMain {
     Clock.updateTimer();
 
     gameDialog = new GameDialog(null, this);
-    initLayers();
+    initLayer();
   }
 
-  void initLayers() {
+  void initLayer() {
     var font = new OGLFont();
     font.buildFont("Courier New", 24);
 
     // Layer 0 is the background starfield
-    layers[0] = new Layer();
-    layers[0].add(new TextureMap());
-    layers[0].init();
+    //    layer[0] = new Layer();
+    //    layer[0].add(new TextureMap());
+    //    layer[0].init();
 
-    // Layer 1 is the active objects layer
-    layers[1] = new Layer();
-    Player p = Player.of(layers[1], gameDialog);
+    Player p = Player.of(layer, gameDialog);
     p.setFont(font);
-    layers[1].setPlayer(p);
-    layers[1].init();
+    layer.setPlayer(p);
+    layer.init();
 
     gameDialog.setPlayer(p);
     gameDialog.setFont(font);
@@ -159,9 +158,8 @@ public class AbbayeMain {
     GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
     GL11.glLoadIdentity();
 
-    for (int i = 0; i < layers.length; i += 1) {
-      layers[i].render();
-    }
+    //    stage.render();
+    layer.render();
 
     gameDialog.render();
   }

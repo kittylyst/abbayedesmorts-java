@@ -14,6 +14,10 @@ public class ToolStage {
 
   static {
     ROGUE.put(0, ' ');
+    ROGUE.put(32, 'A');
+    ROGUE.put(33, 'B');
+    ROGUE.put(34, 'C');
+    ROGUE.put(35, 'D');
   }
 
   public static void main(String[] args) {
@@ -32,7 +36,8 @@ public class ToolStage {
         }
         System.out.println();
       }
-      System.out.println("\n\n");
+      System.out.println();
+      System.out.println();
     }
   }
 }

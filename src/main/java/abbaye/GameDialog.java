@@ -76,7 +76,7 @@ public class GameDialog {
 
         Keyboard.poll();
         if (Keyboard.isKeyDown(Keyboard.KEY_TAB)) {
-          mainClass.initLayers();
+          mainClass.initLayer();
           state = State.INACTIVE;
         }
       }
@@ -98,7 +98,7 @@ public class GameDialog {
         Keyboard.poll();
         if (Keyboard.isKeyDown(Keyboard.KEY_TAB)) {
           reset();
-          mainClass.initLayers();
+          mainClass.initLayer();
         }
       }
     }
