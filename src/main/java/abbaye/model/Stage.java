@@ -3,17 +3,12 @@ package abbaye.model;
 
 import static abbaye.model.Room.ROOM_CHURCH;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.glGetUniformLocation;
-import static org.lwjgl.opengl.GL20.glUniformMatrix4;
 import static org.lwjgl.opengl.GL20.glUseProgram;
 
 import abbaye.AbbayeMain;
 import abbaye.basic.Textures;
 import java.io.*;
-import java.nio.ByteBuffer;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
 
 /** The stage shows the layout of the furniture of the current screen */
 public class Stage {
@@ -201,14 +196,14 @@ public class Stage {
     // Fixme
     GL11.glBegin(GL11.GL_QUADS);
 
-    var model =
-        new Matrix4f()
-            .translate(new Vector3f(srctiles.x, srctiles.y, 0))
-            .scale(new Vector3f(srctiles.w, srctiles.h, 1));
-    int uniModel = glGetUniformLocation(shaderProgram, "model");
-    var buffer = ByteBuffer.allocateDirect(16 * 4).asFloatBuffer();
-    model.load(buffer);
-    glUniformMatrix4(uniModel, false, buffer);
+    //    var model =
+    //        new Matrix4f()
+    //            .translate(new Vector3f(srctiles.x, srctiles.y, 0))
+    //            .scale(new Vector3f(srctiles.w, srctiles.h, 1));
+    //    int uniModel = glGetUniformLocation(shaderProgram, "model");
+    //    var buffer = ByteBuffer.allocateDirect(16 * 4).asFloatBuffer();
+    //    model.load(buffer);
+    //    glUniformMatrix4(uniModel, false, buffer);
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 

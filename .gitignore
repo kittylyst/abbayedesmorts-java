@@ -10,6 +10,8 @@ buildNumber.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
 
+hs_err_*.log
+
 # Eclipse m2e generated files
 # Eclipse Core
 .project

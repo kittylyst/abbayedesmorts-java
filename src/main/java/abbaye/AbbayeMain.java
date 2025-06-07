@@ -1,6 +1,9 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye;
 
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.GL_TRUE;
+
 import abbaye.basic.Clock;
 import abbaye.basic.OGLFont;
 import abbaye.model.Enemy;
@@ -12,8 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import java.util.Optional;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 
 public class AbbayeMain {
@@ -26,6 +28,7 @@ public class AbbayeMain {
   private Stage stage = new Stage();
   private Layer layer = new Layer();
   private GameDialog gameDialog;
+  private long window;
 
   public static boolean isGlEnabled() {
     return glEnabled;
@@ -66,16 +69,41 @@ public class AbbayeMain {
     main.run();
   }
 
+  void init() {
+    try {
+      //      GLFWErrorCallback.createPrint(System.err).set();
+
+      // Initialize GLFW. Most GLFW functions will not work before doing this.
+      if (!glfwInit()) {
+        throw new IllegalStateException("Unable to initialize GLFW");
+      }
+
+      createWindow();
+      glfwShowWindow(window);
+    } catch (Exception e) {
+      e.printStackTrace();
+      System.exit(1);
+    }
+
+    //    initGL();
+    Clock.init();
+    Clock.updateTimer();
+
+    gameDialog = new GameDialog(null, this);
+    initLayer();
+    stage.load();
+  }
+
   /** Main game loop method */
   public void run() {
     try {
       while (!done) {
-        Keyboard.poll();
+        //        Keyboard.poll();
 
-        if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
           done = true;
         }
-        if (Display.isCloseRequested()) {
+        if (glfwWindowShouldClose(window)) {
           done = true;
         }
         Clock.updateTimer();
@@ -87,31 +115,15 @@ public class AbbayeMain {
 
         // Now Render
         render();
-        Display.update();
+        //        Display.update();
+        glfwPollEvents();
+        glfwSwapBuffers(window);
       }
       cleanup();
     } catch (Exception e) {
       e.printStackTrace();
       System.exit(2);
     }
-  }
-
-  void init() {
-    try {
-      createWindow();
-      Keyboard.create();
-    } catch (Exception e) {
-      e.printStackTrace();
-      System.exit(1);
-    }
-
-    initGL();
-    Clock.init();
-    Clock.updateTimer();
-
-    gameDialog = new GameDialog(null, this);
-    initLayer();
-    stage.load();
   }
 
   void initLayer() {
@@ -133,25 +145,31 @@ public class AbbayeMain {
     //    gameDialog.reset();
   }
 
-  private void initGL() {
-    GL11.glEnable(GL11.GL_TEXTURE_2D);
-    GL11.glShadeModel(GL11.GL_SMOOTH);
-    GL11.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
-    GL11.glClearDepth(1.0f);
-
-    var config = Config.config();
-    GL11.glMatrixMode(GL11.GL_PROJECTION);
-    GL11.glLoadIdentity();
-    GL11.glOrtho(0, config.getScreenWidth(), config.getScreenHeight(), 0, -100, 100);
-    GL11.glMatrixMode(GL11.GL_MODELVIEW);
-    GL11.glDisable(GL11.GL_DEPTH_TEST);
-  }
+  //  private void initGL() {
+  //    GL11.glEnable(GL11.GL_TEXTURE_2D);
+  //    GL11.glShadeModel(GL11.GL_SMOOTH);
+  //    GL11.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
+  //    GL11.glClearDepth(1.0f);
+  //
+  //    var config = Config.config();
+  //    GL11.glMatrixMode(GL11.GL_PROJECTION);
+  //    GL11.glLoadIdentity();
+  //    GL11.glOrtho(0, config.getScreenWidth(), config.getScreenHeight(), 0, -100, 100);
+  //    GL11.glMatrixMode(GL11.GL_MODELVIEW);
+  //    GL11.glDisable(GL11.GL_DEPTH_TEST);
+  //  }
 
   private void createWindow() throws Exception {
-    Display.setTitle(windowTitle);
-    Display.setLocation(0, 0);
-    Display.setFullscreen(false);
-    Display.create(); // windowTitle, 10, 10, 640, 480, 16, 0, 8, 0);
+    var config = Config.config();
+
+    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    window = glfwCreateWindow(config.getScreenWidth(), config.getScreenHeight(), windowTitle, 0, 0);
+
+    glfwMakeContextCurrent(window);
+    GL.createCapabilities();
   }
 
   private void render() {
@@ -165,8 +183,13 @@ public class AbbayeMain {
     gameDialog.render();
   }
 
-  private static void cleanup() {
-    Keyboard.destroy();
-    Display.destroy();
+  private void cleanup() {
+    //    Keyboard.destroy();
+    //    Display.destroy();
+    glfwDestroyWindow(window);
+  }
+
+  public long getWindow() {
+    return window;
   }
 }

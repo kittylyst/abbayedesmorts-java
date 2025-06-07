@@ -1,13 +1,16 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye;
 
+import static org.lwjgl.glfw.GLFW.*;
+
 import abbaye.basic.OGLFont;
 import abbaye.basic.Textures;
 import abbaye.model.Player;
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 public class GameDialog {
+  private final long window;
+
   public enum State {
     INACTIVE,
     START,
@@ -30,6 +33,7 @@ public class GameDialog {
     mainClass = main;
     state = State.INACTIVE;
     introSplash = Textures.loadTextureMirrored("/intro.png");
+    window = main.getWindow();
     reset();
   }
 
@@ -74,8 +78,7 @@ public class GameDialog {
 
         GL11.glDisable(GL11.GL_BLEND);
 
-        Keyboard.poll();
-        if (Keyboard.isKeyDown(Keyboard.KEY_TAB)) {
+        if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
           mainClass.initLayer();
           state = State.INACTIVE;
         }
@@ -95,8 +98,7 @@ public class GameDialog {
         // 200));
         //        font.print("Press TAB to play again", new Vector2(100, 260));
 
-        Keyboard.poll();
-        if (Keyboard.isKeyDown(Keyboard.KEY_TAB)) {
+        if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
           reset();
           mainClass.initLayer();
         }
