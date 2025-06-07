@@ -3,8 +3,6 @@ package abbaye.model;
 
 import static abbaye.model.Room.ROOM_CHURCH;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
-import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL20.glGetUniformLocation;
 import static org.lwjgl.opengl.GL20.glUniformMatrix4;
 import static org.lwjgl.opengl.GL20.glUseProgram;
@@ -12,7 +10,8 @@ import static org.lwjgl.opengl.GL20.glUseProgram;
 import abbaye.AbbayeMain;
 import abbaye.basic.Textures;
 import java.io.*;
-import java.nio.FloatBuffer;
+import java.nio.ByteBuffer;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
@@ -26,7 +25,7 @@ public class Stage {
 
   private int[][][] stagedata = new int[NUM_SCREENS][NUM_ROWS][NUM_COLUMNS];
   private int roomx = 0;
-  private int roomy = 0;
+  private int roomy = 1;
 
   private int tiles;
   private int shaderProgram;
@@ -91,7 +90,7 @@ public class Stage {
     roomy += 1;
   }
 
-  void render(int[] counter, int changeflag, int changetiles) {
+  public void render(int[] counter, boolean changeflag, int changetiles) {
     var room = roomy * 5 + roomx;
     for (var coordy = 0; coordy <= 21; coordy++) {
       for (var coordx = 0; coordx <= 31; coordx++) {
@@ -182,7 +181,7 @@ public class Stage {
           //                  destiles.w = srctiles.w;
           //                  destiles.h = srctiles.h;
           if ((data == 152) || (data == 137) || (data == 136)) {
-            if (changeflag == 0) {
+            if (changeflag) {
               srctiles.y = srctiles.y + (changetiles * 120);
               SDL_RenderCopy(srctiles);
             }
@@ -196,19 +195,25 @@ public class Stage {
   }
 
   private void SDL_RenderCopy(SDL_Rect srctiles) {
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, tiles);
+    //    glActiveTexture(GL_TEXTURE0);
+    //    glBindTexture(GL_TEXTURE_2D, tiles);
+
+    // Fixme
+    GL11.glBegin(GL11.GL_QUADS);
 
     var model =
         new Matrix4f()
             .translate(new Vector3f(srctiles.x, srctiles.y, 0))
             .scale(new Vector3f(srctiles.w, srctiles.h, 1));
     int uniModel = glGetUniformLocation(shaderProgram, "model");
-    var buffer = FloatBuffer.allocate(16);
+    var buffer = ByteBuffer.allocateDirect(16 * 4).asFloatBuffer();
     model.load(buffer);
     glUniformMatrix4(uniModel, false, buffer);
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    // fixme
+    GL11.glEnd();
   }
 
   static class SDL_Rect {

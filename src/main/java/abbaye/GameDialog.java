@@ -29,7 +29,7 @@ public class GameDialog {
     player = pl;
     mainClass = main;
     state = State.INACTIVE;
-    introSplash = Textures.loadTexture("/intro.png");
+    introSplash = Textures.loadTextureMirrored("/intro.png");
     reset();
   }
 

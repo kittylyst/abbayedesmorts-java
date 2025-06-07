@@ -98,7 +98,6 @@ public class AbbayeMain {
 
   void init() {
     try {
-      stage.load();
       createWindow();
       Keyboard.create();
     } catch (Exception e) {
@@ -112,6 +111,7 @@ public class AbbayeMain {
 
     gameDialog = new GameDialog(null, this);
     initLayer();
+    stage.load();
   }
 
   void initLayer() {
@@ -157,8 +157,9 @@ public class AbbayeMain {
   private void render() {
     GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
     GL11.glLoadIdentity();
+    int[] counters = {0, 0, 0};
 
-    //    stage.render();
+    stage.render(counters, false, 0);
     layer.render();
 
     gameDialog.render();

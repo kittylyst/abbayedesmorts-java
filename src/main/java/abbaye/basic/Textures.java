@@ -20,11 +20,16 @@ public final class Textures {
 
   private static Map<String, Integer> textures = new HashMap<>();
 
-  public static synchronized int loadTexture(String pathStr) {
-    return loadTexture(pathStr, true);
+  public static synchronized int loadTextureMirrored(String pathStr) {
+    return loadTexture(pathStr, true, true);
   }
 
-  public static synchronized int loadTexture(String pathStr, boolean isResource) {
+  public static synchronized int loadTexture(String pathStr) {
+    return loadTexture(pathStr, true, false);
+  }
+
+  public static synchronized int loadTexture(
+      String pathStr, boolean isResource, boolean withMirror) {
     if (!AbbayeMain.isGlEnabled()) {
       return 0;
     }
@@ -40,7 +45,8 @@ public final class Textures {
     } else {
       bufferedImage = getBufferedImageFromFile(pathStr);
     }
-    BufferedImage image = flipImage(bufferedImage);
+    BufferedImage image =
+        withMirror ? flipImageWithMirror(bufferedImage) : flipImage(bufferedImage);
 
     // Put Image In Memory
     ByteBuffer scratch = ByteBuffer.allocateDirect(4 * image.getWidth() * image.getHeight());
@@ -120,7 +126,19 @@ public final class Textures {
   /** Flip the image vertically to match OpenGL's texture coordinate system */
   public static BufferedImage flipImage(BufferedImage tex) {
     AffineTransform transform = AffineTransform.getScaleInstance(1, -1);
-    transform.translate(0, -tex.getHeight(null));
+    transform.translate(0, -tex.getHeight());
+    AffineTransformOp op =
+        new AffineTransformOp(transform, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+    return op.filter(tex, null);
+  }
+
+  /**
+   * Flip the image vertically to match OpenGL's texture coordinate system, and also mirror it in
+   * the x-axis
+   */
+  public static BufferedImage flipImageWithMirror(BufferedImage tex) {
+    AffineTransform transform = AffineTransform.getScaleInstance(-1, -1);
+    transform.translate(-tex.getWidth(), -tex.getHeight(null));
     AffineTransformOp op =
         new AffineTransformOp(transform, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
     return op.filter(tex, null);
