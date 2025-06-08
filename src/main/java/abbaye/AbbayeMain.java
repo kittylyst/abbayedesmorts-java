@@ -1,34 +1,45 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye;
 
+import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.GL_TRUE;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryUtil.NULL;
 
 import abbaye.basic.Clock;
-import abbaye.basic.OGLFont;
+import abbaye.graphics.OGLFont;
+import abbaye.graphics.StageRenderer;
 import abbaye.model.Enemy;
 import abbaye.model.Layer;
 import abbaye.model.Player;
 import abbaye.model.Stage;
+import abbaye.scratch.TilemapRenderer;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+
+import java.nio.IntBuffer;
 import java.util.Optional;
+
+import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.system.MemoryStack;
 
 public class AbbayeMain {
   private static ObjectMapper mapper;
   private static volatile boolean glEnabled = true;
 
-  private volatile boolean done = false;
   private boolean fullscreen = false;
   private final String windowTitle = "Abbaye Des Mortes";
   private Stage stage = new Stage();
   private Layer layer = new Layer();
   private GameDialog gameDialog;
   private long window;
+  private StageRenderer renderer;
 
   public static boolean isGlEnabled() {
     return glEnabled;
@@ -71,41 +82,79 @@ public class AbbayeMain {
 
   void init() {
     try {
-      //      GLFWErrorCallback.createPrint(System.err).set();
+      GLFWErrorCallback.createPrint(System.err).set();
 
       // Initialize GLFW. Most GLFW functions will not work before doing this.
       if (!glfwInit()) {
         throw new IllegalStateException("Unable to initialize GLFW");
       }
 
-      createWindow();
+      var config = Config.config();
+
+      glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+      glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+      glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+      glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+      window = glfwCreateWindow(config.getScreenWidth(), config.getScreenHeight(), windowTitle, 0, 0);
+
+      glfwMakeContextCurrent(window);
+      if (window == NULL) {
+        throw new RuntimeException("Failed to create the GLFW window");
+      }
+
+      glfwSetKeyCallback(
+              window,
+              (window, key, scancode, action, mods) -> {
+                if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+                  System.out.println("ESC Released");
+                  glfwSetWindowShouldClose(window, true);
+                }
+              });
+
+      spawnInitialWindow();
+
+      glfwMakeContextCurrent(window);
+      glfwSwapInterval(1);
       glfwShowWindow(window);
+
+      GL.createCapabilities();
+
+      glEnable(GL_BLEND);
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     } catch (Exception e) {
       e.printStackTrace();
       System.exit(1);
     }
+    stage.load();
+    renderer = new StageRenderer();
+    renderer.init();
 
-    //    initGL();
     Clock.init();
     Clock.updateTimer();
 
     gameDialog = new GameDialog(null, this);
     initLayer();
-    stage.load();
+  }
+
+  private void spawnInitialWindow() {
+    try (MemoryStack stack = stackPush()) {
+      IntBuffer pWidth = stack.mallocInt(1);
+      IntBuffer pHeight = stack.mallocInt(1);
+
+      glfwGetWindowSize(window, pWidth, pHeight);
+
+      GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+      glfwSetWindowPos(
+              window, (vidmode.width() - pWidth.get(0)) / 2, (vidmode.height() - pHeight.get(0)) / 2);
+    }
   }
 
   /** Main game loop method */
   public void run() {
     try {
-      while (!done) {
-        //        Keyboard.poll();
-
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-          done = true;
-        }
-        if (glfwWindowShouldClose(window)) {
-          done = true;
-        }
+      while (!glfwWindowShouldClose(window)) {
         Clock.updateTimer();
 
         // Update Layers
@@ -115,9 +164,9 @@ public class AbbayeMain {
 
         // Now Render
         render();
-        //        Display.update();
-        glfwPollEvents();
+
         glfwSwapBuffers(window);
+        glfwPollEvents();
       }
       cleanup();
     } catch (Exception e) {
@@ -128,7 +177,7 @@ public class AbbayeMain {
 
   void initLayer() {
     var font = new OGLFont();
-    font.buildFont("Courier New", 24);
+//    font.buildFont("Courier New", 24);
 
     // Layer 0 is the background starfield
     //    layer[0] = new Layer();
@@ -145,48 +194,31 @@ public class AbbayeMain {
     //    gameDialog.reset();
   }
 
-  //  private void initGL() {
-  //    GL11.glEnable(GL11.GL_TEXTURE_2D);
-  //    GL11.glShadeModel(GL11.GL_SMOOTH);
-  //    GL11.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
-  //    GL11.glClearDepth(1.0f);
-  //
-  //    var config = Config.config();
-  //    GL11.glMatrixMode(GL11.GL_PROJECTION);
-  //    GL11.glLoadIdentity();
-  //    GL11.glOrtho(0, config.getScreenWidth(), config.getScreenHeight(), 0, -100, 100);
-  //    GL11.glMatrixMode(GL11.GL_MODELVIEW);
-  //    GL11.glDisable(GL11.GL_DEPTH_TEST);
-  //  }
 
-  private void createWindow() throws Exception {
-    var config = Config.config();
+  public void render() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    window = glfwCreateWindow(config.getScreenWidth(), config.getScreenHeight(), windowTitle, 0, 0);
+    // Update viewport
+    try (MemoryStack stack = stackPush()) {
+      IntBuffer width = stack.mallocInt(1);
+      IntBuffer height = stack.mallocInt(1);
+      glfwGetFramebufferSize(window, width, height);
+      glViewport(0, 0, width.get(0), height.get(0));
 
-    glfwMakeContextCurrent(window);
-    GL.createCapabilities();
-  }
-
-  private void render() {
-    GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-    GL11.glLoadIdentity();
-    int[] counters = {0, 0, 0};
-
-    stage.render(counters, false, 0);
-    layer.render();
-
-    gameDialog.render();
+      renderer.render(stage, width.get(0), height.get(0));
+    }
+//    layer.render();
+//
+//    gameDialog.render();
   }
 
   private void cleanup() {
-    //    Keyboard.destroy();
-    //    Display.destroy();
+    renderer.cleanup();
+    glfwFreeCallbacks(window);
     glfwDestroyWindow(window);
+    glfwTerminate();
+    glfwSetErrorCallback(null).free();
+
   }
 
   public long getWindow() {

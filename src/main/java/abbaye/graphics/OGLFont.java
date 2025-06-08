@@ -1,5 +1,5 @@
 /* Copyright (C) The Authors 2025 */
-package abbaye.basic;
+package abbaye.graphics;
 
 import abbaye.AbbayeMain;
 import java.awt.*;
@@ -9,6 +9,8 @@ import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
+
+import abbaye.basic.Vector2;
 import org.lwjgl.opengl.GL11;
 
 public final class OGLFont {

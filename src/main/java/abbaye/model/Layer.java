@@ -2,7 +2,7 @@
 package abbaye.model;
 
 import abbaye.Config;
-import abbaye.TextureMap;
+import abbaye.graphics.TextureMap;
 import abbaye.basic.Actor;
 import abbaye.basic.Renderable;
 import java.util.ArrayList;

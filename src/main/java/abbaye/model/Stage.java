@@ -2,13 +2,11 @@
 package abbaye.model;
 
 import static abbaye.model.Room.ROOM_CHURCH;
-import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.glUseProgram;
 
 import abbaye.AbbayeMain;
-import abbaye.basic.Textures;
+import abbaye.graphics.Textures;
 import java.io.*;
-import org.lwjgl.opengl.GL11;
 
 /** The stage shows the layout of the furniture of the current screen */
 public class Stage {
@@ -178,37 +176,23 @@ public class Stage {
           if ((data == 152) || (data == 137) || (data == 136)) {
             if (changeflag) {
               srctiles.y = srctiles.y + (changetiles * 120);
-              SDL_RenderCopy(srctiles);
+//              SDL_RenderCopy(srctiles);
             }
           } else {
             srctiles.y = srctiles.y + (changetiles * 120);
-            SDL_RenderCopy(srctiles);
+//            SDL_RenderCopy(srctiles);
           }
         }
       }
     }
   }
 
-  private void SDL_RenderCopy(SDL_Rect srctiles) {
-    //    glActiveTexture(GL_TEXTURE0);
-    //    glBindTexture(GL_TEXTURE_2D, tiles);
+  public int getTileSize() {
+    return 8;
+  }
 
-    // Fixme
-    GL11.glBegin(GL11.GL_QUADS);
-
-    //    var model =
-    //        new Matrix4f()
-    //            .translate(new Vector3f(srctiles.x, srctiles.y, 0))
-    //            .scale(new Vector3f(srctiles.w, srctiles.h, 1));
-    //    int uniModel = glGetUniformLocation(shaderProgram, "model");
-    //    var buffer = ByteBuffer.allocateDirect(16 * 4).asFloatBuffer();
-    //    model.load(buffer);
-    //    glUniformMatrix4(uniModel, false, buffer);
-
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-    // fixme
-    GL11.glEnd();
+  public int getTile(int x, int y) {
+    return stagedata[roomy * 5 + roomx][y][x];
   }
 
   static class SDL_Rect {

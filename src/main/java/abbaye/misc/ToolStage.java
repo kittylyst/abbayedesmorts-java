@@ -1,5 +1,5 @@
 /* Copyright (C) The Authors 2025 */
-package abbaye;
+package abbaye.misc;
 
 import static abbaye.model.Stage.NUM_COLUMNS;
 import static abbaye.model.Stage.NUM_ROWS;

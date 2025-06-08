@@ -1,5 +1,5 @@
 /* Copyright (C) The Authors 2004-2025 */
-package abbaye.basic;
+package abbaye.graphics;
 
 import abbaye.AbbayeMain;
 import java.awt.*;
