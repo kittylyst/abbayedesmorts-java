@@ -108,9 +108,36 @@ public class AbbayeMain {
       glfwSetKeyCallback(
           window,
           (window, key, scancode, action, mods) -> {
-            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-              System.out.println("ESC Released");
-              glfwSetWindowShouldClose(window, true);
+            if (action == GLFW_RELEASE) {
+              switch (key) {
+                case GLFW_KEY_ESCAPE:
+                  {
+                    //                  System.out.println("ESC Released");
+                    glfwSetWindowShouldClose(window, true);
+                    break;
+                  }
+                case GLFW_KEY_RIGHT:
+                  {
+                    stage.moveRight();
+                    break;
+                  }
+                case GLFW_KEY_LEFT:
+                  {
+                    stage.moveLeft();
+                    break;
+                  }
+                case GLFW_KEY_DOWN:
+                  {
+                    stage.moveDown();
+                    break;
+                  }
+                case GLFW_KEY_UP:
+                  {
+                    stage.moveUp();
+                    break;
+                  }
+                default:
+              }
             }
           });
 
@@ -137,7 +164,7 @@ public class AbbayeMain {
     Clock.updateTimer();
 
     gameDialog = new GameDialog(null, this);
-//    initLayer();
+    //    initLayer();
   }
 
   private void spawnInitialWindow() {
@@ -158,12 +185,12 @@ public class AbbayeMain {
   public void loop() {
     try {
       while (!glfwWindowShouldClose(window)) {
-//        Clock.updateTimer();
-//
-//        // Update Layers
-//        if (!gameDialog.isActive()) {
-//          layer.update();
-//        }
+        //        Clock.updateTimer();
+        //
+        //        // Update Layers
+        //        if (!gameDialog.isActive()) {
+        //          layer.update();
+        //        }
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Update viewport
@@ -181,7 +208,9 @@ public class AbbayeMain {
 
         glfwSwapBuffers(window);
         glfwPollEvents();
-        System.out.println("After poll events: " + glfwGetWindowAttrib(window, GLFW_VISIBLE));
+        //        System.out.println("After poll events: " + glfwGetWindowAttrib(window,
+        // GLFW_VISIBLE));
+
       }
       cleanup();
     } catch (Exception e) {

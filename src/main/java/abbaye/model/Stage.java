@@ -1,7 +1,6 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.model;
 
-import static abbaye.model.Room.ROOM_CHURCH;
 import static org.lwjgl.opengl.GL20.glUseProgram;
 
 import abbaye.AbbayeMain;
@@ -17,7 +16,7 @@ public class Stage implements Tiles {
   public static final int NUM_ROWS = 22;
 
   private int[][][] stagedata = new int[NUM_SCREENS][NUM_ROWS][NUM_COLUMNS];
-  private int roomx = 0;
+  private int roomx = 2;
   private int roomy = 1;
 
   private int tiles;
@@ -68,19 +67,27 @@ public class Stage implements Tiles {
   }
 
   public void moveLeft() {
-    roomx -= 1;
+    if (roomx > 0) {
+      roomx -= 1;
+    }
   }
 
   public void moveRight() {
-    roomx += 1;
+    if (roomx < 4) {
+      roomx += 1;
+    }
   }
 
   public void moveUp() {
-    roomy -= 1;
+    if (roomy > 0) {
+      roomy -= 1;
+    }
   }
 
   public void moveDown() {
-    roomy += 1;
+    if (roomy < 4) {
+      roomy += 1;
+    }
   }
 
   public int getTileSize() {
@@ -89,19 +96,5 @@ public class Stage implements Tiles {
 
   public int getTile(int x, int y) {
     return stagedata[roomy * 5 + roomx][y][x];
-  }
-
-  public static class SDL_Rect {
-    public int x;
-    public int y;
-    public int w;
-    public int h;
-
-    public SDL_Rect(int x, int y, int w, int h) {
-      this.x = x;
-      this.y = y;
-      this.w = w;
-      this.h = h;
-    }
   }
 }
