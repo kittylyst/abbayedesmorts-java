@@ -4,7 +4,6 @@ package abbaye;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -26,6 +25,7 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 
+// Must be run with -Djava.awt.headless=true
 public class AbbayeMain {
   private static ObjectMapper mapper;
   private static volatile boolean glEnabled = true;
@@ -63,6 +63,12 @@ public class AbbayeMain {
     return mapper;
   }
 
+  public void run() {
+    init();
+    loop();
+    cleanup();
+  }
+
   public static void main(String[] args) {
     Optional<String> oPath = Optional.empty();
     if (args.length > 0) {
@@ -73,7 +79,6 @@ public class AbbayeMain {
     // Currently, should always be false but smaller devices may want
     // fullscreen to be true
     //        main.fullscreen = Config.config(oPath).getFullscreen();
-    main.init();
     main.run();
   }
 
@@ -86,16 +91,16 @@ public class AbbayeMain {
         throw new IllegalStateException("Unable to initialize GLFW");
       }
 
-      var config = Config.config();
-
-      glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+      glfwDefaultWindowHints();
+      glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+      glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
       glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
       glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
       glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+      var config = Config.config();
       window =
           glfwCreateWindow(config.getScreenWidth(), config.getScreenHeight(), windowTitle, 0, 0);
-
-      glfwMakeContextCurrent(window);
       if (window == NULL) {
         throw new RuntimeException("Failed to create the GLFW window");
       }
@@ -132,7 +137,7 @@ public class AbbayeMain {
     Clock.updateTimer();
 
     gameDialog = new GameDialog(null, this);
-    initLayer();
+//    initLayer();
   }
 
   private void spawnInitialWindow() {
@@ -150,21 +155,33 @@ public class AbbayeMain {
   }
 
   /** Main game loop method */
-  public void run() {
+  public void loop() {
     try {
       while (!glfwWindowShouldClose(window)) {
-        Clock.updateTimer();
+//        Clock.updateTimer();
+//
+//        // Update Layers
+//        if (!gameDialog.isActive()) {
+//          layer.update();
+//        }
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Update Layers
-        if (!gameDialog.isActive()) {
-          layer.update();
+        // Update viewport
+        try (MemoryStack stack = stackPush()) {
+          IntBuffer width = stack.mallocInt(1);
+          IntBuffer height = stack.mallocInt(1);
+          glfwGetFramebufferSize(window, width, height);
+          glViewport(0, 0, width.get(0), height.get(0));
+
+          renderer.render(stage, width.get(0), height.get(0));
         }
-
-        // Now Render
-        render();
+        //    layer.render();
+        //
+        //    gameDialog.render();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+        System.out.println("After poll events: " + glfwGetWindowAttrib(window, GLFW_VISIBLE));
       }
       cleanup();
     } catch (Exception e) {
@@ -190,23 +207,6 @@ public class AbbayeMain {
     gameDialog.setPlayer(p);
     gameDialog.setFont(font);
     //    gameDialog.reset();
-  }
-
-  public void render() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Update viewport
-    try (MemoryStack stack = stackPush()) {
-      IntBuffer width = stack.mallocInt(1);
-      IntBuffer height = stack.mallocInt(1);
-      glfwGetFramebufferSize(window, width, height);
-      glViewport(0, 0, width.get(0), height.get(0));
-
-      renderer.render(stage, width.get(0), height.get(0));
-    }
-    //    layer.render();
-    //
-    //    gameDialog.render();
   }
 
   private void cleanup() {

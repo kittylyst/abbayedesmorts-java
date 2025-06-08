@@ -83,119 +83,15 @@ public class Stage implements Tiles {
     roomy += 1;
   }
 
-  public void render(int[] counter, boolean changeflag, int changetiles) {
-    var room = roomy * 5 + roomx;
-    for (var coordy = 0; coordy <= 21; coordy++) {
-      for (var coordx = 0; coordx <= 31; coordx++) {
-        var data = stagedata[room][coordy][coordx];
-
-        var srctiles = new SDL_Rect(0, 0, 8, 8);
-        //        var destiles = new SDL_Rect(0,0,8,8);
-
-        if ((data > 0) && (data != 99)) {
-          //                  destiles.x = coordx * 8;
-          //                  destiles.y = coordy * 8;
-          if (data < 200) {
-            srctiles.w = 8;
-            srctiles.h = 8;
-            if (data < 101) {
-              srctiles.y = 0;
-              if (data == 84) /* Cross brightness */
-                srctiles.x = (data - 1) * 8 + (counter[0] / 8 * 8);
-              else srctiles.x = (data - 1) * 8;
-            } else {
-              if (data == 154) {
-                /* Door */
-                srctiles.x = 600 + ((counter[0] / 8) * 16);
-                srctiles.y = 0;
-                srctiles.w = 16;
-                srctiles.h = 24;
-              } else {
-                srctiles.y = 8;
-                srctiles.x = (data - 101) * 8;
-              }
-            }
-          }
-          if ((data > 199) && (data < 300)) {
-            srctiles.x = (data - 201) * 48;
-            srctiles.y = 16;
-            srctiles.w = 48;
-            srctiles.h = 48;
-          }
-          if ((data > 299) && (data < 399)) {
-            srctiles.x = 96 + ((data - 301) * 8);
-            srctiles.y = 16;
-            srctiles.w = 8;
-            srctiles.h = 8;
-            /* Door movement */
-            if ((room == ROOM_CHURCH.ordinal()) && ((counter[1] > 59) && (counter[1] < 71))) {
-              if ((data == 347) || (data == 348) || (data == 349) || (data == 350)) {
-                //                        destiles.x += 2;
-                //                        if ((data == 350) && (counter[1] == 70)) {
-                //                          Mix_PlayChannel(-1, fx[3], 0); /* Sound of door */
-                //                        }
-              }
-            }
-          }
-          /* Hearts */
-          if ((data > 399) && (data < 405)) {
-            srctiles.x = 96 + ((data - 401) * 8) + (32 * (counter[0] / 15));
-            srctiles.y = 24;
-            srctiles.w = 8;
-            srctiles.h = 8;
-          }
-          /* Crosses */
-          if ((data > 408) && (data < 429)) {
-            srctiles.x = 96 + ((data - 401) * 8) + (32 * (counter[1] / 23));
-            srctiles.y = 24;
-            srctiles.w = 8;
-            srctiles.h = 8;
-          }
-
-          if ((data > 499) && (data < 599)) {
-            srctiles.x = 96 + ((data - 501) * 8);
-            srctiles.y = 32;
-            srctiles.w = 8;
-            srctiles.h = 8;
-          }
-          if ((data > 599) && (data < 650)) {
-            srctiles.x = 96 + ((data - 601) * 8);
-            srctiles.y = 56;
-            srctiles.w = 8;
-            srctiles.h = 8;
-          }
-          if (data == 650) {
-            /* Cup */
-            srctiles.x = 584;
-            srctiles.y = 87;
-            srctiles.w = 16;
-            srctiles.h = 16;
-          }
-          //                  destiles.w = srctiles.w;
-          //                  destiles.h = srctiles.h;
-          if ((data == 152) || (data == 137) || (data == 136)) {
-            if (changeflag) {
-              srctiles.y = srctiles.y + (changetiles * 120);
-              //              SDL_RenderCopy(srctiles);
-            }
-          } else {
-            srctiles.y = srctiles.y + (changetiles * 120);
-            //            SDL_RenderCopy(srctiles);
-          }
-        }
-      }
-    }
-  }
-
   public int getTileSize() {
-    return 8;
+    return 32;
   }
 
   public int getTile(int x, int y) {
     return stagedata[roomy * 5 + roomx][y][x];
   }
 
-  static class SDL_Rect {
+  public static class SDL_Rect {
     public int x;
     public int y;
     public int w;
