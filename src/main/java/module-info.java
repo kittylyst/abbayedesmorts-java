@@ -9,6 +9,6 @@ module abbaye {
   requires org.lwjgl.opengl;
 
   exports abbaye;
-    exports abbaye.graphics;
+  exports abbaye.graphics;
   exports abbaye.misc;
 }

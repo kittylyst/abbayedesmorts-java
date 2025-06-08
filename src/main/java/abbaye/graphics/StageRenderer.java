@@ -1,10 +1,11 @@
+/* Copyright (C) The Authors 2025 */
 package abbaye.graphics;
-
-import abbaye.model.Stage;
-import abbaye.scratch.Tilemap;
 
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
+
+import abbaye.model.Stage;
+import abbaye.model.Tiles;
 
 public class StageRenderer {
   private int shaderProgram;
@@ -106,7 +107,7 @@ public class StageRenderer {
     return shader;
   }
 
-  public void render(Stage tilemap, int screenWidth, int screenHeight) {
+  public void render(Tiles tilemap, int screenWidth, int screenHeight) {
     glUseProgram(shaderProgram);
 
     // Set up orthographic projection

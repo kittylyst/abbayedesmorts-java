@@ -9,7 +9,7 @@ import abbaye.graphics.Textures;
 import java.io.*;
 
 /** The stage shows the layout of the furniture of the current screen */
-public class Stage {
+public class Stage implements Tiles {
   public static final int SCREENS_X = 5;
   public static final int SCREENS_Y = 5;
   public static final int NUM_SCREENS = SCREENS_X * SCREENS_Y;
@@ -176,11 +176,11 @@ public class Stage {
           if ((data == 152) || (data == 137) || (data == 136)) {
             if (changeflag) {
               srctiles.y = srctiles.y + (changetiles * 120);
-//              SDL_RenderCopy(srctiles);
+              //              SDL_RenderCopy(srctiles);
             }
           } else {
             srctiles.y = srctiles.y + (changetiles * 120);
-//            SDL_RenderCopy(srctiles);
+            //            SDL_RenderCopy(srctiles);
           }
         }
       }

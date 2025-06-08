@@ -24,8 +24,8 @@ public class GameDialog {
   private State state;
   private Player player;
 
-//  private static final int SPLASH_SIZE_X = 256;
-//  private static final int SPLASH_SIZE_Y = 384;
+  //  private static final int SPLASH_SIZE_X = 256;
+  //  private static final int SPLASH_SIZE_Y = 384;
 
   public GameDialog(Player pl, AbbayeMain main) {
     player = pl;
@@ -49,33 +49,33 @@ public class GameDialog {
           return;
         }
 
-//        GL11.glEnable(GL11.GL_BLEND);
-//        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
-//
-//        GL11.glPushMatrix();
+        //        GL11.glEnable(GL11.GL_BLEND);
+        //        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
+        //
+        //        GL11.glPushMatrix();
 
         //          GL11.glColor3f(1.0f, hitColorFade, hitColorFade);
         //          GL11.glTranslatef(pos.x(), pos.y(), 0);
         //          GL11.glRotatef(v.x() * 50, 0, 1, 0);
 
         // draw the texture
-//        GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
-//        GL11.glBindTexture(GL11.GL_TEXTURE_2D, introSplash);
-//        GL11.glBegin(GL11.GL_QUADS);
-//        GL11.glTexCoord2f(0, 0);
-//        GL11.glVertex2f(0, 0);
-//        GL11.glTexCoord2f(0, -1);
-//        GL11.glVertex2f(0, SPLASH_SIZE_Y);
-//        GL11.glTexCoord2f(-1, -1);
-//        GL11.glVertex2f(SPLASH_SIZE_X, SPLASH_SIZE_Y);
-//        GL11.glTexCoord2f(-1, 0);
-//        GL11.glVertex2f(SPLASH_SIZE_X, 0);
-//        GL11.glEnd();
-//
-//        GL11.glColor3f(1.0f, 1.0f, 1.0f);
-//        GL11.glPopMatrix();
-//
-//        GL11.glDisable(GL11.GL_BLEND);
+        //        GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
+        //        GL11.glBindTexture(GL11.GL_TEXTURE_2D, introSplash);
+        //        GL11.glBegin(GL11.GL_QUADS);
+        //        GL11.glTexCoord2f(0, 0);
+        //        GL11.glVertex2f(0, 0);
+        //        GL11.glTexCoord2f(0, -1);
+        //        GL11.glVertex2f(0, SPLASH_SIZE_Y);
+        //        GL11.glTexCoord2f(-1, -1);
+        //        GL11.glVertex2f(SPLASH_SIZE_X, SPLASH_SIZE_Y);
+        //        GL11.glTexCoord2f(-1, 0);
+        //        GL11.glVertex2f(SPLASH_SIZE_X, 0);
+        //        GL11.glEnd();
+        //
+        //        GL11.glColor3f(1.0f, 1.0f, 1.0f);
+        //        GL11.glPopMatrix();
+        //
+        //        GL11.glDisable(GL11.GL_BLEND);
 
         if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
           mainClass.initLayer();

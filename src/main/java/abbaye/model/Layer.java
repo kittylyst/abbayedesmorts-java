@@ -2,9 +2,9 @@
 package abbaye.model;
 
 import abbaye.Config;
-import abbaye.graphics.TextureMap;
 import abbaye.basic.Actor;
 import abbaye.basic.Renderable;
+import abbaye.graphics.TextureMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

@@ -15,15 +15,12 @@ import abbaye.model.Enemy;
 import abbaye.model.Layer;
 import abbaye.model.Player;
 import abbaye.model.Stage;
-import abbaye.scratch.TilemapRenderer;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-
 import java.nio.IntBuffer;
 import java.util.Optional;
-
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
@@ -95,7 +92,8 @@ public class AbbayeMain {
       glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
       glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
       glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-      window = glfwCreateWindow(config.getScreenWidth(), config.getScreenHeight(), windowTitle, 0, 0);
+      window =
+          glfwCreateWindow(config.getScreenWidth(), config.getScreenHeight(), windowTitle, 0, 0);
 
       glfwMakeContextCurrent(window);
       if (window == NULL) {
@@ -103,13 +101,13 @@ public class AbbayeMain {
       }
 
       glfwSetKeyCallback(
-              window,
-              (window, key, scancode, action, mods) -> {
-                if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-                  System.out.println("ESC Released");
-                  glfwSetWindowShouldClose(window, true);
-                }
-              });
+          window,
+          (window, key, scancode, action, mods) -> {
+            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+              System.out.println("ESC Released");
+              glfwSetWindowShouldClose(window, true);
+            }
+          });
 
       spawnInitialWindow();
 
@@ -147,7 +145,7 @@ public class AbbayeMain {
       GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
       glfwSetWindowPos(
-              window, (vidmode.width() - pWidth.get(0)) / 2, (vidmode.height() - pHeight.get(0)) / 2);
+          window, (vidmode.width() - pWidth.get(0)) / 2, (vidmode.height() - pHeight.get(0)) / 2);
     }
   }
 
@@ -177,7 +175,7 @@ public class AbbayeMain {
 
   void initLayer() {
     var font = new OGLFont();
-//    font.buildFont("Courier New", 24);
+    //    font.buildFont("Courier New", 24);
 
     // Layer 0 is the background starfield
     //    layer[0] = new Layer();
@@ -194,7 +192,6 @@ public class AbbayeMain {
     //    gameDialog.reset();
   }
 
-
   public void render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -207,9 +204,9 @@ public class AbbayeMain {
 
       renderer.render(stage, width.get(0), height.get(0));
     }
-//    layer.render();
-//
-//    gameDialog.render();
+    //    layer.render();
+    //
+    //    gameDialog.render();
   }
 
   private void cleanup() {
@@ -218,7 +215,6 @@ public class AbbayeMain {
     glfwDestroyWindow(window);
     glfwTerminate();
     glfwSetErrorCallback(null).free();
-
   }
 
   public long getWindow() {
