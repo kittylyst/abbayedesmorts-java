@@ -36,7 +36,6 @@ public class AbbayeMain {
   private Layer layer = new Layer();
   private GameDialog gameDialog;
   private long window;
-  private StageRenderer renderer;
 
   public static boolean isGlEnabled() {
     return glEnabled;
@@ -84,6 +83,9 @@ public class AbbayeMain {
 
   void init() {
     try {
+      Clock.init();
+      Clock.updateTimer();
+
       GLFWErrorCallback.createPrint(System.err).set();
 
       // Initialize GLFW. Most GLFW functions will not work before doing this.
@@ -105,42 +107,6 @@ public class AbbayeMain {
         throw new RuntimeException("Failed to create the GLFW window");
       }
 
-      glfwSetKeyCallback(
-          window,
-          (window, key, scancode, action, mods) -> {
-            if (action == GLFW_RELEASE) {
-              switch (key) {
-                case GLFW_KEY_ESCAPE:
-                  {
-                    //                  System.out.println("ESC Released");
-                    glfwSetWindowShouldClose(window, true);
-                    break;
-                  }
-                case GLFW_KEY_RIGHT:
-                  {
-                    stage.moveRight();
-                    break;
-                  }
-                case GLFW_KEY_LEFT:
-                  {
-                    stage.moveLeft();
-                    break;
-                  }
-                case GLFW_KEY_DOWN:
-                  {
-                    stage.moveDown();
-                    break;
-                  }
-                case GLFW_KEY_UP:
-                  {
-                    stage.moveUp();
-                    break;
-                  }
-                default:
-              }
-            }
-          });
-
       spawnInitialWindow();
 
       glfwMakeContextCurrent(window);
@@ -156,15 +122,8 @@ public class AbbayeMain {
       e.printStackTrace();
       System.exit(1);
     }
-    stage.load();
-    renderer = new StageRenderer();
-    renderer.init();
-
-    Clock.init();
-    Clock.updateTimer();
-
     gameDialog = new GameDialog(null, this);
-    //    initLayer();
+    stage.load(new StageRenderer(window));
   }
 
   private void spawnInitialWindow() {
@@ -193,24 +152,16 @@ public class AbbayeMain {
         //        }
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Update viewport
-        try (MemoryStack stack = stackPush()) {
-          IntBuffer width = stack.mallocInt(1);
-          IntBuffer height = stack.mallocInt(1);
-          glfwGetFramebufferSize(window, width, height);
-          glViewport(0, 0, width.get(0), height.get(0));
-
-          renderer.render(stage, width.get(0), height.get(0));
+        if (gameDialog.isActive()) {
+          gameDialog.render();
+        } else {
+          glfwSetKeyCallback(window, stage.moveCallback());
+          stage.render();
+          layer.render();
         }
-        //    layer.render();
-        //
-        //    gameDialog.render();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
-        //        System.out.println("After poll events: " + glfwGetWindowAttrib(window,
-        // GLFW_VISIBLE));
-
       }
       cleanup();
     } catch (Exception e) {
@@ -239,7 +190,7 @@ public class AbbayeMain {
   }
 
   private void cleanup() {
-    renderer.cleanup();
+    stage.cleanup();
     glfwFreeCallbacks(window);
     glfwDestroyWindow(window);
     glfwTerminate();

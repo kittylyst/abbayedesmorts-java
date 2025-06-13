@@ -20,4 +20,6 @@ public interface Renderable {
   default boolean update() {
     return true;
   }
+
+  default void cleanup() {}
 }

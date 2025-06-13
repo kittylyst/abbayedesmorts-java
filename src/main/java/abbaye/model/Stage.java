@@ -1,14 +1,18 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.model;
 
+import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL20.glUseProgram;
 
 import abbaye.AbbayeMain;
+import abbaye.basic.Renderable;
+import abbaye.graphics.StageRenderer;
 import abbaye.graphics.Textures;
 import java.io.*;
+import org.lwjgl.glfw.GLFWKeyCallbackI;
 
 /** The stage shows the layout of the furniture of the current screen */
-public class Stage implements Tiles {
+public class Stage implements Tiles, Renderable {
   public static final int SCREENS_X = 5;
   public static final int SCREENS_Y = 5;
   public static final int NUM_SCREENS = SCREENS_X * SCREENS_Y;
@@ -19,17 +23,25 @@ public class Stage implements Tiles {
   private int roomx = 2;
   private int roomy = 1;
 
-  private int tiles;
+  private int texture;
   private int shaderProgram;
+  private StageRenderer renderer;
 
   /** Loads stage screens from default location */
   public void load() {
     load("/map/map.txt");
     if (AbbayeMain.isGlEnabled()) {
-      tiles = Textures.loadTexture("/tiles.png");
+      texture = Textures.loadTexture("/tiles.png");
       shaderProgram = 1;
       glUseProgram(shaderProgram);
+      // FIXME ????
+      renderer.init(this);
     }
+  }
+
+  public void load(StageRenderer renderer) {
+    this.renderer = renderer;
+    load();
   }
 
   /**
@@ -62,6 +74,11 @@ public class Stage implements Tiles {
     }
   }
 
+  @Override
+  public boolean render() {
+    return renderer.render();
+  }
+
   public int[][] getScreen(int level) {
     return stagedata[level];
   }
@@ -88,6 +105,41 @@ public class Stage implements Tiles {
     if (roomy < 4) {
       roomy += 1;
     }
+  }
+
+  public GLFWKeyCallbackI moveCallback() {
+    return (window, key, scancode, action, mods) -> {
+      if (action == GLFW_RELEASE) {
+        switch (key) {
+          case GLFW_KEY_ESCAPE:
+            {
+              glfwSetWindowShouldClose(window, true);
+              break;
+            }
+          case GLFW_KEY_RIGHT:
+            {
+              moveRight();
+              break;
+            }
+          case GLFW_KEY_LEFT:
+            {
+              moveLeft();
+              break;
+            }
+          case GLFW_KEY_DOWN:
+            {
+              moveDown();
+              break;
+            }
+          case GLFW_KEY_UP:
+            {
+              moveUp();
+              break;
+            }
+          default:
+        }
+      }
+    };
   }
 
   public int getTileSize() {

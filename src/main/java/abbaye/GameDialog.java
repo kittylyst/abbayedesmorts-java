@@ -59,23 +59,31 @@ public class GameDialog {
         //          GL11.glRotatef(v.x() * 50, 0, 1, 0);
 
         // draw the texture
-        //        GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
-        //        GL11.glBindTexture(GL11.GL_TEXTURE_2D, introSplash);
-        //        GL11.glBegin(GL11.GL_QUADS);
-        //        GL11.glTexCoord2f(0, 0);
-        //        GL11.glVertex2f(0, 0);
-        //        GL11.glTexCoord2f(0, -1);
-        //        GL11.glVertex2f(0, SPLASH_SIZE_Y);
-        //        GL11.glTexCoord2f(-1, -1);
-        //        GL11.glVertex2f(SPLASH_SIZE_X, SPLASH_SIZE_Y);
-        //        GL11.glTexCoord2f(-1, 0);
-        //        GL11.glVertex2f(SPLASH_SIZE_X, 0);
-        //        GL11.glEnd();
+        //        try (MemoryStack stack = stackPush()) {
+        //          IntBuffer pWidth = stack.mallocInt(1);
+        //          IntBuffer pHeight = stack.mallocInt(1);
         //
-        //        GL11.glColor3f(1.0f, 1.0f, 1.0f);
-        //        GL11.glPopMatrix();
+        //          glfwGetWindowSize(window, pWidth, pHeight);
+
+        // FIXME Need to write into the buffer
+        //          GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
+        //          GL11.glBindTexture(GL11.GL_TEXTURE_2D, introSplash);
+        //          GL11.glBegin(GL11.GL_QUADS);
+        //          GL11.glTexCoord2f(0, 0);
+        //          GL11.glVertex2f(0, 0);
+        //          GL11.glTexCoord2f(0, -1);
+        //          GL11.glVertex2f(0, 600);
+        //          GL11.glTexCoord2f(-1, -1);
+        //          GL11.glVertex2f(800, 600);
+        //          GL11.glTexCoord2f(-1, 0);
+        //          GL11.glVertex2f(800, 0);
+        //          GL11.glEnd();
         //
-        //        GL11.glDisable(GL11.GL_BLEND);
+        //          GL11.glColor3f(1.0f, 1.0f, 1.0f);
+        //          GL11.glPopMatrix();
+        //
+        //          GL11.glDisable(GL11.GL_BLEND);
+        //        }
 
         if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
           mainClass.initLayer();
@@ -116,6 +124,7 @@ public class GameDialog {
   }
 
   public boolean isActive() {
-    return false;
+    //    return false;
+    return !(state == State.INACTIVE);
   }
 }

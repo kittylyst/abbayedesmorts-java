@@ -1,13 +1,19 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.graphics;
 
+import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.system.MemoryStack.stackPush;
 
+import abbaye.basic.Renderable;
 import abbaye.model.Stage;
 import abbaye.model.Tiles;
+import java.nio.IntBuffer;
+import org.lwjgl.system.MemoryStack;
 
-public class StageRenderer {
+public class StageRenderer implements Renderable {
+  private final long window;
   private int shaderProgram;
   private int VAO, VBO;
   private int projectionLocation, modelLocation;
@@ -41,8 +47,14 @@ public class StageRenderer {
           FragColor = vec4(color, 1.0);
       }
       """;
+  private Tiles tilemap;
 
-  public void init() {
+  public StageRenderer(long window) {
+    this.window = window;
+  }
+
+  public void init(Stage stage) {
+    tilemap = stage;
     // Create shader program
     int vertexShader = createShader(GL_VERTEX_SHADER, VERTEX_SHADER);
     int fragmentShader = createShader(GL_FRAGMENT_SHADER, FRAGMENT_SHADER);
@@ -196,45 +208,54 @@ public class StageRenderer {
   //    }
   //  }
 
-  public void render(Tiles tilemap, int screenWidth, int screenHeight) {
-    glUseProgram(shaderProgram);
+  public boolean render() {
+    // Update viewport
+    try (MemoryStack stack = stackPush()) {
+      IntBuffer width = stack.mallocInt(1);
+      IntBuffer height = stack.mallocInt(1);
+      glfwGetFramebufferSize(window, width, height);
+      glViewport(0, 0, width.get(0), height.get(0));
 
-    // Set up orthographic projection
-    float[] projection = createOrthographicMatrix(0, screenWidth, screenHeight, 0, -1, 1);
-    glUniformMatrix4fv(projectionLocation, false, projection);
+      glUseProgram(shaderProgram);
 
-    glBindVertexArray(VAO);
+      // Set up orthographic projection
+      float[] projection = createOrthographicMatrix(0, width.get(0), height.get(0), 0, -1, 1);
+      glUniformMatrix4fv(projectionLocation, false, projection);
 
-    // Render each tile of this room
-    for (int y = 0; y < Stage.NUM_ROWS; y++) {
-      for (int x = 0; x < Stage.NUM_COLUMNS; x++) {
-        int tileType = tilemap.getTile(x, y);
-        if (tileType >= 0) {
-          // Calculate tile position
-          float posX = x * tilemap.getTileSize();
-          float posY = y * tilemap.getTileSize();
+      glBindVertexArray(VAO);
 
-          // Create model matrix for this tile
-          float[] model =
-              createTransformMatrix(posX, posY, tilemap.getTileSize(), tilemap.getTileSize());
-          glUniformMatrix4fv(modelLocation, false, model);
+      // Render each tile of this room
+      for (int y = 0; y < Stage.NUM_ROWS; y++) {
+        for (int x = 0; x < Stage.NUM_COLUMNS; x++) {
+          int tileType = tilemap.getTile(x, y);
+          if (tileType >= 0) {
+            // Calculate tile position
+            float posX = x * tilemap.getTileSize();
+            float posY = y * tilemap.getTileSize();
 
-          // Set color based on tile type
-          int colorLocation = glGetUniformLocation(shaderProgram, "color");
-          switch (tileType) {
-            case 0 -> glUniform3f(colorLocation, 0.2f, 0.8f, 0.2f); // Green (grass)
-            case 1 -> glUniform3f(colorLocation, 0.5f, 0.5f, 0.5f); // Gray (stone)
-            case 2 -> glUniform3f(colorLocation, 0.8f, 0.6f, 0.2f); // Brown (dirt)
-            default -> glUniform3f(colorLocation, 1.0f, 1.0f, 1.0f); // White
+            // Create model matrix for this tile
+            float[] model =
+                createTransformMatrix(posX, posY, tilemap.getTileSize(), tilemap.getTileSize());
+            glUniformMatrix4fv(modelLocation, false, model);
+
+            // Set color based on tile type
+            int colorLocation = glGetUniformLocation(shaderProgram, "color");
+            switch (tileType) {
+              case 0 -> glUniform3f(colorLocation, 0.2f, 0.8f, 0.2f); // Green (grass)
+              case 1 -> glUniform3f(colorLocation, 0.5f, 0.5f, 0.5f); // Gray (stone)
+              case 2 -> glUniform3f(colorLocation, 0.8f, 0.6f, 0.2f); // Brown (dirt)
+              default -> glUniform3f(colorLocation, 1.0f, 1.0f, 1.0f); // White
+            }
+
+            glDrawArrays(GL_TRIANGLES, 0, 6);
           }
-
-          glDrawArrays(GL_TRIANGLES, 0, 6);
         }
       }
-    }
 
-    glBindVertexArray(0);
-    glUseProgram(0);
+      glBindVertexArray(0);
+      glUseProgram(0);
+    }
+    return true;
   }
 
   private float[] createOrthographicMatrix(
