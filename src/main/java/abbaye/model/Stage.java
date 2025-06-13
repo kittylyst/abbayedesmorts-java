@@ -31,7 +31,7 @@ public class Stage implements Tiles, Renderable {
   public void load() {
     load("/map/map.txt");
     if (AbbayeMain.isGlEnabled()) {
-      texture = Textures.loadTexture("/tiles.png");
+      texture = Textures.loadTexture("/tiles.png", true);
       shaderProgram = 1;
       glUseProgram(shaderProgram);
       // FIXME ????

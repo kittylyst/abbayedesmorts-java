@@ -1,18 +1,20 @@
 /* Copyright (C) The Authors 2004-2025 */
 package abbaye.graphics;
 
-import abbaye.AbbayeMain;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.stb.STBImage.*;
+import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryUtil.memAlloc;
+import static org.lwjgl.system.MemoryUtil.memFree;
+
 import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.*;
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.system.MemoryStack;
 
 /** Textures utility class */
 public final class Textures {
@@ -20,127 +22,100 @@ public final class Textures {
 
   private static Map<String, Integer> textures = new HashMap<>();
 
-  public static synchronized int loadTextureMirrored(String pathStr) {
-    return loadTexture(pathStr, true, true);
-  }
+  public static int loadTexture(String path, boolean isResource) {
+    ByteBuffer imageBuffer = null;
 
-  public static synchronized int loadTexture(String pathStr) {
-    return loadTexture(pathStr, true, false);
-  }
+    try (MemoryStack stack = stackPush()) {
+      IntBuffer w = stack.mallocInt(1);
+      IntBuffer h = stack.mallocInt(1);
+      IntBuffer channels = stack.mallocInt(1);
 
-  public static synchronized int loadTexture(
-      String pathStr, boolean isResource, boolean withMirror) {
-    if (!AbbayeMain.isGlEnabled()) {
-      return 0;
+      // Load image data from ByteBuffer
+      stbi_set_flip_vertically_on_load(true);
+
+      ByteBuffer decodedImage = null;
+      if (isResource) {
+        // Load resource as ByteBuffer
+        imageBuffer = loadResourceAsBuffer(path);
+        if (imageBuffer == null) {
+          System.err.println("Failed to load resource: " + path);
+          return -1;
+        }
+        decodedImage = stbi_load_from_memory(imageBuffer, w, h, channels, 4);
+      } else {
+        decodedImage = stbi_load(path, w, h, channels, 4);
+      }
+
+      if (decodedImage == null) {
+        System.err.println("Failed to decode image: " + path);
+        System.err.println("STB Error: " + stbi_failure_reason());
+        return -1;
+      }
+
+      int textureId = glGenTextures();
+      glBindTexture(GL_TEXTURE_2D, textureId);
+
+      // Set texture parameters
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+      // Upload texture data
+      glTexImage2D(
+          GL_TEXTURE_2D,
+          0,
+          GL_RGBA,
+          w.get(0),
+          h.get(0),
+          0,
+          GL_RGBA,
+          GL_UNSIGNED_BYTE,
+          decodedImage);
+
+      // Free image memory
+      stbi_image_free(decodedImage);
+
+      System.out.println(
+          "Loaded texture from resource: " + path + " (" + w.get(0) + "x" + h.get(0) + ")");
+      return textureId;
+
+    } catch (Exception e) {
+      System.err.println("Exception loading texture resource " + path + ": " + e.getMessage());
+      e.printStackTrace();
+      return -1;
+    } finally {
+      // Free the resource buffer if it was allocated
+      if (imageBuffer != null) {
+        memFree(imageBuffer);
+      }
     }
-    // check if we already loaded this texture
-    if (textures.containsKey(pathStr)) {
-      // Return the existing texture's ID if it is already loaded
-      return textures.get(pathStr);
-    }
-    BufferedImage bufferedImage;
-
-    if (isResource) {
-      bufferedImage = getBufferedImageFromResource(pathStr);
-    } else {
-      bufferedImage = getBufferedImageFromFile(pathStr);
-    }
-    BufferedImage image =
-        withMirror ? flipImageWithMirror(bufferedImage) : flipImage(bufferedImage);
-
-    // Put Image In Memory
-    ByteBuffer scratch = ByteBuffer.allocateDirect(4 * image.getWidth() * image.getHeight());
-
-    byte data[] =
-        (byte[]) image.getRaster().getDataElements(0, 0, image.getWidth(), image.getHeight(), null);
-    scratch.clear();
-    scratch.put(data);
-    scratch.rewind();
-
-    // Create A IntBuffer For Image Address In Memory
-    IntBuffer buf = ByteBuffer.allocateDirect(4).order(ByteOrder.nativeOrder()).asIntBuffer();
-    GL11.glGenTextures(buf); // Create Texture ID In OpenGL
-    int textureID = buf.get(0);
-
-    // Bind the generated texture ID for use
-    GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureID);
-
-    // Set texture parameters (linear filtering for magnification and minification)
-    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-
-    // Generate The Texture in OpenGL
-    GL11.glTexImage2D(
-        GL11.GL_TEXTURE_2D,
-        0,
-        GL11.GL_RGB,
-        image.getWidth(),
-        image.getHeight(),
-        0,
-        GL11.GL_RGB,
-        GL11.GL_UNSIGNED_BYTE,
-        scratch);
-
-    // add the texture to the list
-    textures.put(pathStr, textureID);
-
-    // Return Texture ID
-    return textureID;
   }
 
   /**
-   * @param pathStr
-   * @return
-   */
-  public static BufferedImage getBufferedImageFromResource(String pathStr) {
-    Image image = (new ImageIcon(Textures.class.getResource(pathStr))).getImage();
-    return imageToBufferedImage(image);
-  }
-
-  /**
-   * @param fileName
-   * @return
-   */
-  public static BufferedImage getBufferedImageFromFile(String fileName) {
-    Image image = (new ImageIcon(fileName)).getImage();
-    return imageToBufferedImage(image);
-  }
-
-  /**
-   * Convert the image to a BufferedImage and draw it
+   * Returns an
    *
-   * @param image
+   * @param resourcePath
    * @return
+   * @throws IOException
    */
-  public static BufferedImage imageToBufferedImage(Image image) {
-    BufferedImage tex =
-        new BufferedImage(
-            image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_3BYTE_BGR);
-    Graphics2D g = (Graphics2D) tex.getGraphics();
-    g.drawImage(image, null, null);
-    g.dispose();
+  static ByteBuffer loadResourceAsBuffer(String resourcePath) throws IOException {
+    try (var inputStream = Textures.class.getResourceAsStream(resourcePath)) {
+      if (inputStream == null) {
+        throw new IOException("Resource not found: " + resourcePath);
+      }
 
-    return tex;
-  }
+      var data = inputStream.readAllBytes();
 
-  /** Flip the image vertically to match OpenGL's texture coordinate system */
-  public static BufferedImage flipImage(BufferedImage tex) {
-    AffineTransform transform = AffineTransform.getScaleInstance(1, -1);
-    transform.translate(0, -tex.getHeight());
-    AffineTransformOp op =
-        new AffineTransformOp(transform, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-    return op.filter(tex, null);
-  }
+      // Create a ByteBuffer and copy the data
+      ByteBuffer byteBuffer = memAlloc(data.length);
+      byteBuffer.put(data);
+      byteBuffer.flip();
 
-  /**
-   * Flip the image vertically to match OpenGL's texture coordinate system, and also mirror it in
-   * the x-axis
-   */
-  public static BufferedImage flipImageWithMirror(BufferedImage tex) {
-    AffineTransform transform = AffineTransform.getScaleInstance(-1, -1);
-    transform.translate(-tex.getWidth(), -tex.getHeight(null));
-    AffineTransformOp op =
-        new AffineTransformOp(transform, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-    return op.filter(tex, null);
+      return byteBuffer;
+
+    } catch (IOException e) {
+      throw new IOException("Failed to read resource: " + resourcePath, e);
+    }
   }
 }
