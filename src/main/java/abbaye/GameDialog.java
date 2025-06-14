@@ -3,13 +3,10 @@ package abbaye;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.system.MemoryStack.stackPush;
 
 import abbaye.graphics.OGLFont;
 import abbaye.graphics.Textures;
 import abbaye.model.Player;
-import java.nio.IntBuffer;
-import org.lwjgl.system.MemoryStack;
 
 public class GameDialog {
   private final long window;
@@ -40,10 +37,6 @@ public class GameDialog {
     reset();
   }
 
-  public void reset() {
-    state = State.START;
-  }
-
   public void render() {
     switch (state) {
       case INACTIVE -> {}
@@ -53,48 +46,11 @@ public class GameDialog {
           return;
         }
         glClear(GL_COLOR_BUFFER_BIT);
-        glLoadIdentity();
 
-        int logoWidth = 0, logoHeight = 0;
-        try (MemoryStack stack = stackPush()) {
-          IntBuffer width = stack.mallocInt(1);
-          IntBuffer height = stack.mallocInt(1);
-          glfwGetFramebufferSize(window, width, height);
-          // Assume logo is 512x256, scale it appropriately
-          logoWidth = width.get(0); // 512 * logoScale;
-          logoHeight = height.get(0); // 256 * logoScale;
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-        displayScreen(logoWidth, logoHeight);
-
-        if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
-          mainClass.initLayer();
-          state = State.INACTIVE;
-        }
-
-        //          glViewport(0, 0, logoWidth, logoHeight);
-        //
-        //
-        //          float centerX = logoWidth / 2.0f;
-        //          float centerY = logoHeight / 2.0f;
-        //
-        //          float x = centerX - logoWidth / 2;
-        //          float y = centerY - logoHeight / 2;
-        //
-        ////        glColor4f(1.0f, 1.0f, 1.0f, fadeAlpha);
-        //          glBindTexture(GL_TEXTURE_2D, introSplashTexture);
-
-        //          glBegin(GL_QUADS);
-        //          glTexCoord2f(0, 1);
-        //          glVertex2f(x, y);
-        //          glTexCoord2f(1, 1);
-        //          glVertex2f(x + logoWidth, y);
-        //          glTexCoord2f(1, 0);
-        //          glVertex2f(x + logoWidth, y + logoHeight);
-        //          glTexCoord2f(0, 0);
-        //          glVertex2f(x, y + logoHeight);
-        //          glEnd();
+        //        if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
+        //          mainClass.initLayer();
+        //          state = State.INACTIVE;
+        //        }
 
       }
       case END -> {
@@ -120,27 +76,15 @@ public class GameDialog {
     }
   }
 
-  private void displayScreen(int width, int height) {
-    //    glViewport(0, 0, width, height);
-    //    glClear(GL_COLOR_BUFFER_BIT);
-    //    glLoadIdentity();
+  //////////////////
 
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    glBindTexture(GL_TEXTURE_2D, introSplashTexture);
-
-    glBegin(GL_QUADS);
-    glTexCoord2f(0, 1);
-    glVertex2f(0, 0);
-    glTexCoord2f(1, 1);
-    glVertex2f(width, 0);
-    glTexCoord2f(1, 0);
-    glVertex2f(width, height);
-    glTexCoord2f(0, 0);
-    glVertex2f(0, height);
-    glEnd();
+  public void reset() {
+    state = State.START;
   }
 
-  //////////////////
+  public void startTurn() {
+    state = State.INACTIVE;
+  }
 
   public void setPlayer(Player player) {
     this.player = player;
