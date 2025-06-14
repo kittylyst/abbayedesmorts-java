@@ -62,12 +62,6 @@ public class AbbayeMain {
     return mapper;
   }
 
-  public void run() {
-    init();
-    loop();
-    cleanup();
-  }
-
   public static void main(String[] args) {
     Optional<String> oPath = Optional.empty();
     if (args.length > 0) {
@@ -81,11 +75,14 @@ public class AbbayeMain {
     main.run();
   }
 
+  public void run() {
+    init();
+    loop();
+    cleanup();
+  }
+
   void init() {
     try {
-      Clock.init();
-      Clock.updateTimer();
-
       GLFWErrorCallback.createPrint(System.err).set();
 
       // Initialize GLFW. Most GLFW functions will not work before doing this.
@@ -96,18 +93,41 @@ public class AbbayeMain {
       glfwDefaultWindowHints();
       glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
       glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-      glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-      glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-      glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+      //      glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+      //      glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+      //      glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
       var config = Config.config();
-      window =
-          glfwCreateWindow(config.getScreenWidth(), config.getScreenHeight(), windowTitle, 0, 0);
+      var width = config.getScreenWidth();
+      var height = config.getScreenHeight();
+      window = glfwCreateWindow(width, height, windowTitle, NULL, NULL);
       if (window == NULL) {
         throw new RuntimeException("Failed to create the GLFW window");
       }
 
-      spawnInitialWindow();
+      glfwSetKeyCallback(
+          window,
+          (window, key, scancode, action, mods) -> {
+            if (action == GLFW_RELEASE) {
+              glfwSetWindowShouldClose(window, true);
+            }
+          });
+
+      try (MemoryStack stack = stackPush()) {
+        IntBuffer pWidth = stack.mallocInt(1);
+        IntBuffer pHeight = stack.mallocInt(1);
+
+        glfwGetWindowSize(window, pWidth, pHeight);
+
+        GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+        glfwSetWindowPos(
+            window, (vidmode.width() - pWidth.get(0)) / 2, (vidmode.height() - pHeight.get(0)) / 2);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+
+      //      spawnInitialWindow();
 
       glfwMakeContextCurrent(window);
       glfwSwapInterval(1);
@@ -115,6 +135,17 @@ public class AbbayeMain {
 
       GL.createCapabilities();
 
+      // Set viewport
+      glViewport(0, 0, width, height);
+
+      // Setup 2D projection
+      glMatrixMode(GL_PROJECTION);
+      glLoadIdentity();
+      glOrtho(0, width, height, 0, -1, 1);
+      glMatrixMode(GL_MODELVIEW);
+
+      // Enable textures and blending
+      glEnable(GL_TEXTURE_2D);
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -124,6 +155,8 @@ public class AbbayeMain {
     }
     gameDialog = new GameDialog(null, this);
     stage.load(new StageRenderer(window));
+    Clock.init();
+    Clock.updateTimer();
   }
 
   private void spawnInitialWindow() {
@@ -137,6 +170,8 @@ public class AbbayeMain {
 
       glfwSetWindowPos(
           window, (vidmode.width() - pWidth.get(0)) / 2, (vidmode.height() - pHeight.get(0)) / 2);
+    } catch (Exception e) {
+      e.printStackTrace();
     }
   }
 
