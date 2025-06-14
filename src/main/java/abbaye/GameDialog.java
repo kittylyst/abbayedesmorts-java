@@ -3,14 +3,17 @@ package abbaye;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
+import abbaye.graphics.GLManager;
 import abbaye.graphics.OGLFont;
 import abbaye.graphics.Textures;
 import abbaye.model.Player;
 
 public class GameDialog {
-  private final long window;
-
   public enum State {
     INACTIVE,
     START,
@@ -18,6 +21,8 @@ public class GameDialog {
   }
 
   private final AbbayeMain mainClass;
+  private final GLManager glManager;
+  private final long window;
 
   private final int introSplashTexture;
 
@@ -28,9 +33,10 @@ public class GameDialog {
   //  private static final int SPLASH_SIZE_X = 256;
   //  private static final int SPLASH_SIZE_Y = 384;
 
-  public GameDialog(Player pl, AbbayeMain main) {
+  public GameDialog(Player pl, AbbayeMain main, GLManager glManager) {
     player = pl;
     mainClass = main;
+    this.glManager = glManager;
     state = State.INACTIVE;
     introSplashTexture = Textures.loadTexture("/intro.png", true); // Needs to be mirrored?
     window = main.getWindow();
@@ -45,13 +51,19 @@ public class GameDialog {
         if (mainClass == null) {
           return;
         }
-        glClear(GL_COLOR_BUFFER_BIT);
+        // Use shader program
+        glUseProgram(glManager.getShaderProgram());
 
-        //        if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
-        //          mainClass.initLayer();
-        //          state = State.INACTIVE;
-        //        }
+        // Set alpha uniform for fade effect
+        glUniform1f(glGetUniformLocation(glManager.getShaderProgram(), "alpha"), 1.0f);
 
+        // Bind texture
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, introSplashTexture);
+
+        // Draw quad
+        glBindVertexArray(glManager.getVAO());
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
       }
       case END -> {
         // Used for testing
@@ -84,6 +96,7 @@ public class GameDialog {
 
   public void startTurn() {
     state = State.INACTIVE;
+    glfwSetKeyCallback(window, mainClass.getStage().moveCallback());
   }
 
   public void setPlayer(Player player) {

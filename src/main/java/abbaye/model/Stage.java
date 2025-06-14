@@ -20,7 +20,7 @@ public class Stage implements Tiles, Renderable {
   public static final int NUM_ROWS = 22;
 
   private int[][][] stagedata = new int[NUM_SCREENS][NUM_ROWS][NUM_COLUMNS];
-  private int roomx = 2;
+  private int roomx = 0;
   private int roomy = 1;
 
   private int texture;

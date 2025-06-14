@@ -8,6 +8,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 import abbaye.basic.Clock;
+import abbaye.graphics.GLManager;
 import abbaye.graphics.OGLFont;
 import abbaye.graphics.StageRenderer;
 import abbaye.model.Enemy;
@@ -153,8 +154,11 @@ public class AbbayeMain {
       e.printStackTrace();
       System.exit(1);
     }
-    gameDialog = new GameDialog(null, this);
-    stage.load(new StageRenderer(window));
+    var glManager = new GLManager();
+    glManager.init();
+    gameDialog = new GameDialog(null, this, glManager);
+    var renderer = new StageRenderer(window, glManager);
+    stage.load(renderer);
     glfwSetKeyCallback(
         window,
         (w, key, scancode, action, mods) -> {
@@ -170,23 +174,6 @@ public class AbbayeMain {
     Clock.updateTimer();
   }
 
-  //  private void spawnInitialWindow() {
-  //    try (MemoryStack stack = stackPush()) {
-  //      IntBuffer pWidth = stack.mallocInt(1);
-  //      IntBuffer pHeight = stack.mallocInt(1);
-  //
-  //      glfwGetWindowSize(window, pWidth, pHeight);
-  //
-  //      GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-  //
-  //      glfwSetWindowPos(
-  //          window, (vidmode.width() - pWidth.get(0)) / 2, (vidmode.height() - pHeight.get(0)) /
-  // 2);
-  //    } catch (Exception e) {
-  //      e.printStackTrace();
-  //    }
-  //  }
-
   /** Main game loop method */
   public void loop() {
     try {
@@ -197,12 +184,11 @@ public class AbbayeMain {
         //        if (!gameDialog.isActive()) {
         //          layer.update();
         //        }
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
 
         if (gameDialog.isActive()) {
           gameDialog.render();
         } else {
-          glfwSetKeyCallback(window, stage.moveCallback());
           stage.render();
           layer.render();
         }
@@ -246,5 +232,9 @@ public class AbbayeMain {
 
   public long getWindow() {
     return window;
+  }
+
+  public Stage getStage() {
+    return stage;
   }
 }
