@@ -1,11 +1,10 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.scratch;
 
-import static abbaye.graphics.Textures.loadTexture;
+import static abbaye.graphics.GLManager.loadTexture;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL33.*;
-import static org.lwjgl.stb.STBImage.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 

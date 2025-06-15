@@ -18,9 +18,9 @@ public class StageRenderer implements Renderable {
   private Tiles tilemap;
   private GLManager manager;
 
-  public StageRenderer(long window, GLManager manager) {
+  public StageRenderer(long window) {
     this.window = window;
-    this.manager = manager;
+    this.manager = GLManager.get("game");
   }
 
   public void init(Stage stage) {

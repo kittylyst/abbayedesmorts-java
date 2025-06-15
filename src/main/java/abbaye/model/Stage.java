@@ -6,8 +6,8 @@ import static org.lwjgl.opengl.GL20.glUseProgram;
 
 import abbaye.AbbayeMain;
 import abbaye.basic.Renderable;
+import abbaye.graphics.GLManager;
 import abbaye.graphics.StageRenderer;
-import abbaye.graphics.Textures;
 import java.io.*;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 
@@ -31,7 +31,7 @@ public class Stage implements Tiles, Renderable {
   public void load() {
     load("/map/map.txt");
     if (AbbayeMain.isGlEnabled()) {
-      texture = Textures.loadTexture("/tiles.png", true);
+      texture = GLManager.loadTexture("/tiles.png", true);
       shaderProgram = 1;
       glUseProgram(shaderProgram);
       // FIXME ????

@@ -8,7 +8,6 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 import abbaye.basic.Clock;
-import abbaye.graphics.GLManager;
 import abbaye.graphics.OGLFont;
 import abbaye.graphics.StageRenderer;
 import abbaye.model.Enemy;
@@ -154,10 +153,8 @@ public class AbbayeMain {
       e.printStackTrace();
       System.exit(1);
     }
-    var glManager = new GLManager();
-    glManager.init();
-    gameDialog = new GameDialog(null, this, glManager);
-    var renderer = new StageRenderer(window, glManager);
+    gameDialog = new GameDialog(null, this);
+    var renderer = new StageRenderer(window);
     stage.load(renderer);
     glfwSetKeyCallback(
         window,

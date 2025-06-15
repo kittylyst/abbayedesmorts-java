@@ -10,7 +10,6 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 import abbaye.graphics.GLManager;
 import abbaye.graphics.OGLFont;
-import abbaye.graphics.Textures;
 import abbaye.model.Player;
 
 public class GameDialog {
@@ -33,12 +32,12 @@ public class GameDialog {
   //  private static final int SPLASH_SIZE_X = 256;
   //  private static final int SPLASH_SIZE_Y = 384;
 
-  public GameDialog(Player pl, AbbayeMain main, GLManager glManager) {
+  public GameDialog(Player pl, AbbayeMain main) {
     player = pl;
     mainClass = main;
-    this.glManager = glManager;
+    introSplashTexture = GLManager.loadTexture("/intro.png", true); // Needs to be mirrored?
+    glManager = GLManager.get("dialog");
     state = State.INACTIVE;
-    introSplashTexture = Textures.loadTexture("/intro.png", true); // Needs to be mirrored?
     window = main.getWindow();
     reset();
   }
