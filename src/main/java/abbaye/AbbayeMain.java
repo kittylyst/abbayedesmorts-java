@@ -138,12 +138,6 @@ public class AbbayeMain {
       // Set viewport
       glViewport(0, 0, width, height);
 
-      //      // Setup 2D projection
-      //      glMatrixMode(GL_PROJECTION);
-      //      glLoadIdentity();
-      //      glOrtho(0, width, height, 0, -1, 1);
-      //      glMatrixMode(GL_MODELVIEW);
-
       // Enable textures and blending
       glEnable(GL_TEXTURE_2D);
       glEnable(GL_BLEND);
@@ -154,15 +148,14 @@ public class AbbayeMain {
       System.exit(1);
     }
     gameDialog = new GameDialog(null, this);
-    var renderer = new StageRenderer(window);
-    stage.load(renderer);
+    stage.load(window);
     glfwSetKeyCallback(
         window,
         (w, key, scancode, action, mods) -> {
           if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
             glfwSetWindowShouldClose(w, true);
           }
-          if (key == GLFW_KEY_TAB && action == GLFW_RELEASE) {
+          if ((key == GLFW_KEY_TAB || key == GLFW_KEY_SPACE) && action == GLFW_RELEASE) {
             gameDialog.startTurn();
           }
         });
@@ -187,7 +180,7 @@ public class AbbayeMain {
           gameDialog.render();
         } else {
           stage.render();
-          layer.render();
+//          layer.render();
         }
 
         glfwSwapBuffers(window);

@@ -1,6 +1,8 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.graphics;
 
+import static abbaye.graphics.GLManager.createOrthographicMatrix;
+import static abbaye.graphics.GLManager.createTransformMatrix;
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
@@ -124,7 +126,8 @@ public class StageRenderer implements Renderable {
       glfwGetFramebufferSize(window, width, height);
       glViewport(0, 0, width.get(0), height.get(0));
 
-      glUseProgram(manager.getShaderProgram());
+      var shaderProgram = manager.getShaderProgram();
+      glUseProgram(shaderProgram);
 
       // Set up orthographic projection
       float[] projection = createOrthographicMatrix(0, width.get(0), height.get(0), 0, -1, 1);
@@ -147,6 +150,9 @@ public class StageRenderer implements Renderable {
             glUniformMatrix4fv(manager.getModelLocation(), false, model);
 
             // Set color based on tile type
+            //    // Set texture uniform
+//            glUniform1i(glGetUniformLocation(shaderProgram, "color"), 0);
+
             int colorLocation = glGetUniformLocation(manager.getShaderProgram(), "color");
             switch (tileType) {
               case 0 -> glUniform3f(colorLocation, 0.2f, 0.8f, 0.2f); // Green (grass)
@@ -160,33 +166,10 @@ public class StageRenderer implements Renderable {
         }
       }
 
-      glBindVertexArray(0);
-      glUseProgram(0);
+      glBindVertexArray(manager.getVAO());
+      glUseProgram(manager.getShaderProgram());
     }
     return true;
   }
 
-  private float[] createOrthographicMatrix(
-      float left, float right, float bottom, float top, float near, float far) {
-    float[] matrix = new float[16];
-    matrix[0] = 2.0f / (right - left);
-    matrix[5] = 2.0f / (top - bottom);
-    matrix[10] = -2.0f / (far - near);
-    matrix[12] = -(right + left) / (right - left);
-    matrix[13] = -(top + bottom) / (top - bottom);
-    matrix[14] = -(far + near) / (far - near);
-    matrix[15] = 1.0f;
-    return matrix;
-  }
-
-  private float[] createTransformMatrix(float x, float y, float width, float height) {
-    float[] matrix = new float[16];
-    matrix[0] = width; // Scale X
-    matrix[5] = height; // Scale Y
-    matrix[10] = 1.0f; // Scale Z
-    matrix[12] = x; // Translate X
-    matrix[13] = y; // Translate Y
-    matrix[15] = 1.0f; // W component
-    return matrix;
-  }
 }

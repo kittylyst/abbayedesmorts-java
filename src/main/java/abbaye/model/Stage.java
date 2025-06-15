@@ -23,24 +23,23 @@ public class Stage implements Tiles, Renderable {
   private int roomx = 0;
   private int roomy = 1;
 
-  private int texture;
+  private int tilesTexture;
   private int shaderProgram;
   private StageRenderer renderer;
+  private GLManager glm;
 
   /** Loads stage screens from default location */
   public void load() {
     load("/map/map.txt");
     if (AbbayeMain.isGlEnabled()) {
-      texture = GLManager.loadTexture("/tiles.png", true);
-      shaderProgram = 1;
-      glUseProgram(shaderProgram);
-      // FIXME ????
+      tilesTexture = GLManager.loadTexture("/tiles.png", true);
+      glm = GLManager.get("game");
       renderer.init(this);
     }
   }
 
-  public void load(StageRenderer renderer) {
-    this.renderer = renderer;
+  public void load(long window) {
+    this.renderer = new StageRenderer(window);
     load();
   }
 

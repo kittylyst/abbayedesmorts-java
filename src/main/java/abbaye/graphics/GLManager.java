@@ -15,75 +15,12 @@ import java.util.Map;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 
-public class GLManager {
+public final class GLManager {
 
   private static Map<String, GLManager> managers = new HashMap<>();
 
-  //  // Vertex shader source
-  //  private static final String VERTEX_SHADER =
-  //          """
-  //          #version 330 core
-  //          layout (location = 0) in vec3 aPos;
-  //          layout (location = 1) in vec2 aTexCoord;
-  //
-  //          uniform mat4 projection;
-  //
-  //          out vec2 TexCoord;
-  //
-  //          void main() {
-  //              gl_Position = projection * vec4(aPos, 1.0);
-  //              TexCoord = aTexCoord;
-  //          }
-  //          """;
-  //
-  //  private static final String FRAGMENT_SHADER =
-  //          """
-  //          #version 330 core
-  //          out vec4 FragColor;
-  //
-  //          in vec2 TexCoord;
-  //
-  //          uniform sampler2D logoTexture;
-  //          uniform float alpha;
-  //
-  //          void main() {
-  //            vec4 texColor = texture(logoTexture, TexCoord);
-  //            FragColor = vec4(texColor.rgb, texColor.a * alpha);
-  //          }
-  //          """;
-
-  //  private static final String VERTEX_SHADER =
-  //      """
-  //      #version 330 core
-  //      layout (location = 0) in vec2 aPos;
-  //      layout (location = 1) in vec2 aTexCoord;
-  //
-  //      uniform mat4 projection;
-  //      uniform mat4 model;
-  //
-  //      out vec2 TexCoord;
-  //
-  //      void main() {
-  //          gl_Position = projection * model * vec4(aPos, 0.0, 1.0);
-  //          TexCoord = aTexCoord;
-  //      }
-  //      """;
-  //
-  //  private static final String FRAGMENT_SHADER =
-  //      """
-  //      #version 330 core
-  //      out vec4 FragColor;
-  //
-  //      in vec2 TexCoord;
-  //      uniform vec3 color;
-  //
-  //      void main() {
-  //          FragColor = vec4(color, 1.0);
-  //      }
-  //      """;
-
   // Quad vertices (position + texture coordinates)
-  private static final float[] VERTICES = {
+  public static final float[] VERTICES = {
     // positions        // texture coords
     -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // top left
     0.5f, 0.5f, 0.0f, 1.0f, 1.0f, // top right
@@ -91,12 +28,12 @@ public class GLManager {
     -0.5f, -0.5f, 0.0f, 0.0f, 0.0f // bottom left
   };
 
-  private static final int[] INDICES = {
+  public static final int[] INDICES = {
     0, 1, 2,
     2, 3, 0
   };
 
-  private static float[] PROJECTION_MATRIX = {
+  public static float[] PROJECTION_MATRIX = {
     2.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 2.0f, 0.0f, 0.0f,
     0.0f, 0.0f, -1.0f, 0.0f,
@@ -178,32 +115,6 @@ public class GLManager {
     // Texture coordinate attribute
     glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
     glEnableVertexAttribArray(1);
-
-    // Load texture
-    //        logoTexture = loadTexture("logo.png", false);
-    //    logoTexture = loadTexture("/intro.png", true);
-
-    // Setup projection matrix (orthographic)
-    glUseProgram(shaderProgram);
-    int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-
-    glUniformMatrix4fv(projectionLoc, false, PROJECTION_MATRIX);
-
-    // Set texture uniform
-    glUniform1i(glGetUniformLocation(shaderProgram, "logoTexture"), 0);
-  }
-
-  private int createShader(int type, String source) {
-    int shader = glCreateShader(type);
-    glShaderSource(shader, source);
-    glCompileShader(shader);
-
-    if (glGetShaderi(shader, GL_COMPILE_STATUS) == GL_FALSE) {
-      String info = glGetShaderInfoLog(shader);
-      throw new RuntimeException("Shader compilation failed: " + info);
-    }
-
-    return shader;
   }
 
   public void cleanup() {
@@ -228,6 +139,45 @@ public class GLManager {
 
   public int getModelLocation() {
     return modelLocation;
+  }
+
+  private static int createShader(int type, String source) {
+    int shader = glCreateShader(type);
+    glShaderSource(shader, source);
+    glCompileShader(shader);
+
+    if (glGetShaderi(shader, GL_COMPILE_STATUS) == GL_FALSE) {
+      String info = glGetShaderInfoLog(shader);
+      throw new RuntimeException("Shader compilation failed: " + info);
+    }
+
+    return shader;
+  }
+
+  /////////////// Matrix helpers
+
+  public static float[] createOrthographicMatrix(
+          float left, float right, float bottom, float top, float near, float far) {
+    float[] matrix = new float[16];
+    matrix[0] = 2.0f / (right - left);
+    matrix[5] = 2.0f / (top - bottom);
+    matrix[10] = -2.0f / (far - near);
+    matrix[12] = -(right + left) / (right - left);
+    matrix[13] = -(top + bottom) / (top - bottom);
+    matrix[14] = -(far + near) / (far - near);
+    matrix[15] = 1.0f;
+    return matrix;
+  }
+
+  public static float[] createTransformMatrix(float x, float y, float width, float height) {
+    float[] matrix = new float[16];
+    matrix[0] = width; // Scale X
+    matrix[5] = height; // Scale Y
+    matrix[10] = 1.0f; // Scale Z
+    matrix[12] = x; // Translate X
+    matrix[13] = y; // Translate Y
+    matrix[15] = 1.0f; // W component
+    return matrix;
   }
 
   /////////////// Texture helpers

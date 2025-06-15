@@ -1,6 +1,7 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye;
 
+import static abbaye.graphics.GLManager.PROJECTION_MATRIX;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
@@ -50,8 +51,16 @@ public class GameDialog {
         if (mainClass == null) {
           return;
         }
-        // Use shader program
-        glUseProgram(glManager.getShaderProgram());
+        // Setup projection matrix (orthographic)
+        var shaderProgram = glManager.getShaderProgram();
+        glUseProgram(shaderProgram);
+        var projectionLocation = glGetUniformLocation(shaderProgram, "projection");
+
+        glUniformMatrix4fv(projectionLocation, false, PROJECTION_MATRIX);
+
+        // Set texture uniform
+        glUniform1i(glGetUniformLocation(shaderProgram, "splashTexture"), 0);
+
 
         // Set alpha uniform for fade effect
         glUniform1f(glGetUniformLocation(glManager.getShaderProgram(), "alpha"), 1.0f);
