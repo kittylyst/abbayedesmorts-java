@@ -4,6 +4,7 @@ package abbaye.model;
 import abbaye.Config;
 import abbaye.GameDialog;
 import abbaye.basic.*;
+import abbaye.graphics.OGLFont;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;

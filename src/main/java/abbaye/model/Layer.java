@@ -2,7 +2,6 @@
 package abbaye.model;
 
 import abbaye.Config;
-import abbaye.TextureMap;
 import abbaye.basic.Actor;
 import abbaye.basic.Renderable;
 import java.util.ArrayList;
@@ -70,7 +69,7 @@ public class Layer {
 
   ///////////////////////////
 
-  public void add(TextureMap texture) {}
+  //  public void add(TextureMap texture) {}
 
   public void setPlayer(Player p) {
     oPlayer = Optional.of(p);

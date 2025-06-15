@@ -1,7 +1,8 @@
 /* Copyright (C) The Authors 2025 */
-package abbaye.basic;
+package abbaye.graphics;
 
 import abbaye.AbbayeMain;
+import abbaye.basic.Vector2;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;

@@ -1,54 +1,50 @@
 /* Copyright (C) The Authors 2004-2025 */
 package abbaye.basic;
 
+import static org.lwjgl.glfw.GLFW.glfwGetTime;
+
 import abbaye.Config;
-import org.lwjgl.Sys;
 
 public final class Clock {
   private static double frameInterval = 0;
-  private static long frameTime = Sys.getTime();
+  private static double frameTime;
   private static int fps = 0;
-  // Ticks per second
-  private static final long tmrRes = Sys.getTimerResolution();
 
-  private static long lastTime = 0;
+  private static double lastTime = 0;
   private static int fpsCounter = 0;
 
   public static void init() {
-    Config.config().getLogger().debug("Timer initialized, timer resolution: " + getTmrRes());
+    frameTime = glfwGetTime() * 1000;
+    Config.config().getLogger().debug("Timer initialized, timer: " + frameTime);
   }
 
   public static void updateTimer() {
     // The current value of the hires timer, in ticks
-    long currentTime = Sys.getTime();
+    var currentTimeMillis = glfwGetTime() * 1000;
 
-    setFrameInterval(((float) (currentTime - getFrameTime())) / getTmrRes());
-    setFrameTime(currentTime);
+    setFrameInterval(currentTimeMillis - lastTime);
+    setFrameTime(currentTimeMillis);
 
     fpsCounter += 1;
-
-    if ((currentTime - lastTime) > getTmrRes()) {
-      lastTime = currentTime;
-
-      setFps(fpsCounter);
-      fpsCounter = 0;
-      Config.config().getLogger().debug("FPS: " + fps);
-    }
+    lastTime = currentTimeMillis;
+    //    setFps(fpsCounter);
+    //    fpsCounter = 0;
+    Config.config().getLogger().debug("FPS: " + fps);
   }
 
   public static double getFrameInterval() {
     return frameInterval;
   }
 
-  public static void setFrameInterval(float frameInterval) {
+  public static void setFrameInterval(double frameInterval) {
     Clock.frameInterval = frameInterval;
   }
 
-  public static long getFrameTime() {
+  public static double getFrameTime() {
     return frameTime;
   }
 
-  public static void setFrameTime(long frameTime) {
+  public static void setFrameTime(double frameTime) {
     Clock.frameTime = frameTime;
   }
 
@@ -58,9 +54,5 @@ public final class Clock {
 
   public static void setFps(int fps) {
     Clock.fps = fps;
-  }
-
-  public static long getTmrRes() {
-    return tmrRes;
   }
 }

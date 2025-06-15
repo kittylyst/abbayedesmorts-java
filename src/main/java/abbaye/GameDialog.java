@@ -1,11 +1,17 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye;
 
-import abbaye.basic.OGLFont;
-import abbaye.basic.Textures;
+import static abbaye.graphics.GLManager.PROJECTION_MATRIX;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
+
+import abbaye.graphics.GLManager;
+import abbaye.graphics.OGLFont;
 import abbaye.model.Player;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.GL11;
 
 public class GameDialog {
   public enum State {
@@ -15,70 +21,60 @@ public class GameDialog {
   }
 
   private final AbbayeMain mainClass;
+  private final GLManager glManager;
+  private final long window;
 
-  private final int introSplash;
+  private final int introSplashTexture;
 
   private OGLFont font;
   private State state;
   private Player player;
 
-  private static final int SPLASH_SIZE_X = 256;
-  private static final int SPLASH_SIZE_Y = 384;
+  //  private static final int SPLASH_SIZE_X = 256;
+  //  private static final int SPLASH_SIZE_Y = 384;
 
   public GameDialog(Player pl, AbbayeMain main) {
     player = pl;
     mainClass = main;
+    introSplashTexture = GLManager.loadTexture("/intro.png", true); // Needs to be mirrored?
+    glManager = GLManager.get("dialog");
     state = State.INACTIVE;
-    introSplash = Textures.loadTexture("/intro.png");
+    window = main.getWindow();
     reset();
-  }
-
-  public void reset() {
-    state = State.START;
   }
 
   public void render() {
     switch (state) {
       case INACTIVE -> {}
       case START -> {
-        // Used for testing
+        // True if we're testing
         if (mainClass == null) {
           return;
         }
+        // Setup projection matrix (orthographic)
+        //        if (glManager == null) {
+        //          state = State.INACTIVE;
+        //          return;
+        //        }
+        var shaderProgram = glManager.getShaderProgram();
+        glUseProgram(shaderProgram);
+        var projectionLocation = glGetUniformLocation(shaderProgram, "projection");
 
-        GL11.glEnable(GL11.GL_BLEND);
-        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE);
+        glUniformMatrix4fv(projectionLocation, false, PROJECTION_MATRIX);
 
-        GL11.glPushMatrix();
+        // Set texture uniform
+        glUniform1i(glGetUniformLocation(shaderProgram, "splashTexture"), 0);
 
-        //          GL11.glColor3f(1.0f, hitColorFade, hitColorFade);
-        //          GL11.glTranslatef(pos.x(), pos.y(), 0);
-        //          GL11.glRotatef(v.x() * 50, 0, 1, 0);
+        // Set alpha uniform for fade effect
+        glUniform1f(glGetUniformLocation(glManager.getShaderProgram(), "alpha"), 1.0f);
 
-        // draw the texture
-        GL11.glBlendFunc(GL11.GL_ONE, GL11.GL_ONE);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, introSplash);
-        GL11.glBegin(GL11.GL_QUADS);
-        GL11.glTexCoord2f(0, 0);
-        GL11.glVertex2f(0, 0);
-        GL11.glTexCoord2f(0, -1);
-        GL11.glVertex2f(0, SPLASH_SIZE_Y);
-        GL11.glTexCoord2f(-1, -1);
-        GL11.glVertex2f(SPLASH_SIZE_X, SPLASH_SIZE_Y);
-        GL11.glTexCoord2f(-1, 0);
-        GL11.glVertex2f(SPLASH_SIZE_X, 0);
-        GL11.glEnd();
+        // Bind texture
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, introSplashTexture);
 
-        GL11.glColor3f(1.0f, 1.0f, 1.0f);
-        GL11.glPopMatrix();
-
-        GL11.glDisable(GL11.GL_BLEND);
-
-        Keyboard.poll();
-        if (Keyboard.isKeyDown(Keyboard.KEY_TAB)) {
-          mainClass.initLayers();
-          state = State.INACTIVE;
-        }
+        // Draw quad
+        glBindVertexArray(glManager.getVAO());
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
       }
       case END -> {
         // Used for testing
@@ -95,16 +91,24 @@ public class GameDialog {
         // 200));
         //        font.print("Press TAB to play again", new Vector2(100, 260));
 
-        Keyboard.poll();
-        if (Keyboard.isKeyDown(Keyboard.KEY_TAB)) {
+        if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
           reset();
-          mainClass.initLayers();
+          mainClass.initLayer();
         }
       }
     }
   }
 
   //////////////////
+
+  public void reset() {
+    state = State.START;
+  }
+
+  public void startTurn() {
+    state = State.INACTIVE;
+    glfwSetKeyCallback(window, mainClass.getStage().moveCallback());
+  }
 
   public void setPlayer(Player player) {
     this.player = player;
@@ -115,6 +119,7 @@ public class GameDialog {
   }
 
   public boolean isActive() {
-    return false;
+    //    return false;
+    return !(state == State.INACTIVE);
   }
 }
