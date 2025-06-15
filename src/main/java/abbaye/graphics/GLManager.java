@@ -47,9 +47,30 @@ public final class GLManager {
   static {
     var manager = new GLManager();
     manager.init("/shaders/splash.shd", "/shaders/splash.frag");
+    manager.projectionLocation = glGetUniformLocation(manager.shaderProgram, "projection");
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
+    glEnableVertexAttribArray(0);
+
+    // Texture coordinate attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
+    glEnableVertexAttribArray(1);
     managers.put("dialog", manager);
+
     manager = new GLManager();
     manager.init("/shaders/game.shd", "/shaders/game.frag");
+    // Get uniform locations
+    manager.projectionLocation = glGetUniformLocation(manager.shaderProgram, "projection");
+    manager.modelLocation = glGetUniformLocation(manager.shaderProgram, "model");
+
+    // Position attribute
+    glVertexAttribPointer(0, 2, GL_FLOAT, false, 5 * Float.BYTES, 0);
+    glEnableVertexAttribArray(0);
+
+    // Texture coordinate attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
+    glEnableVertexAttribArray(1);
+
     managers.put("game", manager);
   }
 
@@ -107,14 +128,6 @@ public final class GLManager {
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDICES, GL_STATIC_DRAW);
-
-    // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
-    glEnableVertexAttribArray(0);
-
-    // Texture coordinate attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
-    glEnableVertexAttribArray(1);
   }
 
   public void cleanup() {
@@ -157,7 +170,7 @@ public final class GLManager {
   /////////////// Matrix helpers
 
   public static float[] createOrthographicMatrix(
-          float left, float right, float bottom, float top, float near, float far) {
+      float left, float right, float bottom, float top, float near, float far) {
     float[] matrix = new float[16];
     matrix[0] = 2.0f / (right - left);
     matrix[5] = 2.0f / (top - bottom);

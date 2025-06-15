@@ -52,6 +52,10 @@ public class GameDialog {
           return;
         }
         // Setup projection matrix (orthographic)
+        //        if (glManager == null) {
+        //          state = State.INACTIVE;
+        //          return;
+        //        }
         var shaderProgram = glManager.getShaderProgram();
         glUseProgram(shaderProgram);
         var projectionLocation = glGetUniformLocation(shaderProgram, "projection");
@@ -60,7 +64,6 @@ public class GameDialog {
 
         // Set texture uniform
         glUniform1i(glGetUniformLocation(shaderProgram, "splashTexture"), 0);
-
 
         // Set alpha uniform for fade effect
         glUniform1f(glGetUniformLocation(glManager.getShaderProgram(), "alpha"), 1.0f);

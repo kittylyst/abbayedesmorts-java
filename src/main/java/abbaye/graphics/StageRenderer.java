@@ -151,7 +151,7 @@ public class StageRenderer implements Renderable {
 
             // Set color based on tile type
             //    // Set texture uniform
-//            glUniform1i(glGetUniformLocation(shaderProgram, "color"), 0);
+            //            glUniform1i(glGetUniformLocation(shaderProgram, "color"), 0);
 
             int colorLocation = glGetUniformLocation(manager.getShaderProgram(), "color");
             switch (tileType) {
@@ -171,5 +171,4 @@ public class StageRenderer implements Renderable {
     }
     return true;
   }
-
 }

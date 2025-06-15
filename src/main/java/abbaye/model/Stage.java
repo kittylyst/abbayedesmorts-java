@@ -2,7 +2,6 @@
 package abbaye.model;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL20.glUseProgram;
 
 import abbaye.AbbayeMain;
 import abbaye.basic.Renderable;

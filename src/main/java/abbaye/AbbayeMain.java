@@ -9,7 +9,6 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 import abbaye.basic.Clock;
 import abbaye.graphics.OGLFont;
-import abbaye.graphics.StageRenderer;
 import abbaye.model.Enemy;
 import abbaye.model.Layer;
 import abbaye.model.Player;
@@ -180,7 +179,7 @@ public class AbbayeMain {
           gameDialog.render();
         } else {
           stage.render();
-//          layer.render();
+          //          layer.render();
         }
 
         glfwSwapBuffers(window);
