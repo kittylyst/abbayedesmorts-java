@@ -1,6 +1,7 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.scratch;
 
+import static abbaye.graphics.GLManager.createShader;
 import static abbaye.graphics.GLManager.loadTexture;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -207,19 +208,6 @@ public class SplashScreenResource {
 
     // Set texture uniform
     glUniform1i(glGetUniformLocation(shaderProgram, "logoTexture"), 0);
-  }
-
-  private int createShader(int type, String source) {
-    int shader = glCreateShader(type);
-    glShaderSource(shader, source);
-    glCompileShader(shader);
-
-    if (glGetShaderi(shader, GL_COMPILE_STATUS) == GL_FALSE) {
-      String info = glGetShaderInfoLog(shader);
-      throw new RuntimeException("Shader compilation failed: " + info);
-    }
-
-    return shader;
   }
 
   private void loop() {

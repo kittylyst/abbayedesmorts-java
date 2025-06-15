@@ -74,8 +74,12 @@ public final class GLManager {
     managers.put("game", manager);
   }
 
-  public static synchronized GLManager get(String s) {
-    return managers.get(s);
+  public static synchronized GLManager get(String shaderName) {
+    var mgr = managers.get(shaderName);
+    if (mgr == null) {
+      throw new IllegalArgumentException("Unknown shader: " + shaderName);
+    }
+    return mgr;
   }
 
   private int shaderProgram;
@@ -154,7 +158,9 @@ public final class GLManager {
     return modelLocation;
   }
 
-  private static int createShader(int type, String source) {
+  ///////////// Helpers
+
+  public static int createShader(int type, String source) {
     int shader = glCreateShader(type);
     glShaderSource(shader, source);
     glCompileShader(shader);

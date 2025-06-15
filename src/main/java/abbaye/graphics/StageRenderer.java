@@ -150,9 +150,6 @@ public class StageRenderer implements Renderable {
             glUniformMatrix4fv(manager.getModelLocation(), false, model);
 
             // Set color based on tile type
-            //    // Set texture uniform
-            //            glUniform1i(glGetUniformLocation(shaderProgram, "color"), 0);
-
             int colorLocation = glGetUniformLocation(manager.getShaderProgram(), "color");
             switch (tileType) {
               case 0 -> glUniform3f(colorLocation, 0.2f, 0.8f, 0.2f); // Green (grass)
