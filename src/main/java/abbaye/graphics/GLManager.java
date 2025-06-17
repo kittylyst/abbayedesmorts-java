@@ -22,6 +22,11 @@ public final class GLManager {
   // Quad vertices (position + texture coordinates)
   public static final float[] VERTICES = {
     // positions        // texture coords
+    //          1.0f,  1.0f, 0.0f,   1.0f, 1.0f, // top right
+    //          1.0f, -1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+    //          -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
+    //          -1.0f,  1.0f, 0.0f,   0.0f, 1.0f  // top left
+
     -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // top left
     0.5f, 0.5f, 0.0f, 1.0f, 1.0f, // top right
     0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // bottom right
@@ -29,9 +34,26 @@ public final class GLManager {
   };
 
   public static final int[] INDICES = {
+    //          0, 1, 3, // first triangle
+    //          1, 2, 3  // second triangle
+
     0, 1, 2,
-    2, 3, 0
+          2, 3, 0
   };
+
+  //  // Quad vertices (position + texture coordinates)
+  //  float[] vertices = {
+  //          // positions          // texture coords
+  //          1.0f,  1.0f, 0.0f,   1.0f, 1.0f, // top right
+  //          1.0f, -1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+  //          -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
+  //          -1.0f,  1.0f, 0.0f,   0.0f, 1.0f  // top left
+  //  };
+  //
+  //  int[] indices = {
+  //          0, 1, 3, // first triangle
+  //          1, 2, 3  // second triangle
+  //  };
 
   public static float[] PROJECTION_MATRIX = {
     2.0f, 0.0f, 0.0f, 0.0f,
@@ -58,6 +80,7 @@ public final class GLManager {
     managers.put("dialog", manager);
 
     manager = new GLManager();
+    // FIXME This is currently a shader for a solid colour not a texture map
     manager.init("/shaders/game.shd", "/shaders/game.frag");
     // Get uniform locations
     manager.projectionLocation = glGetUniformLocation(manager.shaderProgram, "projection");
@@ -154,6 +177,10 @@ public final class GLManager {
     return VAO;
   }
 
+  public int getVBO() {
+    return VBO;
+  }
+
   public int getModelLocation() {
     return modelLocation;
   }
@@ -185,17 +212,6 @@ public final class GLManager {
     matrix[13] = -(top + bottom) / (top - bottom);
     matrix[14] = -(far + near) / (far - near);
     matrix[15] = 1.0f;
-    return matrix;
-  }
-
-  public static float[] createTransformMatrix(float x, float y, float width, float height) {
-    float[] matrix = new float[16];
-    matrix[0] = width; // Scale X
-    matrix[5] = height; // Scale Y
-    matrix[10] = 1.0f; // Scale Z
-    matrix[12] = x; // Translate X
-    matrix[13] = y; // Translate Y
-    matrix[15] = 1.0f; // W component
     return matrix;
   }
 

@@ -22,24 +22,21 @@ public class Stage implements Tiles, Renderable {
   private int roomx = 0;
   private int roomy = 1;
 
-  private int tilesTexture;
-  private int shaderProgram;
   private StageRenderer renderer;
   private GLManager glm;
+
+  public void load(long window) {
+    this.renderer = new StageRenderer(window);
+    load();
+  }
 
   /** Loads stage screens from default location */
   public void load() {
     load("/map/map.txt");
     if (AbbayeMain.isGlEnabled()) {
-      tilesTexture = GLManager.loadTexture("/tiles.png", true);
       glm = GLManager.get("game");
       renderer.init(this);
     }
-  }
-
-  public void load(long window) {
-    this.renderer = new StageRenderer(window);
-    load();
   }
 
   /**
@@ -54,7 +51,6 @@ public class Stage implements Tiles, Renderable {
 
       // Skip two header lines
       br.readLine();
-      //      br.readLine();
 
       for (int i = 0; i < NUM_SCREENS; i++) {
         for (int j = 0; j < NUM_ROWS; j++) {
@@ -65,7 +61,7 @@ public class Stage implements Tiles, Renderable {
             stagedata[i][j][k] = Integer.parseInt(temp.trim());
           }
         }
-        line = br.readLine(); // Skip separator line
+        br.readLine(); // Skip separator line
       }
     } catch (IOException e) {
       throw new RuntimeException(e);

@@ -2,7 +2,6 @@
 package abbaye.graphics;
 
 import static abbaye.graphics.GLManager.createOrthographicMatrix;
-import static abbaye.graphics.GLManager.createTransformMatrix;
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
@@ -16,6 +15,7 @@ import org.lwjgl.system.MemoryStack;
 
 public class StageRenderer implements Renderable {
   private final long window;
+  private final int tilesTexture;
 
   private Tiles tilemap;
   private GLManager manager;
@@ -23,6 +23,7 @@ public class StageRenderer implements Renderable {
   public StageRenderer(long window) {
     this.window = window;
     this.manager = GLManager.get("game");
+    this.tilesTexture = GLManager.loadTexture("/tiles.png", true);
   }
 
   public void init(Stage stage) {
@@ -138,11 +139,25 @@ public class StageRenderer implements Renderable {
       // Render each tile of this room
       for (int y = 0; y < Stage.NUM_ROWS; y++) {
         for (int x = 0; x < Stage.NUM_COLUMNS; x++) {
-          int tileType = tilemap.getTile(x, y);
-          if (tileType >= 0) {
+          int tileIndex = tilemap.getTile(x, y);
+          if (tileIndex >= 0) {
             // Calculate tile position
             float posX = x * tilemap.getTileSize();
             float posY = y * tilemap.getTileSize();
+
+            // FIXME Code from ExampleTileRenderer
+
+            //            // Update texture coordinates in vertex buffer
+            //            updateTileVertices(x, y, tilemap.getTileSize(), u1, v1, u2, v2);
+            //
+            //            // Set model matrix for position and scale
+            //            float[] model = createTranslationMatrix(x, y, 0);
+            //            float[] scale = createScaleMatrix(tilemap.getTileSize(),
+            // tilemap.getTileSize(), 1);
+            //            float[] finalModel = multiplyMatrices(model, scale);
+            //
+            //            int modelLoc = glGetUniformLocation(shaderProgram, "model");
+            //            glUniformMatrix4fv(modelLoc, false, finalModel);
 
             // Create model matrix for this tile
             float[] model =
@@ -150,12 +165,12 @@ public class StageRenderer implements Renderable {
             glUniformMatrix4fv(manager.getModelLocation(), false, model);
 
             // Set color based on tile type
-            int colorLocation = glGetUniformLocation(manager.getShaderProgram(), "color");
-            switch (tileType) {
-              case 0 -> glUniform3f(colorLocation, 0.2f, 0.8f, 0.2f); // Green (grass)
-              case 1 -> glUniform3f(colorLocation, 0.5f, 0.5f, 0.5f); // Gray (stone)
-              case 2 -> glUniform3f(colorLocation, 0.8f, 0.6f, 0.2f); // Brown (dirt)
-              default -> glUniform3f(colorLocation, 1.0f, 1.0f, 1.0f); // White
+            int modelLoc = glGetUniformLocation(manager.getShaderProgram(), "color");
+            switch (tileIndex) {
+              case 0 -> glUniform3f(modelLoc, 0.2f, 0.8f, 0.2f); // Green (grass)
+              case 1 -> glUniform3f(modelLoc, 0.5f, 0.5f, 0.5f); // Gray (stone)
+              case 2 -> glUniform3f(modelLoc, 0.8f, 0.6f, 0.2f); // Brown (dirt)
+              default -> glUniform3f(modelLoc, 1.0f, 1.0f, 1.0f); // White
             }
 
             glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -167,5 +182,64 @@ public class StageRenderer implements Renderable {
       glUseProgram(manager.getShaderProgram());
     }
     return true;
+  }
+
+  // FIXME What is this matrix for? It looks a 4x4 matrix - in column-row format maybe?
+  public float[] createTransformMatrix(float x, float y, float width, float height) {
+    float[] matrix = new float[16];
+    matrix[0] = width; // Scale X
+    matrix[5] = height; // Scale Y
+    matrix[10] = 1.0f; // Scale Z
+    matrix[12] = x; // Translate X
+    matrix[13] = y; // Translate Y
+    matrix[15] = 1.0f; // W component
+    return matrix;
+  }
+
+  private void updateTileVertices(
+      float x, float y, float size, float u1, float v1, float u2, float v2) {
+    float[] vertices = {
+      // positions           // texture coords
+      1.0f, 1.0f, 0.0f, u2, v1, // top right
+      1.0f, 0.0f, 0.0f, u2, v2, // bottom right
+      0.0f, 0.0f, 0.0f, u1, v2, // bottom left
+      0.0f, 1.0f, 0.0f, u1, v1 // top left
+    };
+
+    glBindBuffer(GL_ARRAY_BUFFER, manager.getVBO());
+    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
+  }
+
+  private float[] createTranslationMatrix(float x, float y, float z) {
+    float[] matrix = new float[16];
+    matrix[0] = 1;
+    matrix[5] = 1;
+    matrix[10] = 1;
+    matrix[15] = 1;
+    matrix[12] = x;
+    matrix[13] = y;
+    matrix[14] = z;
+    return matrix;
+  }
+
+  private float[] createScaleMatrix(float x, float y, float z) {
+    float[] matrix = new float[16];
+    matrix[0] = x;
+    matrix[5] = y;
+    matrix[10] = z;
+    matrix[15] = 1;
+    return matrix;
+  }
+
+  private float[] multiplyMatrices(float[] a, float[] b) {
+    float[] result = new float[16];
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        for (int k = 0; k < 4; k++) {
+          result[i * 4 + j] += a[i * 4 + k] * b[k * 4 + j];
+        }
+      }
+    }
+    return result;
   }
 }
