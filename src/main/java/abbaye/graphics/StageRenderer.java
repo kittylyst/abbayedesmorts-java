@@ -135,6 +135,9 @@ public class StageRenderer implements Renderable {
 
       glBindVertexArray(manager.getVAO());
 
+      var tilesPerRow = 32; // atlasWidth / tileSize;
+      var tilesPerCol = 8; // atlasHeight / tileSize;
+
       // Render each tile of this room
       for (int y = 0; y < Stage.NUM_ROWS; y++) {
         for (int x = 0; x < Stage.NUM_COLUMNS; x++) {
@@ -144,41 +147,57 @@ public class StageRenderer implements Renderable {
             float posX = x * tilemap.getTileSize();
             float posY = y * tilemap.getTileSize();
 
+            // Calculate texture coordinates for this tile in the atlas
+            int tileX = tileIndex % tilesPerRow;
+            int tileY = tileIndex / tilesPerRow;
+
+            float u1 = (float) tileX / tilesPerRow;
+            float v1 = (float) tileY / tilesPerCol;
+            float u2 = (float) (tileX + 1) / tilesPerRow;
+            float v2 = (float) (tileY + 1) / tilesPerCol;
+
+
             //            // FIXME Code from ExampleTileRenderer
             //
-            //            int u1 = 0, v1 = 0, u2 = 32, v2 = 32;
-            //            // Update texture coordinates in vertex buffer
-            //            updateTileVertices(x, y, tilemap.getTileSize(), u1, v1, u2, v2);
-            //
+            // Update texture coordinates in vertex buffer
+            updateTileVertices(x, y, tilemap.getTileSize(), u1, v1, u2, v2);
+
             //            // Set model matrix for position and scale
             //            float[] model = createTranslationMatrix(x, y, 0);
-            //
             //
             //            float[] scale = createScaleMatrix(tilemap.getTileSize(),
             //             tilemap.getTileSize(), 1);
             //            float[] finalModel = multiplyMatrices(model, scale);
-            //
-            //            int modelLoc = glGetUniformLocation(shaderProgram, "model");
-            //            glUniformMatrix4fv(modelLoc, false, finalModel);
-            //
+
+            float[] finalModel = {tilemap.getTileSize(), 0, 0, 0,
+                    0, tilemap.getTileSize(), 0, 0,
+                    0, 0, 1, 0,
+                    x, y, 0, 1};
+
+            int modelLoc = glGetUniformLocation(shaderProgram, "model");
+            glUniformMatrix4fv(modelLoc, false, finalModel);
+
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
             //            // END Code from ExampleTileRenderer
 
-            // Create model matrix for this tile
-            float[] model =
-                createTransformMatrix(posX, posY, tilemap.getTileSize(), tilemap.getTileSize());
-
-            glUniformMatrix4fv(manager.getModelLocation(), false, model);
+//            // Create model matrix for this tile
+//            float[] model =
+//                createTransformMatrix(posX, posY, tilemap.getTileSize(), tilemap.getTileSize());
+//
+//            glUniformMatrix4fv(manager.getModelLocation(), false, model);
 
             // Set solid color based on tile type
-            int modelLoc = glGetUniformLocation(manager.getShaderProgram(), "color");
-            switch (tileIndex) {
-              case 0 -> glUniform3f(modelLoc, 0.2f, 0.8f, 0.2f); // Green (grass)
-              case 1 -> glUniform3f(modelLoc, 0.5f, 0.5f, 0.5f); // Gray (stone)
-              case 2 -> glUniform3f(modelLoc, 0.8f, 0.6f, 0.2f); // Brown (dirt)
-              default -> glUniform3f(modelLoc, 1.0f, 1.0f, 1.0f); // White
-            }
+//            int modelLoc = glGetUniformLocation(manager.getShaderProgram(), "color");
+//            switch (tileIndex) {
+//              case 0 -> glUniform3f(modelLoc, 0.2f, 0.8f, 0.2f); // Green (grass)
+//              case 1 -> glUniform3f(modelLoc, 0.5f, 0.5f, 0.5f); // Gray (stone)
+//              case 2 -> glUniform3f(modelLoc, 0.8f, 0.6f, 0.2f); // Brown (dirt)
+//              default -> glUniform3f(modelLoc, 1.0f, 1.0f, 1.0f); // White
+//            }
 
-            glDrawArrays(GL_TRIANGLES, 0, 6);
+//            glDrawArrays(GL_TRIANGLES, 0, 6);
+
           }
         }
       }

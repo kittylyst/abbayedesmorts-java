@@ -13,6 +13,8 @@ import abbaye.graphics.GLManager;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 
+import java.util.Arrays;
+
 public class ExampleTileRenderer {
 
   private static final float Z_ZERO = 0.0f;
@@ -204,12 +206,10 @@ public class ExampleTileRenderer {
         int tileX = tileIndex % tilesPerRow;
         int tileY = tileIndex / tilesPerRow;
 
-        // FIXME Is this correct?
         // Calculate position on screen
         float x = col * tileDisplaySize;
         float y = row * tileDisplaySize;
 
-        // FIXME Is this correct?
         float u1 = (float) tileX / tilesPerRow;
         float v1 = (float) tileY / tilesPerCol;
         float u2 = (float) (tileX + 1) / tilesPerRow;
@@ -219,8 +219,8 @@ public class ExampleTileRenderer {
         updateTileVertices(x, y, tileDisplaySize, u1, v1, u2, v2);
 
         // Set model matrix for position and scale
-//        float[] model = createTranslationMatrix(x, y, 0);
-//        float[] scale = createScaleMatrix(tileDisplaySize, tileDisplaySize, 1);
+        float[] model = createTranslationMatrix(x, y, 0);
+        float[] scale = createScaleMatrix(tileDisplaySize, tileDisplaySize, 1);
 //        float[] finalModel = multiplyMatrices(model, scale);
 
         float[] finalModel = {tileDisplaySize, 0, 0, 0,
@@ -228,6 +228,8 @@ public class ExampleTileRenderer {
                 0, 0, 1, 0,
                 x, y, 0, 1};
 
+//        System.out.println("M1: "+ Arrays.toString(finalModel));
+//        System.out.println("M2: "+ Arrays.toString(finalModel2));
 
         int modelLoc = glGetUniformLocation(shaderProgram, "model");
         glUniformMatrix4fv(modelLoc, false, finalModel);
@@ -296,7 +298,7 @@ public class ExampleTileRenderer {
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
         for (int k = 0; k < 4; k++) {
-          result[i * 4 + j] += a[i * 4 + k] * b[k * 4 + j];
+          result[i * 4 + j] += a[i * 4 + k] * b[j * 4 + k];
         }
       }
     }

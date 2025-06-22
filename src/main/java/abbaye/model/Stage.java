@@ -137,7 +137,7 @@ public class Stage implements Tiles, Renderable {
   }
 
   public int getTileSize() {
-    return 32;
+    return 64;
   }
 
   public int getTile(int x, int y) {
