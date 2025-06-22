@@ -205,23 +205,29 @@ public class ExampleTileRenderer {
         int tileY = tileIndex / tilesPerRow;
 
         // FIXME Is this correct?
+        // Calculate position on screen
+        float x = col * tileDisplaySize;
+        float y = row * tileDisplaySize;
+
+        // FIXME Is this correct?
         float u1 = (float) tileX / tilesPerRow;
         float v1 = (float) tileY / tilesPerCol;
         float u2 = (float) (tileX + 1) / tilesPerRow;
         float v2 = (float) (tileY + 1) / tilesPerCol;
 
-        // FIXME Is this correct?
-        // Calculate position on screen
-        float x = col * tileDisplaySize;
-        float y = row * tileDisplaySize;
-
         // Update texture coordinates in vertex buffer
         updateTileVertices(x, y, tileDisplaySize, u1, v1, u2, v2);
 
         // Set model matrix for position and scale
-        float[] model = createTranslationMatrix(x, y, 0);
-        float[] scale = createScaleMatrix(tileDisplaySize, tileDisplaySize, 1);
-        float[] finalModel = multiplyMatrices(model, scale);
+//        float[] model = createTranslationMatrix(x, y, 0);
+//        float[] scale = createScaleMatrix(tileDisplaySize, tileDisplaySize, 1);
+//        float[] finalModel = multiplyMatrices(model, scale);
+
+        float[] finalModel = {tileDisplaySize, 0, 0, 0,
+                0, tileDisplaySize, 0, 0,
+                0, 0, 1, 0,
+                x, y, 0, 1};
+
 
         int modelLoc = glGetUniformLocation(shaderProgram, "model");
         glUniformMatrix4fv(modelLoc, false, finalModel);
@@ -233,13 +239,22 @@ public class ExampleTileRenderer {
 
   private void updateTileVertices(
       float x, float y, float size, float u1, float v1, float u2, float v2) {
+//    float[] vertices = {
+//      // positions           // texture coords
+//      1.0f, 1.0f, Z_ZERO, u2, v1, // top right
+//      1.0f, 0.0f, Z_ZERO, u2, v2, // bottom right
+//      0.0f, 0.0f, Z_ZERO, u1, v2, // bottom left
+//      0.0f, 1.0f, Z_ZERO, u1, v1 // top left
+//    };
+
     float[] vertices = {
-      // positions           // texture coords
-      1.0f, 1.0f, Z_ZERO, u2, v1, // top right
-      1.0f, 0.0f, Z_ZERO, u2, v2, // bottom right
-      0.0f, 0.0f, Z_ZERO, u1, v2, // bottom left
-      0.0f, 1.0f, Z_ZERO, u1, v1 // top left
+            // positions           // texture coords
+            1.0f, 1.0f, Z_ZERO, u2, v1, // top right
+            1.0f, 0.0f, Z_ZERO, u2, v2, // bottom right
+            0.0f, 0.0f, Z_ZERO, u1, v2, // bottom left
+            0.0f, 1.0f, Z_ZERO, u1, v1 // top left
     };
+
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
@@ -259,28 +274,24 @@ public class ExampleTileRenderer {
     return matrix;
   }
 
-  private float[] createTranslationMatrix(float x, float y, float z) {
-    float[] matrix = new float[16];
-    matrix[0] = 1;
-    matrix[5] = 1;
-    matrix[10] = 1;
-    matrix[15] = 1;
-    matrix[12] = x;
-    matrix[13] = y;
-    matrix[14] = z;
+  public float[] createTranslationMatrix(float x, float y, float z) {
+    float[] matrix = {1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            x, y, z, 1};
+
     return matrix;
   }
 
-  private float[] createScaleMatrix(float x, float y, float z) {
-    float[] matrix = new float[16];
-    matrix[0] = x;
-    matrix[5] = y;
-    matrix[10] = z;
-    matrix[15] = 1;
+  public float[] createScaleMatrix(float x, float y, float z) {
+    float[] matrix = {x, 0, 0, 0,
+              0, y, 0, 0,
+              0, 0, z, 0,
+              0, 0, 0, 1};
     return matrix;
   }
 
-  private float[] multiplyMatrices(float[] a, float[] b) {
+  public float[] multiplyMatrices(float[] a, float[] b) {
     float[] result = new float[16];
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
