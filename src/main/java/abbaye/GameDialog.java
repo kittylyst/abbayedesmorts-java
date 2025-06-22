@@ -1,7 +1,6 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye;
 
-import static abbaye.graphics.GLManager.PROJECTION_MATRIX;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
@@ -42,6 +41,13 @@ public class GameDialog {
     window = main.getWindow();
     reset();
   }
+
+  private static float[] PROJECTION_MATRIX = {
+    2.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 2.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, -1.0f, 0.0f,
+    0.0f, 0.0f, 0.0f, 1.0f
+  };
 
   public void render() {
     switch (state) {

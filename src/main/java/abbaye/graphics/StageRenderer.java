@@ -1,7 +1,6 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.graphics;
 
-import static abbaye.graphics.GLManager.createOrthographicMatrix;
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
@@ -145,26 +144,32 @@ public class StageRenderer implements Renderable {
             float posX = x * tilemap.getTileSize();
             float posY = y * tilemap.getTileSize();
 
-            // FIXME Code from ExampleTileRenderer
-
+            //            // FIXME Code from ExampleTileRenderer
+            //
+            //            int u1 = 0, v1 = 0, u2 = 32, v2 = 32;
             //            // Update texture coordinates in vertex buffer
             //            updateTileVertices(x, y, tilemap.getTileSize(), u1, v1, u2, v2);
             //
             //            // Set model matrix for position and scale
             //            float[] model = createTranslationMatrix(x, y, 0);
+            //
+            //
             //            float[] scale = createScaleMatrix(tilemap.getTileSize(),
-            // tilemap.getTileSize(), 1);
+            //             tilemap.getTileSize(), 1);
             //            float[] finalModel = multiplyMatrices(model, scale);
             //
             //            int modelLoc = glGetUniformLocation(shaderProgram, "model");
             //            glUniformMatrix4fv(modelLoc, false, finalModel);
+            //
+            //            // END Code from ExampleTileRenderer
 
             // Create model matrix for this tile
             float[] model =
                 createTransformMatrix(posX, posY, tilemap.getTileSize(), tilemap.getTileSize());
+
             glUniformMatrix4fv(manager.getModelLocation(), false, model);
 
-            // Set color based on tile type
+            // Set solid color based on tile type
             int modelLoc = glGetUniformLocation(manager.getShaderProgram(), "color");
             switch (tileIndex) {
               case 0 -> glUniform3f(modelLoc, 0.2f, 0.8f, 0.2f); // Green (grass)
@@ -182,6 +187,21 @@ public class StageRenderer implements Renderable {
       glUseProgram(manager.getShaderProgram());
     }
     return true;
+  }
+
+  /////////////// Matrix helpers
+
+  public static float[] createOrthographicMatrix(
+      float left, float right, float bottom, float top, float near, float far) {
+    float[] matrix = new float[16];
+    matrix[0] = 2.0f / (right - left);
+    matrix[5] = 2.0f / (top - bottom);
+    matrix[10] = -2.0f / (far - near);
+    matrix[12] = -(right + left) / (right - left);
+    matrix[13] = -(top + bottom) / (top - bottom);
+    matrix[14] = -(far + near) / (far - near);
+    matrix[15] = 1.0f;
+    return matrix;
   }
 
   // FIXME What is this matrix for? It looks a 4x4 matrix - in column-row format maybe?

@@ -43,16 +43,16 @@ public class SplashScreenResource {
   private static final String FRAGMENT_SHADER_SOURCE =
       """
       #version 330 core
-      out vec4 FragColor;
-
       in vec2 TexCoord;
 
       uniform sampler2D logoTexture;
       uniform float alpha;
 
+      out vec4 FragColor;
+
       void main() {
-        vec4 texColor = texture(logoTexture, TexCoord);
-        FragColor = vec4(texColor.rgb, texColor.a * alpha);
+          vec4 texColor = texture(logoTexture, TexCoord);
+          FragColor = vec4(texColor.rgb, texColor.a * alpha);
       }
       """;
 
@@ -167,29 +167,30 @@ public class SplashScreenResource {
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    // Setup vertex data and buffers
+    // Setup vertex data and array object
     VAO = glGenVertexArrays();
-    VBO = glGenBuffers();
-    EBO = glGenBuffers();
-
     glBindVertexArray(VAO);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, VERTICES, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDICES, GL_STATIC_DRAW);
-
-    // Position attribute
+    // Set up the bindings for each location
+    // Position attribute (aPos)
     glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
     glEnableVertexAttribArray(0);
 
-    // Texture coordinate attribute
+    // Texture coordinate attribute (aTexCoord)
     glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
     glEnableVertexAttribArray(1);
 
+    // Setup vertex buffer object
+    VBO = glGenBuffers();
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, VERTICES, GL_STATIC_DRAW);
+
+    //
+    EBO = glGenBuffers();
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDICES, GL_STATIC_DRAW);
+
     // Load texture
-    //        logoTexture = loadTexture("logo.png", false);
     logoTexture = loadTexture("/intro.png", true);
 
     // Setup projection matrix (orthographic)
@@ -206,7 +207,7 @@ public class SplashScreenResource {
 
     glUniformMatrix4fv(projectionLoc, false, projectionMatrix);
 
-    // Set texture uniform
+    // Set uniform for texture
     glUniform1i(glGetUniformLocation(shaderProgram, "logoTexture"), 0);
   }
 
@@ -230,7 +231,7 @@ public class SplashScreenResource {
       // Use shader program
       glUseProgram(shaderProgram);
 
-      // Set alpha uniform for fade effect
+      // Set uniform for alpha-based fade-in effect
       glUniform1f(glGetUniformLocation(shaderProgram, "alpha"), alpha);
 
       // Bind texture

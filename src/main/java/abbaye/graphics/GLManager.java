@@ -37,8 +37,7 @@ public final class GLManager {
     //          0, 1, 3, // first triangle
     //          1, 2, 3  // second triangle
 
-    0, 1, 2,
-          2, 3, 0
+    0, 1, 2, 2, 3, 0
   };
 
   //  // Quad vertices (position + texture coordinates)
@@ -55,20 +54,14 @@ public final class GLManager {
   //          1, 2, 3  // second triangle
   //  };
 
-  public static float[] PROJECTION_MATRIX = {
-    2.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 2.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, -1.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 1.0f
-  };
-
   private static Map<String, Integer> textures = new HashMap<>();
 
   private GLManager() {}
 
   static {
     var manager = new GLManager();
-    manager.init("/shaders/splash.shd", "/shaders/splash.frag");
+    manager.init("/shaders/splash.vert", "/shaders/splash.frag");
+    // Get locations for uniforms
     manager.projectionLocation = glGetUniformLocation(manager.shaderProgram, "projection");
     // Position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
@@ -81,8 +74,8 @@ public final class GLManager {
 
     manager = new GLManager();
     // FIXME This is currently a shader for a solid colour not a texture map
-    manager.init("/shaders/game.shd", "/shaders/game.frag");
-    // Get uniform locations
+    manager.init("/shaders/game.vert", "/shaders/game.frag");
+    // Get locations for uniforms
     manager.projectionLocation = glGetUniformLocation(manager.shaderProgram, "projection");
     manager.modelLocation = glGetUniformLocation(manager.shaderProgram, "model");
 
@@ -198,21 +191,6 @@ public final class GLManager {
     }
 
     return shader;
-  }
-
-  /////////////// Matrix helpers
-
-  public static float[] createOrthographicMatrix(
-      float left, float right, float bottom, float top, float near, float far) {
-    float[] matrix = new float[16];
-    matrix[0] = 2.0f / (right - left);
-    matrix[5] = 2.0f / (top - bottom);
-    matrix[10] = -2.0f / (far - near);
-    matrix[12] = -(right + left) / (right - left);
-    matrix[13] = -(top + bottom) / (top - bottom);
-    matrix[14] = -(far + near) / (far - near);
-    matrix[15] = 1.0f;
-    return matrix;
   }
 
   /////////////// Texture helpers
