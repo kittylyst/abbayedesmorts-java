@@ -133,6 +133,9 @@ public class StageRenderer implements Renderable {
       float[] projection = createOrthographicMatrix(0, width.get(0), height.get(0), 0, -1, 1);
       glUniformMatrix4fv(manager.getProjectionLocation(), false, projection);
 
+      // Bind texture
+      glBindTexture(GL_TEXTURE_2D, tilesTexture);
+
       glBindVertexArray(manager.getVAO());
 
       var tilesPerRow = 32; // atlasWidth / tileSize;
@@ -160,7 +163,7 @@ public class StageRenderer implements Renderable {
             //            // FIXME Code from ExampleTileRenderer
             //
             // Update texture coordinates in vertex buffer
-            updateTileVertices(x, y, tilemap.getTileSize(), u1, v1, u2, v2);
+            updateTileVertices(posX, posY, tilemap.getTileSize(), u1, v1, u2, v2);
 
             //            // Set model matrix for position and scale
             //            float[] model = createTranslationMatrix(x, y, 0);
@@ -172,7 +175,7 @@ public class StageRenderer implements Renderable {
             float[] finalModel = {tilemap.getTileSize(), 0, 0, 0,
                     0, tilemap.getTileSize(), 0, 0,
                     0, 0, 1, 0,
-                    x, y, 0, 1};
+                    posX, posY, 0, 1};
 
             int modelLoc = glGetUniformLocation(shaderProgram, "model");
             glUniformMatrix4fv(modelLoc, false, finalModel);
