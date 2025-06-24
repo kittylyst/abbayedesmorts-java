@@ -1,6 +1,7 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.graphics;
 
+import static abbaye.graphics.GLManager.Z_ZERO;
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
@@ -18,8 +19,6 @@ public class StageRenderer implements Renderable {
 
   private Tiles tilemap;
   private GLManager manager;
-
-  private static final float Z_ZERO = 0.0f;
 
   public StageRenderer(long window) {
     this.window = window;

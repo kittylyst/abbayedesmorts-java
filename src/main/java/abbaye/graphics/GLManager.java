@@ -19,25 +19,27 @@ public final class GLManager {
 
   private static Map<String, GLManager> managers = new HashMap<>();
 
+  public static final float Z_ZERO = 0.0f;
+
   // Quad vertices (position + texture coordinates)
   public static final float[] VERTICES = {
     // positions        // texture coords
-    //          1.0f,  1.0f, 0.0f,   1.0f, 1.0f, // top right
-    //          1.0f, -1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-    //          -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
-    //          -1.0f,  1.0f, 0.0f,   0.0f, 1.0f  // top left
+    //              1.0f,  1.0f, 0.0f,   1.0f, 1.0f, // top right
+    //              1.0f, -1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+    //              -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
+    //              -1.0f,  1.0f, 0.0f,   0.0f, 1.0f  // top left
 
-    -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // top left
-    0.5f, 0.5f, 0.0f, 1.0f, 1.0f, // top right
-    0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // bottom right
-    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f // bottom left
+    -0.5f, 0.5f, Z_ZERO, 0.0f, 1.0f, // top left
+    0.5f, 0.5f, Z_ZERO, 1.0f, 1.0f, // top right
+    0.5f, -0.5f, Z_ZERO, 1.0f, 0.0f, // bottom right
+    -0.5f, -0.5f, Z_ZERO, 0.0f, 0.0f // bottom left
   };
 
   public static final int[] INDICES = {
-    //          0, 1, 3, // first triangle
-    //          1, 2, 3  // second triangle
+    0, 1, 3, // first triangle
+    1, 2, 3 // second triangle
 
-    0, 1, 2, 2, 3, 0
+    //    0, 1, 2, 2, 3, 0
   };
 
   //  // Quad vertices (position + texture coordinates)
@@ -80,7 +82,7 @@ public final class GLManager {
     manager.modelLocation = glGetUniformLocation(manager.shaderProgram, "model");
 
     // Position attribute
-    glVertexAttribPointer(0, 2, GL_FLOAT, false, 5 * Float.BYTES, 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
     glEnableVertexAttribArray(0);
 
     // Texture coordinate attribute
