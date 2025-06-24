@@ -195,7 +195,7 @@ public final class GLManager {
 
   /////////////// Texture helpers
 
-  public static int loadTexture(String path, boolean isResource) {
+  public static int loadTexture(String path, boolean isResource, boolean shouldFlip) {
     int texture = glGenTextures();
     glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -212,7 +212,9 @@ public final class GLManager {
       IntBuffer channels = stack.mallocInt(1);
 
       // Flip image vertically for OpenGL
-      stbi_set_flip_vertically_on_load(true);
+      if (shouldFlip) {
+        stbi_set_flip_vertically_on_load(true);
+      }
 
       ByteBuffer image = null;
       if (isResource) {

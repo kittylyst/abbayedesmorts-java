@@ -191,7 +191,7 @@ public class SplashScreenResource {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDICES, GL_STATIC_DRAW);
 
     // Load texture
-    logoTexture = loadTexture("/intro.png", true);
+    logoTexture = loadTexture("/intro.png", true, true);
 
     // Setup projection matrix (orthographic)
     glUseProgram(shaderProgram);

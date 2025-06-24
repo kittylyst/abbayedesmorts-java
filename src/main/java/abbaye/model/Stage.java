@@ -84,7 +84,7 @@ public class Stage implements Tiles, Renderable {
   }
 
   public void moveRight() {
-    if (roomx < 4) {
+    if (roomx < SCREENS_X - 1) {
       roomx += 1;
     }
   }
@@ -96,7 +96,7 @@ public class Stage implements Tiles, Renderable {
   }
 
   public void moveDown() {
-    if (roomy < 4) {
+    if (roomy < SCREENS_Y - 1) {
       roomy += 1;
     }
   }
@@ -136,11 +136,12 @@ public class Stage implements Tiles, Renderable {
     };
   }
 
+  // FIXME What does this represent?
   public int getTileSize() {
-    return 64;
+    return 32;
   }
 
   public int getTile(int x, int y) {
-    return stagedata[roomy * 5 + roomx][y][x];
+    return stagedata[roomy * SCREENS_X + roomx][y][x];
   }
 }

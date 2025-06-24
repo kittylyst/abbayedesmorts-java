@@ -13,8 +13,6 @@ import abbaye.graphics.GLManager;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 
-import java.util.Arrays;
-
 public class ExampleTileRenderer {
 
   private static final float Z_ZERO = 0.0f;
@@ -24,9 +22,9 @@ public class ExampleTileRenderer {
   private int textureId;
 
   // Sprite atlas properties
-//  private int atlasWidth = 32; // Total atlas width in pixels
-//  private int atlasHeight = 32; // Total atlas height in pixels
-//  private int tileSize = 32; // Size of each tile in pixels
+  //  private int atlasWidth = 32; // Total atlas width in pixels
+  //  private int atlasHeight = 32; // Total atlas height in pixels
+  //  private int tileSize = 32; // Size of each tile in pixels
   private int tilesPerRow; // Calculated tiles per row
   private int tilesPerCol; // Calculated tiles per column
 
@@ -102,19 +100,19 @@ public class ExampleTileRenderer {
 
     setupShaders();
     setupBuffers();
-    textureId = GLManager.loadTexture("/tiles.png", true);
+    textureId = GLManager.loadTexture("/tiles.png", true, false);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Setup key callback
     glfwSetKeyCallback(
-            window,
-            (window, key, scancode, action, mods) -> {
-              if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-                glfwSetWindowShouldClose(window, true);
-              }
-            });
+        window,
+        (window, key, scancode, action, mods) -> {
+          if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+            glfwSetWindowShouldClose(window, true);
+          }
+        });
   }
 
   private void setupShaders() {
@@ -221,15 +219,14 @@ public class ExampleTileRenderer {
         // Set model matrix for position and scale
         float[] model = createTranslationMatrix(x, y, 0);
         float[] scale = createScaleMatrix(tileDisplaySize, tileDisplaySize, 1);
-//        float[] finalModel = multiplyMatrices(model, scale);
+        //        float[] finalModel = multiplyMatrices(model, scale);
 
-        float[] finalModel = {tileDisplaySize, 0, 0, 0,
-                0, tileDisplaySize, 0, 0,
-                0, 0, 1, 0,
-                x, y, 0, 1};
+        float[] finalModel = {
+          tileDisplaySize, 0, 0, 0, 0, tileDisplaySize, 0, 0, 0, 0, 1, 0, x, y, 0, 1
+        };
 
-//        System.out.println("M1: "+ Arrays.toString(finalModel));
-//        System.out.println("M2: "+ Arrays.toString(finalModel2));
+        //        System.out.println("M1: "+ Arrays.toString(finalModel));
+        //        System.out.println("M2: "+ Arrays.toString(finalModel2));
 
         int modelLoc = glGetUniformLocation(shaderProgram, "model");
         glUniformMatrix4fv(modelLoc, false, finalModel);
@@ -241,22 +238,21 @@ public class ExampleTileRenderer {
 
   private void updateTileVertices(
       float x, float y, float size, float u1, float v1, float u2, float v2) {
-//    float[] vertices = {
-//      // positions           // texture coords
-//      1.0f, 1.0f, Z_ZERO, u2, v1, // top right
-//      1.0f, 0.0f, Z_ZERO, u2, v2, // bottom right
-//      0.0f, 0.0f, Z_ZERO, u1, v2, // bottom left
-//      0.0f, 1.0f, Z_ZERO, u1, v1 // top left
-//    };
+    //    float[] vertices = {
+    //      // positions           // texture coords
+    //      1.0f, 1.0f, Z_ZERO, u2, v1, // top right
+    //      1.0f, 0.0f, Z_ZERO, u2, v2, // bottom right
+    //      0.0f, 0.0f, Z_ZERO, u1, v2, // bottom left
+    //      0.0f, 1.0f, Z_ZERO, u1, v1 // top left
+    //    };
 
     float[] vertices = {
-            // positions           // texture coords
-            1.0f, 1.0f, Z_ZERO, u2, v1, // top right
-            1.0f, 0.0f, Z_ZERO, u2, v2, // bottom right
-            0.0f, 0.0f, Z_ZERO, u1, v2, // bottom left
-            0.0f, 1.0f, Z_ZERO, u1, v1 // top left
+      // positions           // texture coords
+      1.0f, 1.0f, Z_ZERO, u2, v1, // top right
+      1.0f, 0.0f, Z_ZERO, u2, v2, // bottom right
+      0.0f, 0.0f, Z_ZERO, u1, v2, // bottom left
+      0.0f, 1.0f, Z_ZERO, u1, v1 // top left
     };
-
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
@@ -277,19 +273,13 @@ public class ExampleTileRenderer {
   }
 
   public float[] createTranslationMatrix(float x, float y, float z) {
-    float[] matrix = {1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            x, y, z, 1};
+    float[] matrix = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1};
 
     return matrix;
   }
 
   public float[] createScaleMatrix(float x, float y, float z) {
-    float[] matrix = {x, 0, 0, 0,
-              0, y, 0, 0,
-              0, 0, z, 0,
-              0, 0, 0, 1};
+    float[] matrix = {x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1};
     return matrix;
   }
 

@@ -19,10 +19,12 @@ public class StageRenderer implements Renderable {
   private Tiles tilemap;
   private GLManager manager;
 
+  private static final float Z_ZERO = 0.0f;
+
   public StageRenderer(long window) {
     this.window = window;
     this.manager = GLManager.get("game");
-    this.tilesTexture = GLManager.loadTexture("/tiles.png", true);
+    this.tilesTexture = GLManager.loadTexture("/tiles.png", true, true);
   }
 
   public void init(Stage stage) {
@@ -135,11 +137,12 @@ public class StageRenderer implements Renderable {
 
       // Bind texture
       glBindTexture(GL_TEXTURE_2D, tilesTexture);
-
       glBindVertexArray(manager.getVAO());
 
-      var tilesPerRow = 32; // atlasWidth / tileSize;
-      var tilesPerCol = 8; // atlasHeight / tileSize;
+      // FIXME Are these tiles square?
+      var tileSize = tilemap.getTileSize();
+      var tilesPerRow = 1000 / 16; // 62
+      var tilesPerCol = 240 / 16; // 15;
 
       // Render each tile of this room
       for (int y = 0; y < Stage.NUM_ROWS; y++) {
@@ -147,23 +150,21 @@ public class StageRenderer implements Renderable {
           int tileIndex = tilemap.getTile(x, y);
           if (tileIndex >= 0) {
             // Calculate tile position
-            float posX = x * tilemap.getTileSize();
-            float posY = y * tilemap.getTileSize();
+            float posX = x * tileSize;
+            float posY = y * tileSize;
 
             // Calculate texture coordinates for this tile in the atlas
             int tileX = tileIndex % tilesPerRow;
             int tileY = tileIndex / tilesPerRow;
 
-            float u1 = (float) tileX / tilesPerRow;
-            float v1 = (float) tileY / tilesPerCol;
-            float u2 = (float) (tileX + 1) / tilesPerRow;
-            float v2 = (float) (tileY + 1) / tilesPerCol;
+            float u1 = 1 - ((float) tileX / tilesPerRow);
+            float v1 = 1 - ((float) tileY / tilesPerCol);
+            float u2 = 1 - ((float) (tileX + 1) / tilesPerRow);
+            float v2 = 1 - ((float) (tileY + 1) / tilesPerCol);
 
-
-            //            // FIXME Code from ExampleTileRenderer
-            //
             // Update texture coordinates in vertex buffer
-            updateTileVertices(posX, posY, tilemap.getTileSize(), u1, v1, u2, v2);
+            //            posX, posY, tilemap.getTileSize(),
+            updateTileVertices(u1, v1, u2, v2);
 
             //            // Set model matrix for position and scale
             //            float[] model = createTranslationMatrix(x, y, 0);
@@ -172,34 +173,31 @@ public class StageRenderer implements Renderable {
             //             tilemap.getTileSize(), 1);
             //            float[] finalModel = multiplyMatrices(model, scale);
 
-            float[] finalModel = {tilemap.getTileSize(), 0, 0, 0,
-                    0, tilemap.getTileSize(), 0, 0,
-                    0, 0, 1, 0,
-                    posX, posY, 0, 1};
+            float[] finalModel = {
+              tileSize, 0, 0, 0, 0, tileSize, 0, 0, 0, 0, 1, 0, posX, posY, Z_ZERO, 1
+            };
 
             int modelLoc = glGetUniformLocation(shaderProgram, "model");
             glUniformMatrix4fv(modelLoc, false, finalModel);
 
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-            //            // END Code from ExampleTileRenderer
-
-//            // Create model matrix for this tile
-//            float[] model =
-//                createTransformMatrix(posX, posY, tilemap.getTileSize(), tilemap.getTileSize());
-//
-//            glUniformMatrix4fv(manager.getModelLocation(), false, model);
+            //            // Create model matrix for this tile
+            //            float[] model =
+            //                createTransformMatrix(posX, posY, tilemap.getTileSize(),
+            // tilemap.getTileSize());
+            //
+            //            glUniformMatrix4fv(manager.getModelLocation(), false, model);
 
             // Set solid color based on tile type
-//            int modelLoc = glGetUniformLocation(manager.getShaderProgram(), "color");
-//            switch (tileIndex) {
-//              case 0 -> glUniform3f(modelLoc, 0.2f, 0.8f, 0.2f); // Green (grass)
-//              case 1 -> glUniform3f(modelLoc, 0.5f, 0.5f, 0.5f); // Gray (stone)
-//              case 2 -> glUniform3f(modelLoc, 0.8f, 0.6f, 0.2f); // Brown (dirt)
-//              default -> glUniform3f(modelLoc, 1.0f, 1.0f, 1.0f); // White
-//            }
-
-//            glDrawArrays(GL_TRIANGLES, 0, 6);
+            //            int modelLoc = glGetUniformLocation(manager.getShaderProgram(), "color");
+            //            switch (tileIndex) {
+            //              case 0 -> glUniform3f(modelLoc, 0.2f, 0.8f, 0.2f); // Green (grass)
+            //              case 1 -> glUniform3f(modelLoc, 0.5f, 0.5f, 0.5f); // Gray (stone)
+            //              case 2 -> glUniform3f(modelLoc, 0.8f, 0.6f, 0.2f); // Brown (dirt)
+            //              default -> glUniform3f(modelLoc, 1.0f, 1.0f, 1.0f); // White
+            //            }
+            //            glDrawArrays(GL_TRIANGLES, 0, 6);
 
           }
         }
@@ -212,6 +210,20 @@ public class StageRenderer implements Renderable {
   }
 
   /////////////// Matrix helpers
+
+  // float x, float y, float size,
+  private void updateTileVertices(float u1, float v1, float u2, float v2) {
+    float[] vertices = {
+      // positions           // texture coords
+      1.0f, 1.0f, Z_ZERO, u2, v1, // top right
+      1.0f, 0.0f, Z_ZERO, u2, v2, // bottom right
+      0.0f, 0.0f, Z_ZERO, u1, v2, // bottom left
+      0.0f, 1.0f, Z_ZERO, u1, v1 // top left
+    };
+
+    glBindBuffer(GL_ARRAY_BUFFER, manager.getVBO());
+    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
+  }
 
   public static float[] createOrthographicMatrix(
       float left, float right, float bottom, float top, float near, float far) {
@@ -236,20 +248,6 @@ public class StageRenderer implements Renderable {
     matrix[13] = y; // Translate Y
     matrix[15] = 1.0f; // W component
     return matrix;
-  }
-
-  private void updateTileVertices(
-      float x, float y, float size, float u1, float v1, float u2, float v2) {
-    float[] vertices = {
-      // positions           // texture coords
-      1.0f, 1.0f, 0.0f, u2, v1, // top right
-      1.0f, 0.0f, 0.0f, u2, v2, // bottom right
-      0.0f, 0.0f, 0.0f, u1, v2, // bottom left
-      0.0f, 1.0f, 0.0f, u1, v1 // top left
-    };
-
-    glBindBuffer(GL_ARRAY_BUFFER, manager.getVBO());
-    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
   }
 
   private float[] createTranslationMatrix(float x, float y, float z) {

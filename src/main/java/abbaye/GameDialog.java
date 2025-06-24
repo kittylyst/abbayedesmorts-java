@@ -35,7 +35,7 @@ public class GameDialog {
   public GameDialog(Player pl, AbbayeMain main) {
     player = pl;
     mainClass = main;
-    introSplashTexture = GLManager.loadTexture("/intro.png", true); // Needs to be mirrored?
+    introSplashTexture = GLManager.loadTexture("/intro.png", true, true);
     glManager = GLManager.get("dialog");
     state = State.INACTIVE;
     window = main.getWindow();
