@@ -150,6 +150,14 @@ public final class GLManager {
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDICES, GL_STATIC_DRAW);
+
+    //    // DEBUG
+    //    glValidateProgram(shaderProgram);
+    //    if (glGetProgrami(shaderProgram, GL_VALIDATE_STATUS) == 0) {
+    //      System.err.println("Warning validating Shader code: " +
+    // glGetProgramInfoLog(shaderProgram, 1024));
+    //    }
+
   }
 
   public void cleanup() {

@@ -4,14 +4,17 @@ package abbaye.model;
 import static org.lwjgl.glfw.GLFW.*;
 
 import abbaye.AbbayeMain;
+import abbaye.basic.Corners;
 import abbaye.basic.Renderable;
 import abbaye.graphics.GLManager;
 import abbaye.graphics.StageRenderer;
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 
 /** The stage shows the layout of the furniture of the current screen */
-public class Stage implements Tiles, Renderable {
+public class Stage implements Renderable {
   public static final int SCREENS_X = 5;
   public static final int SCREENS_Y = 5;
   public static final int NUM_SCREENS = SCREENS_X * SCREENS_Y;
@@ -22,12 +25,18 @@ public class Stage implements Tiles, Renderable {
   private int roomx = 0;
   private int roomy = 1;
 
+  private Map<Integer, Corners> cache = new HashMap<>();
+
   private StageRenderer renderer;
   private GLManager glm;
 
   public void load(long window) {
     this.renderer = new StageRenderer(window);
     load();
+    // TEST
+    //    srctiles.y = 8;
+    //    srctiles.x = (data - 101) * 8;
+    cache.put(110, new Corners(72, 8, 104, 40));
   }
 
   /** Loads stage screens from default location */
@@ -137,11 +146,55 @@ public class Stage implements Tiles, Renderable {
   }
 
   // FIXME What does this represent?
-  public int getTileSize() {
-    return 32;
+  public float getTileSize() {
+    return 64.0f;
   }
 
-  public int getTile(int x, int y) {
-    return stagedata[roomy * SCREENS_X + roomx][y][x];
+  //  public int getTile(int x, int y) {
+  //    var tileType = stagedata[roomy * SCREENS_X + roomx][y][x];
+  //    var out = tileType;
+  //    return out;
+  //  }
+
+  public Corners getCorners(int x, int y) {
+    var tileType = stagedata[roomy * SCREENS_X + roomx][y][x];
+    if (cache.containsKey(tileType)) {
+      return cache.get(tileType);
+    }
+
+    int w = 0, h = 0;
+    if ((tileType > 0) && (tileType != 99)) {
+      if (tileType < 200) {
+        w = 8;
+        h = 8;
+        if (tileType < 101) {
+          y = 0;
+          //          if (tileType == 84) /* Cross brightness */
+          //            x = (tileType - 1) * 8 + (counter[0] / 8 * 8);
+          //          else
+          x = (tileType - 1) * 8;
+        } else {
+          if (tileType == 154) {
+            /* Door */
+            x = 600 + 16; // ((counter[0] / 8) * 16);
+            y = 0;
+            w = 16;
+            h = 24;
+          } else {
+            y = 8;
+            x = (tileType - 101) * 8;
+          }
+        }
+      }
+    }
+    var out = new Corners(x, y, x + w, y + h);
+    cache.computeIfAbsent(
+        tileType,
+        t -> {
+          System.out.println("Tile type: " + t + " has corners: " + out);
+          return out;
+        });
+
+    return out;
   }
 }
