@@ -150,7 +150,7 @@ public class Stage implements Renderable {
     return 64.0f;
   }
 
-  static class SDLRect {
+  public static class SDLRect {
     public int x;
     public int y;
     public int w;
