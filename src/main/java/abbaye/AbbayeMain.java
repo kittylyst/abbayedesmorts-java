@@ -216,7 +216,7 @@ public class AbbayeMain {
     glfwFreeCallbacks(window);
     glfwDestroyWindow(window);
     glfwTerminate();
-    glfwSetErrorCallback(null).free();
+    glfwSetErrorCallback(null);
   }
 
   public long getWindow() {

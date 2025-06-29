@@ -19,25 +19,22 @@ public final class GLManager {
 
   private static Map<String, GLManager> managers = new HashMap<>();
 
+  public static final float Z_ZERO = 0.0f;
+
   // Quad vertices (position + texture coordinates)
   public static final float[] VERTICES = {
     // positions        // texture coords
-    -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // top left
-    0.5f, 0.5f, 0.0f, 1.0f, 1.0f, // top right
-    0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // bottom right
-    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f // bottom left
+    -0.5f, 0.5f, Z_ZERO, 0.0f, 1.0f, // top left
+    0.5f, 0.5f, Z_ZERO, 1.0f, 1.0f, // top right
+    0.5f, -0.5f, Z_ZERO, 1.0f, 0.0f, // bottom right
+    -0.5f, -0.5f, Z_ZERO, 0.0f, 0.0f // bottom left
   };
 
   public static final int[] INDICES = {
-    0, 1, 2,
-    2, 3, 0
-  };
+    0, 1, 3, // first triangle
+    1, 2, 3 // second triangle
 
-  public static float[] PROJECTION_MATRIX = {
-    2.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 2.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, -1.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 1.0f
+    //    0, 1, 2, 2, 3, 0
   };
 
   private static Map<String, Integer> textures = new HashMap<>();
@@ -46,7 +43,8 @@ public final class GLManager {
 
   static {
     var manager = new GLManager();
-    manager.init("/shaders/splash.shd", "/shaders/splash.frag");
+    manager.init("/shaders/splash.vert", "/shaders/splash.frag");
+    // Get locations for uniforms
     manager.projectionLocation = glGetUniformLocation(manager.shaderProgram, "projection");
     // Position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
@@ -58,13 +56,14 @@ public final class GLManager {
     managers.put("dialog", manager);
 
     manager = new GLManager();
-    manager.init("/shaders/game.shd", "/shaders/game.frag");
-    // Get uniform locations
+    // FIXME This is currently a shader for a solid colour not a texture map
+    manager.init("/shaders/game.vert", "/shaders/game.frag");
+    // Get locations for uniforms
     manager.projectionLocation = glGetUniformLocation(manager.shaderProgram, "projection");
     manager.modelLocation = glGetUniformLocation(manager.shaderProgram, "model");
 
     // Position attribute
-    glVertexAttribPointer(0, 2, GL_FLOAT, false, 5 * Float.BYTES, 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
     glEnableVertexAttribArray(0);
 
     // Texture coordinate attribute
@@ -132,6 +131,14 @@ public final class GLManager {
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDICES, GL_STATIC_DRAW);
+
+    //    // DEBUG
+    //    glValidateProgram(shaderProgram);
+    //    if (glGetProgrami(shaderProgram, GL_VALIDATE_STATUS) == 0) {
+    //      System.err.println("Warning validating Shader code: " +
+    // glGetProgramInfoLog(shaderProgram, 1024));
+    //    }
+
   }
 
   public void cleanup() {
@@ -154,8 +161,8 @@ public final class GLManager {
     return VAO;
   }
 
-  public int getModelLocation() {
-    return modelLocation;
+  public int getVBO() {
+    return VBO;
   }
 
   ///////////// Helpers
@@ -173,35 +180,9 @@ public final class GLManager {
     return shader;
   }
 
-  /////////////// Matrix helpers
-
-  public static float[] createOrthographicMatrix(
-      float left, float right, float bottom, float top, float near, float far) {
-    float[] matrix = new float[16];
-    matrix[0] = 2.0f / (right - left);
-    matrix[5] = 2.0f / (top - bottom);
-    matrix[10] = -2.0f / (far - near);
-    matrix[12] = -(right + left) / (right - left);
-    matrix[13] = -(top + bottom) / (top - bottom);
-    matrix[14] = -(far + near) / (far - near);
-    matrix[15] = 1.0f;
-    return matrix;
-  }
-
-  public static float[] createTransformMatrix(float x, float y, float width, float height) {
-    float[] matrix = new float[16];
-    matrix[0] = width; // Scale X
-    matrix[5] = height; // Scale Y
-    matrix[10] = 1.0f; // Scale Z
-    matrix[12] = x; // Translate X
-    matrix[13] = y; // Translate Y
-    matrix[15] = 1.0f; // W component
-    return matrix;
-  }
-
   /////////////// Texture helpers
 
-  public static int loadTexture(String path, boolean isResource) {
+  public static int loadTexture(String path, boolean isResource, boolean shouldFlip) {
     int texture = glGenTextures();
     glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -218,7 +199,9 @@ public final class GLManager {
       IntBuffer channels = stack.mallocInt(1);
 
       // Flip image vertically for OpenGL
-      stbi_set_flip_vertically_on_load(true);
+      if (shouldFlip) {
+        stbi_set_flip_vertically_on_load(true);
+      }
 
       ByteBuffer image = null;
       if (isResource) {

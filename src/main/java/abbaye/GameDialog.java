@@ -1,7 +1,7 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye;
 
-import static abbaye.graphics.GLManager.PROJECTION_MATRIX;
+import static abbaye.graphics.GLManager.Z_ZERO;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
@@ -30,18 +30,25 @@ public class GameDialog {
   private State state;
   private Player player;
 
-  //  private static final int SPLASH_SIZE_X = 256;
-  //  private static final int SPLASH_SIZE_Y = 384;
+  private static final int SPLASH_SIZE_X = 256;
+  private static final int SPLASH_SIZE_Y = 384;
 
   public GameDialog(Player pl, AbbayeMain main) {
     player = pl;
     mainClass = main;
-    introSplashTexture = GLManager.loadTexture("/intro.png", true); // Needs to be mirrored?
+    introSplashTexture = GLManager.loadTexture("/intro.png", true, true);
     glManager = GLManager.get("dialog");
     state = State.INACTIVE;
     window = main.getWindow();
     reset();
   }
+
+  private static float[] PROJECTION_MATRIX = {
+    1.5f, 0.0f, Z_ZERO, 0.0f,
+    0.0f, 1.5f, Z_ZERO, 0.0f,
+    0.0f, 0.0f, Z_ZERO, 0.0f,
+    0.0f, 0.0f, Z_ZERO, 1.0f
+  };
 
   public void render() {
     switch (state) {
