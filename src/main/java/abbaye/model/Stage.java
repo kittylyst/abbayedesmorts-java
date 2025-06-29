@@ -6,7 +6,6 @@ import static org.lwjgl.glfw.GLFW.*;
 import abbaye.AbbayeMain;
 import abbaye.basic.Corners;
 import abbaye.basic.Renderable;
-import abbaye.graphics.GLManager;
 import abbaye.graphics.StageRenderer;
 import java.io.*;
 import java.util.HashMap;
@@ -21,6 +20,10 @@ public class Stage implements Renderable {
   public static final int NUM_COLUMNS = 32;
   public static final int NUM_ROWS = 22;
 
+  public static final int TILES_PER_ROW = 125; // Calculated tiles per row // atlasWidth / tileSize;
+  public static final int TILES_PER_COL =
+      30; // Calculated tiles per column // atlasHeight / tileSize;
+
   private int[][][] stagedata = new int[NUM_SCREENS][NUM_ROWS][NUM_COLUMNS];
   private int roomx = 0;
   private int roomy = 1;
@@ -28,22 +31,19 @@ public class Stage implements Renderable {
   private Map<Integer, Corners> cache = new HashMap<>();
 
   private StageRenderer renderer;
-  private GLManager glm;
+  private boolean is16Bit = false;
+  private boolean changeflag = false;
 
   public void load(long window) {
     this.renderer = new StageRenderer(window);
     load();
-    // TEST
-    //    srctiles.y = 8;
-    //    srctiles.x = (data - 101) * 8;
-    cache.put(110, new Corners(72, 8, 104, 40));
   }
 
   /** Loads stage screens from default location */
   public void load() {
     load("/map/map.txt");
     if (AbbayeMain.isGlEnabled()) {
-      glm = GLManager.get("game");
+      //      glm = GLManager.get("game");
       renderer.init(this);
     }
   }
@@ -150,13 +150,13 @@ public class Stage implements Renderable {
     return 64.0f;
   }
 
-  static class SDL_Rect {
+  static class SDLRect {
     public int x;
     public int y;
     public int w;
     public int h;
 
-    public SDL_Rect(int x, int y, int w, int h) {
+    public SDLRect(int x, int y, int w, int h) {
       this.x = x;
       this.y = y;
       this.w = w;
@@ -165,7 +165,7 @@ public class Stage implements Renderable {
 
     @Override
     public String toString() {
-      return "SDL_Rect{" + "posX=" + 8 * x + ", posY=" + 8 * y + ", w=" + w + ", h=" + h + '}';
+      return "SDLRect{" + "posX=" + 8 * x + ", posY=" + 8 * y + ", w=" + w + ", h=" + h + '}';
     }
   }
 
@@ -175,11 +175,8 @@ public class Stage implements Renderable {
       return cache.get(tileType);
     }
     int[] counter = new int[2];
-    var changeflag = 0;
-    var changetiles = 0;
 
-//    Corners computeTextureCoords(int tileType, int[] counter, int changeflag, int changetiles) {
-    SDL_Rect srctiles = new SDL_Rect(0, 0, 8, 8);
+    SDLRect srctiles = new SDLRect(0, 0, 8, 8);
     if ((tileType > 0) && (tileType != 99)) {
       if (tileType < 200) {
         srctiles.w = 8;
@@ -188,10 +185,10 @@ public class Stage implements Renderable {
           srctiles.y = 0;
           if (tileType == 84) /* Cross brightness */
             srctiles.x = (tileType - 1) * 8 + (counter[0] / 8 * 8);
-          else
-            srctiles.x = (tileType - 1) * 8;
+          else srctiles.x = (tileType - 1) * 8;
         } else {
-          if (tileType == 154) { /* Door */
+          if (tileType == 154) {
+            /* Door */
             srctiles.x = 600 + ((counter[0] / 8) * 16);
             srctiles.y = 0;
             srctiles.w = 16;
@@ -214,8 +211,10 @@ public class Stage implements Renderable {
         srctiles.w = 8;
         srctiles.h = 8;
         /* Door movement */
-        //                        if ((room == ROOM_CHURCH) && ((counter[1] > 59) && (counter[1] < 71))) {
-        //                            if ((tileType == 347) || (tileType == 348) || (tileType == 349) || (tileType == 350)) {
+        //                        if ((room == ROOM_CHURCH) && ((counter[1] > 59) && (counter[1] <
+        // 71))) {
+        //                            if ((tileType == 347) || (tileType == 348) || (tileType ==
+        // 349) || (tileType == 350)) {
         //                                destiles.x += 2;
         //                            }
         //                        }
@@ -247,33 +246,28 @@ public class Stage implements Renderable {
         srctiles.w = 8;
         srctiles.h = 8;
       }
-      if (tileType == 650) { /* Cup */
+      if (tileType == 650) {
+        /* Cup */
         srctiles.x = 584;
         srctiles.y = 87;
         srctiles.w = 16;
         srctiles.h = 16;
       }
       if ((tileType == 152) || (tileType == 137) || (tileType == 136)) {
-        if (changeflag == 0) {
-          srctiles.y = srctiles.y + (changetiles * 120);
-          //                            SDL_RenderCopy(renderer,tiles,&srctiles,&destiles);
+        if (!changeflag) {
+          srctiles.y = srctiles.y + (is16Bit ? 120 : 0);
         }
       } else {
-        srctiles.y = srctiles.y + (changetiles * 120);
-        //                        SDL_RenderCopy(renderer,tiles,&srctiles,&destiles);
+        srctiles.y = srctiles.y + (is16Bit ? 120 : 0);
       }
     }
 
-    // FIXME Constants
-    final int tilesPerRow = 125; // Calculated tiles per row // atlasWidth / tileSize;
-    final int tilesPerCol = 30; // Calculated tiles per column // atlasHeight / tileSize;
+    float u1 = (float) srctiles.x / (8 * TILES_PER_ROW);
+    float v1 = (float) srctiles.y / (8 * TILES_PER_COL);
+    float u2 = (float) (srctiles.x + srctiles.w) / (8 * TILES_PER_ROW);
+    float v2 = (float) (srctiles.y + srctiles.h) / (8 * TILES_PER_COL);
 
-    float u1 = (float) srctiles.x / (8 * tilesPerRow);
-    float v1 = (float) srctiles.y / (8 * tilesPerCol);
-    float u2 = (float) (srctiles.x + srctiles.w) / (8 * tilesPerRow);
-    float v2 = (float) (srctiles.y + srctiles.h) / (8 * tilesPerCol);
-
-//      System.out.println(srctiles);
+    //      System.out.println(srctiles);
     return new Corners(u1, 1 - v1, u2, 1 - v2);
   }
 }

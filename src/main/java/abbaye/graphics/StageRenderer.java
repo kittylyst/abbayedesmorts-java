@@ -11,8 +11,6 @@ import abbaye.basic.Corners;
 import abbaye.basic.Renderable;
 import abbaye.model.Stage;
 import java.nio.IntBuffer;
-
-import abbaye.scratch.ExampleTileRenderer;
 import org.lwjgl.system.MemoryStack;
 
 public class StageRenderer implements Renderable {
@@ -61,18 +59,7 @@ public class StageRenderer implements Renderable {
           //            continue;
           //          }
           Corners tileCoords = tilemap.getCorners(x, y);
-          //
-          //            // Calculate texture coordinates for this tile in the atlas
-          //            int tileX = tileIndex % tilesPerRow;
-          //            int tileY = tileIndex / tilesPerRow;
-          //
-          //            float u1 = 1 - ((float) tileX / tilesPerRow);
-          //            float v1 = 1 - ((float) tileY / tilesPerCol);
-          //            float u2 = 1 - ((float) (tileX + 1) / tilesPerRow);
-          //            float v2 = 1 - ((float) (tileY + 1) / tilesPerCol);
 
-          // Update texture coordinates in vertex buffer
-          //            displayPosX, displayPosY, tilemap.getTileSize(),
           updateTileVertices(tileCoords.u1(), tileCoords.v1(), tileCoords.u2(), tileCoords.v2());
 
           //            // Set model matrix for position and scale
@@ -108,24 +95,6 @@ public class StageRenderer implements Renderable {
           glUniformMatrix4fv(modelLoc, false, finalModel);
 
           glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-          //            // Create model matrix for this tile
-          //            float[] model =
-          //                createTransformMatrix(displayPosX, displayPosY, tilemap.getTileSize(),
-          // tilemap.getTileSize());
-          //
-          //            glUniformMatrix4fv(manager.getModelLocation(), false, model);
-
-          // Set solid color based on tile type
-          //            int modelLoc = glGetUniformLocation(manager.getShaderProgram(), "color");
-          //            switch (tileIndex) {
-          //              case 0 -> glUniform3f(modelLoc, 0.2f, 0.8f, 0.2f); // Green (grass)
-          //              case 1 -> glUniform3f(modelLoc, 0.5f, 0.5f, 0.5f); // Gray (stone)
-          //              case 2 -> glUniform3f(modelLoc, 0.8f, 0.6f, 0.2f); // Brown (dirt)
-          //              default -> glUniform3f(modelLoc, 1.0f, 1.0f, 1.0f); // White
-          //            }
-          //            glDrawArrays(GL_TRIANGLES, 0, 6);
-
         }
       }
 
@@ -171,7 +140,6 @@ public class StageRenderer implements Renderable {
     return matrix;
   }
 
-  // FIXME What is this matrix for? It looks a 4x4 matrix - in column-row format maybe?
   public float[] createTransformMatrix(float x, float y, float width, float height) {
     float[] matrix = new float[16];
     matrix[0] = width; // Scale X

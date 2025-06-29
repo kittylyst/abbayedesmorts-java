@@ -149,13 +149,13 @@ public class MakeTilemapCoords {
     var tilesPerRow = 125;
     var tilesPerCol = 30;
     // Calculate texture coordinates for this tile in the atlas
-//    int tileX = tileIndex % tilesPerRow;
-//    int tileY = tileIndex / tilesPerRow;
-//
-//    float u1 = (float) tileX / tilesPerRow;
-//    float v1 = (float) tileY / tilesPerCol;
-//    float u2 = (float) (tileX + 1) / tilesPerRow;
-//    float v2 = (float) (tileY + 1) / tilesPerCol;
+    //    int tileX = tileIndex % tilesPerRow;
+    //    int tileY = tileIndex / tilesPerRow;
+    //
+    //    float u1 = (float) tileX / tilesPerRow;
+    //    float v1 = (float) tileY / tilesPerCol;
+    //    float u2 = (float) (tileX + 1) / tilesPerRow;
+    //    float v2 = (float) (tileY + 1) / tilesPerCol;
 
     float u1 = (float) srctiles.x / (8 * tilesPerRow);
     float v1 = (float) srctiles.y / (8 * tilesPerCol);
@@ -164,7 +164,7 @@ public class MakeTilemapCoords {
 
     System.out.println(srctiles);
     // Update texture coordinates in vertex buffer
-//    return new Corners(u1, 1 - v1, u2, 1 - v2);
+    //    return new Corners(u1, 1 - v1, u2, 1 - v2);
     return new Corners(u1, 1 - v1, u2, 1 - v2);
   }
 
