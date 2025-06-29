@@ -223,13 +223,14 @@ public class ExampleTileRenderer {
         float x = col * 8 * tileDisplaySize;
         float y = row * 8 * tileDisplaySize;
 
-        float u1 = (float) tileX / tilesPerRow;
-        float v1 = (float) tileY / tilesPerCol;
-        float u2 = (float) (tileX + 1) / tilesPerRow;
-        float v2 = (float) (tileY + 1) / tilesPerCol;
-
-        // Update texture coordinates in vertex buffer
-        var c = new Corners(u1, v1, u2, v2);
+//        float u1 = (float) tileX / tilesPerRow;
+//        float v1 = (float) tileY / tilesPerCol;
+//        float u2 = (float) (tileX + 1) / tilesPerRow;
+//        float v2 = (float) (tileY + 1) / tilesPerCol;
+//
+//        // Update texture coordinates in vertex buffer
+//        var c = new Corners(u1, v1, u2, v2);
+        var c = computeTextureCoords(tileIndex, new int[2], 0, 0);
         cache.computeIfAbsent(
             tileIndex,
             t -> {
@@ -277,97 +278,99 @@ public class ExampleTileRenderer {
     }
   }
 
-  //  Corners computeTextureCoords(int data, int[] counter, int changeflag, int changetiles) {
-  //    MakeTilemapCoords.SDL_Rect srctiles = new MakeTilemapCoords.SDL_Rect(0, 0, 8, 8);
-  //    if ((data > 0) && (data != 99)) {
-  //      if (data < 200) {
-  //        srctiles.w = 8;
-  //        srctiles.h = 8;
-  //        if (data < 101) {
-  //          srctiles.y = 0;
-  //          if (data == 84) /* Cross brightness */
-  //            srctiles.x = (data - 1) * 8 + (counter[0]/8 * 8);
-  //          else
-  //            srctiles.x = (data - 1) * 8;
-  //        }
-  //        else {
-  //          if (data == 154) { /* Door */
-  //            srctiles.x=600 + ((counter[0] / 8) * 16);
-  //            srctiles.y=0;
-  //            srctiles.w=16;
-  //            srctiles.h=24;
-  //          }
-  //          else {
-  //            srctiles.y = 8;
-  //            srctiles.x = (data - 101) * 8;
-  //          }
-  //        }
-  //      }
-  //      if ((data > 199) && (data < 300)) {
-  //        srctiles.x = (data - 201) * 48;
-  //        srctiles.y = 16;
-  //        srctiles.w = 48;
-  //        srctiles.h = 48;
-  //      }
-  //      if ((data > 299) && (data < 399)) {
-  //        srctiles.x = 96 + ((data - 301) * 8);
-  //        srctiles.y = 16;
-  //        srctiles.w = 8;
-  //        srctiles.h = 8;
-  //        /* Door movement */
-  ////                        if ((room == ROOM_CHURCH) && ((counter[1] > 59) && (counter[1] < 71)))
-  // {
-  ////                            if ((data == 347) || (data == 348) || (data == 349) || (data ==
-  // 350)) {
-  ////                                destiles.x += 2;
-  ////                            }
-  ////                        }
-  //      }
-  //      /* Hearts */
-  //      if ((data > 399) && (data < 405)) {
-  //        srctiles.x = 96 + ((data - 401) * 8) + (32 * (counter[0] / 15));
-  //        srctiles.y = 24;
-  //        srctiles.w = 8;
-  //        srctiles.h = 8;
-  //      }
-  //      /* Crosses */
-  //      if ((data > 408) && (data < 429)) {
-  //        srctiles.x = 96 + ((data - 401) * 8) + (32 * (counter[1] / 23));
-  //        srctiles.y = 24;
-  //        srctiles.w = 8;
-  //        srctiles.h = 8;
-  //      }
-  //
-  //      if ((data > 499) && (data < 599)) {
-  //        srctiles.x = 96 + ((data - 501) * 8);
-  //        srctiles.y = 32;
-  //        srctiles.w = 8;
-  //        srctiles.h = 8;
-  //      }
-  //      if ((data > 599) && (data < 650)) {
-  //        srctiles.x = 96 + ((data - 601) * 8);
-  //        srctiles.y = 56;
-  //        srctiles.w = 8;
-  //        srctiles.h = 8;
-  //      }
-  //      if (data == 650) { /* Cup */
-  //        srctiles.x = 584;
-  //        srctiles.y = 87;
-  //        srctiles.w = 16;
-  //        srctiles.h = 16;
-  //      }
-  //      if ((data == 152) || (data == 137) || (data == 136)) {
-  //        if (changeflag == 0) {
-  //          srctiles.y = srctiles.y + (changetiles * 120);
-  ////                            SDL_RenderCopy(renderer,tiles,&srctiles,&destiles);
-  //        }
-  //      } else {
-  //        srctiles.y = srctiles.y + (changetiles * 120);
-  ////                        SDL_RenderCopy(renderer,tiles,&srctiles,&destiles);
-  //      }
-  //    }
-  //    return sdlToCoords(data, srctiles);
-  //  }
+    Corners computeTextureCoords(int data, int[] counter, int changeflag, int changetiles) {
+      SDL_Rect srctiles = new SDL_Rect(0, 0, 8, 8);
+      if ((data > 0) && (data != 99)) {
+        if (data < 200) {
+          srctiles.w = 8;
+          srctiles.h = 8;
+          if (data < 101) {
+            srctiles.y = 0;
+            if (data == 84) /* Cross brightness */
+              srctiles.x = (data - 1) * 8 + (counter[0] / 8 * 8);
+            else
+              srctiles.x = (data - 1) * 8;
+          } else {
+            if (data == 154) { /* Door */
+              srctiles.x = 600 + ((counter[0] / 8) * 16);
+              srctiles.y = 0;
+              srctiles.w = 16;
+              srctiles.h = 24;
+            } else {
+              srctiles.y = 8;
+              srctiles.x = (data - 101) * 8;
+            }
+          }
+        }
+        if ((data > 199) && (data < 300)) {
+          srctiles.x = (data - 201) * 48;
+          srctiles.y = 16;
+          srctiles.w = 48;
+          srctiles.h = 48;
+        }
+        if ((data > 299) && (data < 399)) {
+          srctiles.x = 96 + ((data - 301) * 8);
+          srctiles.y = 16;
+          srctiles.w = 8;
+          srctiles.h = 8;
+          /* Door movement */
+          //                        if ((room == ROOM_CHURCH) && ((counter[1] > 59) && (counter[1] < 71))) {
+            //                            if ((data == 347) || (data == 348) || (data == 349) || (data == 350)) {
+            //                                destiles.x += 2;
+            //                            }
+            //                        }
+          }
+          /* Hearts */
+          if ((data > 399) && (data < 405)) {
+            srctiles.x = 96 + ((data - 401) * 8) + (32 * (counter[0] / 15));
+            srctiles.y = 24;
+            srctiles.w = 8;
+            srctiles.h = 8;
+          }
+          /* Crosses */
+          if ((data > 408) && (data < 429)) {
+            srctiles.x = 96 + ((data - 401) * 8) + (32 * (counter[1] / 23));
+            srctiles.y = 24;
+            srctiles.w = 8;
+            srctiles.h = 8;
+          }
+
+          if ((data > 499) && (data < 599)) {
+            srctiles.x = 96 + ((data - 501) * 8);
+            srctiles.y = 32;
+            srctiles.w = 8;
+            srctiles.h = 8;
+          }
+          if ((data > 599) && (data < 650)) {
+            srctiles.x = 96 + ((data - 601) * 8);
+            srctiles.y = 56;
+            srctiles.w = 8;
+            srctiles.h = 8;
+          }
+          if (data == 650) { /* Cup */
+            srctiles.x = 584;
+            srctiles.y = 87;
+            srctiles.w = 16;
+            srctiles.h = 16;
+          }
+          if ((data == 152) || (data == 137) || (data == 136)) {
+            if (changeflag == 0) {
+              srctiles.y = srctiles.y + (changetiles * 120);
+              //                            SDL_RenderCopy(renderer,tiles,&srctiles,&destiles);
+            }
+          } else {
+            srctiles.y = srctiles.y + (changetiles * 120);
+            //                        SDL_RenderCopy(renderer,tiles,&srctiles,&destiles);
+          }
+      }
+      float u1 = (float) srctiles.x / (8 * tilesPerRow);
+      float v1 = (float) srctiles.y / (8 * tilesPerCol);
+      float u2 = (float) (srctiles.x + srctiles.w) / (8 * tilesPerRow);
+      float v2 = (float) (srctiles.y + srctiles.h) / (8 * tilesPerCol);
+
+//      System.out.println(srctiles);
+      return new Corners(u1, v1, u2, v2);
+    }
 
   private void updateTileVertices(Corners c) {
     //    float[] vertices = {

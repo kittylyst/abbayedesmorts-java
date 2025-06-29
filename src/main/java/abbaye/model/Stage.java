@@ -150,51 +150,130 @@ public class Stage implements Renderable {
     return 64.0f;
   }
 
-  //  public int getTile(int x, int y) {
-  //    var tileType = stagedata[roomy * SCREENS_X + roomx][y][x];
-  //    var out = tileType;
-  //    return out;
-  //  }
+  static class SDL_Rect {
+    public int x;
+    public int y;
+    public int w;
+    public int h;
+
+    public SDL_Rect(int x, int y, int w, int h) {
+      this.x = x;
+      this.y = y;
+      this.w = w;
+      this.h = h;
+    }
+
+    @Override
+    public String toString() {
+      return "SDL_Rect{" + "posX=" + 8 * x + ", posY=" + 8 * y + ", w=" + w + ", h=" + h + '}';
+    }
+  }
 
   public Corners getCorners(int x, int y) {
     var tileType = stagedata[roomy * SCREENS_X + roomx][y][x];
     if (cache.containsKey(tileType)) {
       return cache.get(tileType);
     }
+    int[] counter = new int[2];
+    var changeflag = 0;
+    var changetiles = 0;
 
-    int w = 0, h = 0;
+//    Corners computeTextureCoords(int tileType, int[] counter, int changeflag, int changetiles) {
+    SDL_Rect srctiles = new SDL_Rect(0, 0, 8, 8);
     if ((tileType > 0) && (tileType != 99)) {
       if (tileType < 200) {
-        w = 8;
-        h = 8;
+        srctiles.w = 8;
+        srctiles.h = 8;
         if (tileType < 101) {
-          y = 0;
-          //          if (tileType == 84) /* Cross brightness */
-          //            x = (tileType - 1) * 8 + (counter[0] / 8 * 8);
-          //          else
-          x = (tileType - 1) * 8;
+          srctiles.y = 0;
+          if (tileType == 84) /* Cross brightness */
+            srctiles.x = (tileType - 1) * 8 + (counter[0] / 8 * 8);
+          else
+            srctiles.x = (tileType - 1) * 8;
         } else {
-          if (tileType == 154) {
-            /* Door */
-            x = 600 + 16; // ((counter[0] / 8) * 16);
-            y = 0;
-            w = 16;
-            h = 24;
+          if (tileType == 154) { /* Door */
+            srctiles.x = 600 + ((counter[0] / 8) * 16);
+            srctiles.y = 0;
+            srctiles.w = 16;
+            srctiles.h = 24;
           } else {
-            y = 8;
-            x = (tileType - 101) * 8;
+            srctiles.y = 8;
+            srctiles.x = (tileType - 101) * 8;
           }
         }
       }
-    }
-    var out = new Corners(x, y, x + w, y + h);
-    cache.computeIfAbsent(
-        tileType,
-        t -> {
-          System.out.println("Tile type: " + t + " has corners: " + out);
-          return out;
-        });
+      if ((tileType > 199) && (tileType < 300)) {
+        srctiles.x = (tileType - 201) * 48;
+        srctiles.y = 16;
+        srctiles.w = 48;
+        srctiles.h = 48;
+      }
+      if ((tileType > 299) && (tileType < 399)) {
+        srctiles.x = 96 + ((tileType - 301) * 8);
+        srctiles.y = 16;
+        srctiles.w = 8;
+        srctiles.h = 8;
+        /* Door movement */
+        //                        if ((room == ROOM_CHURCH) && ((counter[1] > 59) && (counter[1] < 71))) {
+        //                            if ((tileType == 347) || (tileType == 348) || (tileType == 349) || (tileType == 350)) {
+        //                                destiles.x += 2;
+        //                            }
+        //                        }
+      }
+      /* Hearts */
+      if ((tileType > 399) && (tileType < 405)) {
+        srctiles.x = 96 + ((tileType - 401) * 8) + (32 * (counter[0] / 15));
+        srctiles.y = 24;
+        srctiles.w = 8;
+        srctiles.h = 8;
+      }
+      /* Crosses */
+      if ((tileType > 408) && (tileType < 429)) {
+        srctiles.x = 96 + ((tileType - 401) * 8) + (32 * (counter[1] / 23));
+        srctiles.y = 24;
+        srctiles.w = 8;
+        srctiles.h = 8;
+      }
 
-    return out;
+      if ((tileType > 499) && (tileType < 599)) {
+        srctiles.x = 96 + ((tileType - 501) * 8);
+        srctiles.y = 32;
+        srctiles.w = 8;
+        srctiles.h = 8;
+      }
+      if ((tileType > 599) && (tileType < 650)) {
+        srctiles.x = 96 + ((tileType - 601) * 8);
+        srctiles.y = 56;
+        srctiles.w = 8;
+        srctiles.h = 8;
+      }
+      if (tileType == 650) { /* Cup */
+        srctiles.x = 584;
+        srctiles.y = 87;
+        srctiles.w = 16;
+        srctiles.h = 16;
+      }
+      if ((tileType == 152) || (tileType == 137) || (tileType == 136)) {
+        if (changeflag == 0) {
+          srctiles.y = srctiles.y + (changetiles * 120);
+          //                            SDL_RenderCopy(renderer,tiles,&srctiles,&destiles);
+        }
+      } else {
+        srctiles.y = srctiles.y + (changetiles * 120);
+        //                        SDL_RenderCopy(renderer,tiles,&srctiles,&destiles);
+      }
+    }
+
+    // FIXME Constants
+    final int tilesPerRow = 125; // Calculated tiles per row // atlasWidth / tileSize;
+    final int tilesPerCol = 30; // Calculated tiles per column // atlasHeight / tileSize;
+
+    float u1 = (float) srctiles.x / (8 * tilesPerRow);
+    float v1 = (float) srctiles.y / (8 * tilesPerCol);
+    float u2 = (float) (srctiles.x + srctiles.w) / (8 * tilesPerRow);
+    float v2 = (float) (srctiles.y + srctiles.h) / (8 * tilesPerCol);
+
+//      System.out.println(srctiles);
+    return new Corners(u1, 1 - v1, u2, 1 - v2);
   }
 }

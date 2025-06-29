@@ -11,6 +11,8 @@ import abbaye.basic.Corners;
 import abbaye.basic.Renderable;
 import abbaye.model.Stage;
 import java.nio.IntBuffer;
+
+import abbaye.scratch.ExampleTileRenderer;
 import org.lwjgl.system.MemoryStack;
 
 public class StageRenderer implements Renderable {

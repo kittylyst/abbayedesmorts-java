@@ -142,22 +142,29 @@ public class MakeTilemapCoords {
         //                        SDL_RenderCopy(renderer,tiles,&srctiles,&destiles);
       }
     }
-    return sdlToCoords(data, srctiles);
+    return sdlToCoords(srctiles);
   }
 
-  private Corners sdlToCoords(int tileIndex, SDL_Rect srctiles) {
+  private Corners sdlToCoords(SDL_Rect srctiles) {
     var tilesPerRow = 125;
     var tilesPerCol = 30;
     // Calculate texture coordinates for this tile in the atlas
-    int tileX = tileIndex % tilesPerRow;
-    int tileY = tileIndex / tilesPerRow;
+//    int tileX = tileIndex % tilesPerRow;
+//    int tileY = tileIndex / tilesPerRow;
+//
+//    float u1 = (float) tileX / tilesPerRow;
+//    float v1 = (float) tileY / tilesPerCol;
+//    float u2 = (float) (tileX + 1) / tilesPerRow;
+//    float v2 = (float) (tileY + 1) / tilesPerCol;
 
-    float u1 = (float) tileX / tilesPerRow;
-    float v1 = (float) tileY / tilesPerCol;
-    float u2 = (float) (tileX + 1) / tilesPerRow;
-    float v2 = (float) (tileY + 1) / tilesPerCol;
+    float u1 = (float) srctiles.x / (8 * tilesPerRow);
+    float v1 = (float) srctiles.y / (8 * tilesPerCol);
+    float u2 = (float) (srctiles.x + srctiles.w) / (8 * tilesPerRow);
+    float v2 = (float) (srctiles.y + srctiles.h) / (8 * tilesPerCol);
 
+    System.out.println(srctiles);
     // Update texture coordinates in vertex buffer
+//    return new Corners(u1, 1 - v1, u2, 1 - v2);
     return new Corners(u1, 1 - v1, u2, 1 - v2);
   }
 
