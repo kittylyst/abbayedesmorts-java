@@ -1,6 +1,6 @@
 # abbayedesmorts-java
 
-Port of Abbaye Des Morts to Java / LWJGL
+Port of [Abbaye Des Morts GPL version](https://github.com/nevat/abbayedesmorts-gpl) to Java / LWJGL.
 
 ## Requirements
 
