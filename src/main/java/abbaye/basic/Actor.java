@@ -12,9 +12,32 @@ import com.fasterxml.jackson.core.JsonProcessingException;
  */
 public sealed interface Actor extends Renderable permits Player, Enemy {
 
+  float DEFAULT_MOVE_SPEED = 25.0f;
+
   default void destroy() {}
 
   BoundingBox2 getBB();
+
+  /**
+   * Update the position of the physical object.
+   *
+   * @return the new position
+   */
+  default Vector2 newPosition() {
+    return new Vector2(
+        (float) (getPos().x() + getV().x() * Clock.getFrameInterval() * getMoveSpeed()),
+        (float) (getPos().y() + getV().y() * Clock.getFrameInterval() * getMoveSpeed()));
+  }
+
+  default float getMoveSpeed() {
+    return DEFAULT_MOVE_SPEED;
+  }
+
+  Vector2 getPos();
+
+  Vector2 getV();
+
+  Vector2 getSize();
 
   /**
    * More useful than toString() - this method enables the dump of a complete game state for

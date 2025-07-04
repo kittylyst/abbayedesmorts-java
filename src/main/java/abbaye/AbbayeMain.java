@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import java.nio.IntBuffer;
 import java.util.Optional;
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWKeyCallbackI;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
@@ -60,6 +61,13 @@ public class AbbayeMain {
     mapper = newMapper;
     return mapper;
   }
+
+  public static final GLFWKeyCallbackI ESC_QUITS_GAME =
+      (w, key, scancode, action, mods) -> {
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+          glfwSetWindowShouldClose(w, true);
+        }
+      };
 
   public static void main(String[] args) {
     Optional<String> oPath = Optional.empty();
@@ -126,8 +134,6 @@ public class AbbayeMain {
         e.printStackTrace();
       }
 
-      //      spawnInitialWindow();
-
       glfwMakeContextCurrent(window);
       glfwSwapInterval(1);
       glfwShowWindow(window);
@@ -159,6 +165,7 @@ public class AbbayeMain {
           }
         });
 
+    initLayer();
     Clock.init();
     Clock.updateTimer();
   }
@@ -167,19 +174,18 @@ public class AbbayeMain {
   public void loop() {
     try {
       while (!glfwWindowShouldClose(window)) {
-        //        Clock.updateTimer();
-        //
-        //        // Update Layers
-        //        if (!gameDialog.isActive()) {
-        //          layer.update();
-        //        }
+        Clock.updateTimer();
+
+        if (!gameDialog.isActive()) {
+          layer.update();
+        }
         glClear(GL_COLOR_BUFFER_BIT);
 
         if (gameDialog.isActive()) {
           gameDialog.render();
         } else {
           stage.render();
-          //          layer.render();
+          layer.render();
         }
 
         glfwSwapBuffers(window);
@@ -196,13 +202,8 @@ public class AbbayeMain {
     var font = new OGLFont();
     //    font.buildFont("Courier New", 24);
 
-    // Layer 0 is the background starfield
-    //    layer[0] = new Layer();
-    //    layer[0].add(new TextureMap());
-    //    layer[0].init();
-
-    Player p = Player.of(layer, gameDialog);
-    p.setFont(font);
+    Player p = Player.of(layer, stage);
+    //    p.setFont(font);
     layer.setPlayer(p);
     layer.init();
 
@@ -225,5 +226,9 @@ public class AbbayeMain {
 
   public Stage getStage() {
     return stage;
+  }
+
+  public Layer getLayer() {
+    return layer;
   }
 }

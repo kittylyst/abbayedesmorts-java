@@ -114,7 +114,8 @@ public class GameDialog {
 
   public void startTurn() {
     state = State.INACTIVE;
-    glfwSetKeyCallback(window, mainClass.getStage().moveCallback());
+    glfwSetKeyCallback(window, mainClass.getLayer().moveCallback());
+    //    glfwSetKeyCallback(window, mainClass.getStage().moveCallback());
   }
 
   public void setPlayer(Player player) {

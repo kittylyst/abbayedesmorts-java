@@ -131,6 +131,10 @@ public final class Config {
     return getBoolean("fullscreen", false);
   }
 
+  public boolean getGLActive() {
+    return getBoolean("glactive", true);
+  }
+
   /**
    * Get the value for a key as an integer
    *
@@ -144,7 +148,6 @@ public final class Config {
       String value = properties.getProperty(tryKey);
       if (value != null) {
         try {
-          //          getLogger().info("Found "+ key +" at level" + level);
           return Integer.parseInt(value);
         } catch (NumberFormatException e) {
           getLogger().error("Invalid integer value for key: " + key);

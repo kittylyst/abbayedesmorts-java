@@ -50,7 +50,7 @@ public class StageRenderer implements Renderable {
       glUseProgram(shaderProgram);
 
       // FIXME Are these tiles square?
-      var tileDisplaySize = tilemap.getTileSize();
+      var tileDisplaySize = Stage.getTileSize();
 
       // Render each tile of this room
       for (int y = 0; y < Stage.NUM_ROWS; y++) {
@@ -101,9 +101,7 @@ public class StageRenderer implements Renderable {
     return true;
   }
 
-  /////////////// Matrix helpers
-
-  private void updateTileVertices(Corners tileCoords) {
+  public void updateTileVertices(Corners tileCoords) {
     var u1 = tileCoords.u1();
     var v1 = tileCoords.v1();
     var u2 = tileCoords.u2();
@@ -120,6 +118,8 @@ public class StageRenderer implements Renderable {
     glBindBuffer(GL_ARRAY_BUFFER, manager.getVBO());
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
   }
+
+  /////////////// Matrix helpers
 
   public static float[] createOrthographicMatrix(
       float left, float right, float bottom, float top, float near, float far) {

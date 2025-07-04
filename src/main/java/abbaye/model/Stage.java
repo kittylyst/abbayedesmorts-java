@@ -85,28 +85,44 @@ public class Stage implements Renderable {
     return stagedata[level];
   }
 
-  public void moveLeft() {
+  public int getRoomX() {
+    return roomx;
+  }
+
+  public int getRoomY() {
+    return roomy;
+  }
+
+  public boolean moveLeft() {
     if (roomx > 0) {
       roomx -= 1;
+      return true;
     }
+    return false;
   }
 
-  public void moveRight() {
+  public boolean moveRight() {
     if (roomx < SCREENS_X - 1) {
       roomx += 1;
+      return true;
     }
+    return false;
   }
 
-  public void moveUp() {
+  public boolean moveUp() {
     if (roomy > 0) {
       roomy -= 1;
+      return true;
     }
+    return false;
   }
 
-  public void moveDown() {
+  public boolean moveDown() {
     if (roomy < SCREENS_Y - 1) {
       roomy += 1;
+      return true;
     }
+    return false;
   }
 
   public GLFWKeyCallbackI moveCallback() {
@@ -145,7 +161,7 @@ public class Stage implements Renderable {
   }
 
   // FIXME What does this represent?
-  public float getTileSize() {
+  public static float getTileSize() {
     return 64.0f;
   }
 
