@@ -107,12 +107,13 @@ public class StageRenderer implements Renderable {
   /////////////// Matrix helpers
 
   private void updateTileVertices(float u1, float v1, float u2, float v2) {
+    // Setup vertices with a per-tile vertical flip to match original rendering
     float[] vertices = {
       // positions           // texture coords
-      1.0f, 1.0f, Z_ZERO, u2, v1, // top right
-      1.0f, 0.0f, Z_ZERO, u2, v2, // bottom right
-      0.0f, 0.0f, Z_ZERO, u1, v2, // bottom left
-      0.0f, 1.0f, Z_ZERO, u1, v1 // top left
+      1.0f, 0.0f, Z_ZERO, u2, v1, // bottom right
+      1.0f, 1.0f, Z_ZERO, u2, v2, // top right
+      0.0f, 1.0f, Z_ZERO, u1, v2, // top left
+      0.0f, 0.0f, Z_ZERO, u1, v1 // bottom left
     };
 
     glBindBuffer(GL_ARRAY_BUFFER, manager.getVBO());
