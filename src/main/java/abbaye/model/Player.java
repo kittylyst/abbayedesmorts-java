@@ -1,6 +1,8 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.model;
 
+import static abbaye.model.Stage.TILES_PER_COL;
+import static abbaye.model.Stage.TILES_PER_ROW;
 import static org.lwjgl.glfw.GLFW.*;
 
 import abbaye.Config;
@@ -61,8 +63,22 @@ public final class Player implements Actor {
     if (!Config.config().getGLActive()) {
       return false;
     }
+    float u1 = (float) 400 / (8 * TILES_PER_ROW);
+    float v1 = (float) 104 / (8 * TILES_PER_COL);
+    float u2 = (float) (400 + 8) / (8 * TILES_PER_ROW);
+    float v2 = (float) (104 + 16) / (8 * TILES_PER_COL);
 
+    var tileCoords = new Corners(u1, v1, u2, v2);
+    System.out.println("Player: " + tileCoords);
+    tileCoords = new Corners(0.4f, 0.43f, 0.5f, 0.55f);
+    //    tileCoords = new Corners(0.096f, 0.56666664f, 0.104f, 0.5f);
+
+    var posX = pos.x();
+    var posY = pos.y();
     var tileDisplaySize = Stage.getTileSize();
+    manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
+    //    System.out.println(stage.getCorners(113));
+    //    System.out.println(stage.getCorners(115));
 
     return false;
   }

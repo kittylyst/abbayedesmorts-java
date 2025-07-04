@@ -25,8 +25,8 @@ public class Stage implements Renderable {
       30; // Calculated tiles per column // atlasHeight / tileSize;
 
   private int[][][] stagedata = new int[NUM_SCREENS][NUM_ROWS][NUM_COLUMNS];
-  private int roomx = 0;
-  private int roomy = 1;
+  private int roomx = 1;
+  private int roomy = 0;
 
   private Map<Integer, Corners> cache = new HashMap<>();
 
@@ -182,6 +182,10 @@ public class Stage implements Renderable {
     public String toString() {
       return "SDLRect{" + "posX=" + 8 * x + ", posY=" + 8 * y + ", w=" + w + ", h=" + h + '}';
     }
+  }
+
+  public Corners getCorners(int tileType) {
+    return cache.get(tileType);
   }
 
   public Corners getCorners(int x, int y) {

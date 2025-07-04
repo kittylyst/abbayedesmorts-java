@@ -1,13 +1,11 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.graphics;
 
-import static abbaye.graphics.GLManager.Z_ZERO;
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
-import abbaye.basic.Corners;
 import abbaye.basic.Renderable;
 import abbaye.model.Stage;
 import java.nio.IntBuffer;
@@ -57,41 +55,10 @@ public class StageRenderer implements Renderable {
         for (int x = 0; x < Stage.NUM_COLUMNS; x++) {
           var tileCoords = tilemap.getCorners(x, y);
 
-          updateTileVertices(tileCoords);
-
-          //            // Set model matrix for position and scale
-          //            float[] model = createTranslationMatrix(x, y, 0);
-          //
-          //            float[] scale = createScaleMatrix(tilemap.getTileSize(),
-          //             tilemap.getTileSize(), 1);
-          //            float[] finalModel = multiplyMatrices(model, scale);
-
           float displayPosX = x * tileDisplaySize;
           float displayPosY = y * tileDisplaySize;
 
-          float[] finalModel = {
-            tileDisplaySize,
-            0,
-            0,
-            0,
-            0,
-            tileDisplaySize,
-            0,
-            0,
-            0,
-            0,
-            1,
-            0,
-            displayPosX,
-            displayPosY,
-            Z_ZERO,
-            1
-          };
-
-          int modelLoc = glGetUniformLocation(shaderProgram, "model");
-          glUniformMatrix4fv(modelLoc, false, finalModel);
-
-          glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+          manager.renderTile(tileCoords, tileDisplaySize, displayPosX, displayPosY);
         }
       }
 
@@ -99,24 +66,6 @@ public class StageRenderer implements Renderable {
       glUseProgram(manager.getShaderProgram());
     }
     return true;
-  }
-
-  public void updateTileVertices(Corners tileCoords) {
-    var u1 = tileCoords.u1();
-    var v1 = tileCoords.v1();
-    var u2 = tileCoords.u2();
-    var v2 = tileCoords.v2();
-    // Setup vertices with a per-tile vertical flip to match original rendering
-    float[] vertices = {
-      // positions           // texture coords
-      1.0f, 0.0f, Z_ZERO, u2, v1, // bottom right
-      1.0f, 1.0f, Z_ZERO, u2, v2, // top right
-      0.0f, 1.0f, Z_ZERO, u1, v2, // top left
-      0.0f, 0.0f, Z_ZERO, u1, v1 // bottom left
-    };
-
-    glBindBuffer(GL_ARRAY_BUFFER, manager.getVBO());
-    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
   }
 
   /////////////// Matrix helpers

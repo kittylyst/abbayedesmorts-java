@@ -7,6 +7,7 @@ import static org.lwjgl.stb.STBImage.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memAlloc;
 
+import abbaye.basic.Corners;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -147,6 +148,27 @@ public final class GLManager {
     glDeleteProgram(shaderProgram);
   }
 
+  /**
+   * @param tileCoords
+   */
+  public void updateTileVertices(Corners tileCoords) {
+    var u1 = tileCoords.u1();
+    var v1 = tileCoords.v1();
+    var u2 = tileCoords.u2();
+    var v2 = tileCoords.v2();
+    // Setup vertices with a per-tile vertical flip to match original rendering
+    float[] vertices = {
+      // positions           // texture coords
+      1.0f, 0.0f, Z_ZERO, u2, v1, // bottom right
+      1.0f, 1.0f, Z_ZERO, u2, v2, // top right
+      0.0f, 1.0f, Z_ZERO, u1, v2, // top left
+      0.0f, 0.0f, Z_ZERO, u1, v1 // bottom left
+    };
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
+  }
+
   ///////////// Getters
 
   public int getShaderProgram() {
@@ -270,5 +292,47 @@ public final class GLManager {
     } catch (IOException e) {
       throw new IOException("Failed to read resource: " + resourcePath, e);
     }
+  }
+
+  /**
+   * @param tileCoords
+   * @param tileDisplaySize
+   * @param displayPosX
+   * @param displayPosY
+   */
+  public void renderTile(
+      Corners tileCoords, float tileDisplaySize, float displayPosX, float displayPosY) {
+    updateTileVertices(tileCoords);
+
+    //            // Set model matrix for position and scale
+    //            float[] model = createTranslationMatrix(x, y, 0);
+    //
+    //            float[] scale = createScaleMatrix(tilemap.getTileSize(),
+    //             tilemap.getTileSize(), 1);
+    //            float[] finalModel = multiplyMatrices(model, scale);
+
+    float[] finalModel = {
+      tileDisplaySize,
+      0,
+      0,
+      0,
+      0,
+      tileDisplaySize,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      displayPosX,
+      displayPosY,
+      Z_ZERO,
+      1
+    };
+
+    int modelLoc = glGetUniformLocation(shaderProgram, "model");
+    glUniformMatrix4fv(modelLoc, false, finalModel);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   }
 }
