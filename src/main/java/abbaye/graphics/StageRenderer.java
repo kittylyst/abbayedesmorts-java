@@ -55,12 +55,9 @@ public class StageRenderer implements Renderable {
       // Render each tile of this room
       for (int y = 0; y < Stage.NUM_ROWS; y++) {
         for (int x = 0; x < Stage.NUM_COLUMNS; x++) {
-          //          if (x != y) {
-          //            continue;
-          //          }
-          Corners tileCoords = tilemap.getCorners(x, y);
+          var tileCoords = tilemap.getCorners(x, y);
 
-          updateTileVertices(tileCoords.u1(), tileCoords.v1(), tileCoords.u2(), tileCoords.v2());
+          updateTileVertices(tileCoords);
 
           //            // Set model matrix for position and scale
           //            float[] model = createTranslationMatrix(x, y, 0);
@@ -106,13 +103,18 @@ public class StageRenderer implements Renderable {
 
   /////////////// Matrix helpers
 
-  private void updateTileVertices(float u1, float v1, float u2, float v2) {
+  private void updateTileVertices(Corners tileCoords) {
+    var u1 = tileCoords.u1();
+    var v1 = tileCoords.v1();
+    var u2 = tileCoords.u2();
+    var v2 = tileCoords.v2();
+    // Setup vertices with a per-tile vertical flip to match original rendering
     float[] vertices = {
       // positions           // texture coords
-      1.0f, 1.0f, Z_ZERO, u2, v1, // top right
-      1.0f, 0.0f, Z_ZERO, u2, v2, // bottom right
-      0.0f, 0.0f, Z_ZERO, u1, v2, // bottom left
-      0.0f, 1.0f, Z_ZERO, u1, v1 // top left
+      1.0f, 0.0f, Z_ZERO, u2, v1, // bottom right
+      1.0f, 1.0f, Z_ZERO, u2, v2, // top right
+      0.0f, 1.0f, Z_ZERO, u1, v2, // top left
+      0.0f, 0.0f, Z_ZERO, u1, v1 // bottom left
     };
 
     glBindBuffer(GL_ARRAY_BUFFER, manager.getVBO());

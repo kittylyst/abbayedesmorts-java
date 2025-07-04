@@ -43,7 +43,6 @@ public class Stage implements Renderable {
   public void load() {
     load("/map/map.txt");
     if (AbbayeMain.isGlEnabled()) {
-      //      glm = GLManager.get("game");
       renderer.init(this);
     }
   }
@@ -150,7 +149,7 @@ public class Stage implements Renderable {
     return 64.0f;
   }
 
-  public static class SDLRect {
+  private static class SDLRect {
     public int x;
     public int y;
     public int w;
@@ -176,8 +175,11 @@ public class Stage implements Renderable {
     }
     int[] counter = new int[2];
 
-    SDLRect srctiles = new SDLRect(0, 0, 8, 8);
-    if ((tileType > 0) && (tileType != 99)) {
+    // When we want to generalize this game, we can move this logic into a separate remapper.
+    var srctiles = new SDLRect(0, 0, 8, 8);
+    if (tileType == 0) {
+      srctiles = new SDLRect(992, 0, 8, 8);
+    } else if (tileType != 99) {
       if (tileType < 200) {
         srctiles.w = 8;
         srctiles.h = 8;
@@ -267,7 +269,8 @@ public class Stage implements Renderable {
     float u2 = (float) (srctiles.x + srctiles.w) / (8 * TILES_PER_ROW);
     float v2 = (float) (srctiles.y + srctiles.h) / (8 * TILES_PER_COL);
 
-    //      System.out.println(srctiles);
-    return new Corners(u1, 1 - v1, u2, 1 - v2);
+    var out = new Corners(u1, 1 - v1, u2, 1 - v2);
+    cache.putIfAbsent(tileType, out);
+    return out;
   }
 }
