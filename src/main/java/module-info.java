@@ -11,5 +11,4 @@ module abbaye {
 
   exports abbaye;
   exports abbaye.graphics;
-  exports abbaye.misc;
 }

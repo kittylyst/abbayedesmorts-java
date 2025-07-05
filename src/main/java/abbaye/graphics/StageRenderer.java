@@ -1,13 +1,11 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.graphics;
 
-import static abbaye.graphics.GLManager.Z_ZERO;
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
-import abbaye.basic.Corners;
 import abbaye.basic.Renderable;
 import abbaye.model.Stage;
 import java.nio.IntBuffer;
@@ -50,48 +48,17 @@ public class StageRenderer implements Renderable {
       glUseProgram(shaderProgram);
 
       // FIXME Are these tiles square?
-      var tileDisplaySize = tilemap.getTileSize();
+      var tileDisplaySize = Stage.getTileSize();
 
       // Render each tile of this room
       for (int y = 0; y < Stage.NUM_ROWS; y++) {
         for (int x = 0; x < Stage.NUM_COLUMNS; x++) {
           var tileCoords = tilemap.getCorners(x, y);
 
-          updateTileVertices(tileCoords);
-
-          //            // Set model matrix for position and scale
-          //            float[] model = createTranslationMatrix(x, y, 0);
-          //
-          //            float[] scale = createScaleMatrix(tilemap.getTileSize(),
-          //             tilemap.getTileSize(), 1);
-          //            float[] finalModel = multiplyMatrices(model, scale);
-
           float displayPosX = x * tileDisplaySize;
           float displayPosY = y * tileDisplaySize;
 
-          float[] finalModel = {
-            tileDisplaySize,
-            0,
-            0,
-            0,
-            0,
-            tileDisplaySize,
-            0,
-            0,
-            0,
-            0,
-            1,
-            0,
-            displayPosX,
-            displayPosY,
-            Z_ZERO,
-            1
-          };
-
-          int modelLoc = glGetUniformLocation(shaderProgram, "model");
-          glUniformMatrix4fv(modelLoc, false, finalModel);
-
-          glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+          manager.renderTile(tileCoords, tileDisplaySize, displayPosX, displayPosY);
         }
       }
 
@@ -102,24 +69,6 @@ public class StageRenderer implements Renderable {
   }
 
   /////////////// Matrix helpers
-
-  private void updateTileVertices(Corners tileCoords) {
-    var u1 = tileCoords.u1();
-    var v1 = tileCoords.v1();
-    var u2 = tileCoords.u2();
-    var v2 = tileCoords.v2();
-    // Setup vertices with a per-tile vertical flip to match original rendering
-    float[] vertices = {
-      // positions           // texture coords
-      1.0f, 0.0f, Z_ZERO, u2, v1, // bottom right
-      1.0f, 1.0f, Z_ZERO, u2, v2, // top right
-      0.0f, 1.0f, Z_ZERO, u1, v2, // top left
-      0.0f, 0.0f, Z_ZERO, u1, v1 // bottom left
-    };
-
-    glBindBuffer(GL_ARRAY_BUFFER, manager.getVBO());
-    glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
-  }
 
   public static float[] createOrthographicMatrix(
       float left, float right, float bottom, float top, float near, float far) {
@@ -140,49 +89,5 @@ public class StageRenderer implements Renderable {
     };
 
     return matrix;
-  }
-
-  public float[] createTransformMatrix(float x, float y, float width, float height) {
-    float[] matrix = new float[16];
-    matrix[0] = width; // Scale X
-    matrix[5] = height; // Scale Y
-    matrix[10] = 1.0f; // Scale Z
-    matrix[12] = x; // Translate X
-    matrix[13] = y; // Translate Y
-    matrix[15] = 1.0f; // W component
-    return matrix;
-  }
-
-  private float[] createTranslationMatrix(float x, float y, float z) {
-    float[] matrix = new float[16];
-    matrix[0] = 1;
-    matrix[5] = 1;
-    matrix[10] = 1;
-    matrix[15] = 1;
-    matrix[12] = x;
-    matrix[13] = y;
-    matrix[14] = z;
-    return matrix;
-  }
-
-  private float[] createScaleMatrix(float x, float y, float z) {
-    float[] matrix = new float[16];
-    matrix[0] = x;
-    matrix[5] = y;
-    matrix[10] = z;
-    matrix[15] = 1;
-    return matrix;
-  }
-
-  private float[] multiplyMatrices(float[] a, float[] b) {
-    float[] result = new float[16];
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-        for (int k = 0; k < 4; k++) {
-          result[i * 4 + j] += a[i * 4 + k] * b[k * 4 + j];
-        }
-      }
-    }
-    return result;
   }
 }
