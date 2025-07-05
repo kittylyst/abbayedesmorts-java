@@ -58,23 +58,53 @@ public final class Player implements Actor {
     return false;
   }
 
+  static Corners makeCorners(int tileX, int tileY) {
+    float u1 = (float) tileX / TILES_PER_ROW;
+    float v1 = (float) tileY / TILES_PER_COL;
+    float u2 = (float) (tileX + 1) / TILES_PER_ROW;
+    float v2 = (float) (tileY + 1) / TILES_PER_COL;
+
+    return new Corners(u1, 1 - v1, u2, 1 - v2);
+    // For 44, 11
+    //    tileCoords = new Corners(0.352f, 0.633333f, 0.36f, 0.6f); // 1 - y coords
+    //    tileCoords = new Corners(0.35f, 0.65f, 0.3625f, 0.6f); // 1 - y coords
+  }
+
   @Override
   public boolean render() {
     if (!Config.config().getGLActive()) {
       return false;
     }
-    float u1 = (float) 44 / TILES_PER_ROW;
-    float v1 = (float) 11 / TILES_PER_COL;
-    float u2 = (float) 45 / TILES_PER_ROW;
-    float v2 = (float) 12 / TILES_PER_COL;
 
-    var tileCoords = new Corners(u1, 1 - v1, u2, 1 - v2);
-    //    tileCoords = new Corners(0.352f, 0.633333f, 0.36f, 0.6f); // 1 - y coords
-    //    tileCoords = new Corners(0.35f, 0.65f, 0.3625f, 0.6f); // 1 - y coords
-
+    var tileDisplaySize = Stage.getTileSize();
     var posX = pos.x();
     var posY = pos.y();
-    var tileDisplaySize = Stage.getTileSize();
+    var tileCoords = makeCorners(44, 11);
+    manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
+
+    posX = pos.x() + tileDisplaySize;
+    posY = pos.y();
+    tileCoords = makeCorners(45, 11);
+    manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
+
+    posX = pos.x();
+    posY = pos.y() + tileDisplaySize;
+    tileCoords = makeCorners(44, 12);
+    manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
+
+    posX = pos.x() + tileDisplaySize;
+    posY = pos.y() + tileDisplaySize;
+    tileCoords = makeCorners(45, 12);
+    manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
+
+    posX = pos.x();
+    posY = pos.y() + tileDisplaySize + tileDisplaySize;
+    tileCoords = makeCorners(44, 13);
+    manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
+
+    posX = pos.x() + tileDisplaySize;
+    posY = pos.y() + tileDisplaySize + tileDisplaySize;
+    tileCoords = makeCorners(45, 13);
     manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
     return false;

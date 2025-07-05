@@ -90,48 +90,4 @@ public class StageRenderer implements Renderable {
 
     return matrix;
   }
-
-  public float[] createTransformMatrix(float x, float y, float width, float height) {
-    float[] matrix = new float[16];
-    matrix[0] = width; // Scale X
-    matrix[5] = height; // Scale Y
-    matrix[10] = 1.0f; // Scale Z
-    matrix[12] = x; // Translate X
-    matrix[13] = y; // Translate Y
-    matrix[15] = 1.0f; // W component
-    return matrix;
-  }
-
-  private float[] createTranslationMatrix(float x, float y, float z) {
-    float[] matrix = new float[16];
-    matrix[0] = 1;
-    matrix[5] = 1;
-    matrix[10] = 1;
-    matrix[15] = 1;
-    matrix[12] = x;
-    matrix[13] = y;
-    matrix[14] = z;
-    return matrix;
-  }
-
-  private float[] createScaleMatrix(float x, float y, float z) {
-    float[] matrix = new float[16];
-    matrix[0] = x;
-    matrix[5] = y;
-    matrix[10] = z;
-    matrix[15] = 1;
-    return matrix;
-  }
-
-  private float[] multiplyMatrices(float[] a, float[] b) {
-    float[] result = new float[16];
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-        for (int k = 0; k < 4; k++) {
-          result[i * 4 + j] += a[i * 4 + k] * b[k * 4 + j];
-        }
-      }
-    }
-    return result;
-  }
 }
