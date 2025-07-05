@@ -90,19 +90,7 @@ public class AbbayeMain {
 
   void init() {
     try {
-      GLFWErrorCallback.createPrint(System.err).set();
-
-      // Initialize GLFW. Most GLFW functions will not work before doing this.
-      if (!glfwInit()) {
-        throw new IllegalStateException("Unable to initialize GLFW");
-      }
-
-      glfwDefaultWindowHints();
-      glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-      glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-      glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-      glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-      glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+      glInit();
 
       var config = Config.config();
       var width = config.getScreenWidth();
@@ -168,6 +156,22 @@ public class AbbayeMain {
     initLayer();
     Clock.init();
     Clock.updateTimer();
+  }
+
+  public static void glInit() {
+    GLFWErrorCallback.createPrint(System.err).set();
+
+    // Initialize GLFW. Most GLFW functions will not work before doing this.
+    if (!glfwInit()) {
+      throw new IllegalStateException("Unable to initialize GLFW");
+    }
+
+    glfwDefaultWindowHints();
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   }
 
   /** Main game loop method */

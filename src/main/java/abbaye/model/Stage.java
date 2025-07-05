@@ -160,7 +160,9 @@ public class Stage implements Renderable {
     };
   }
 
-  // FIXME What does this represent?
+  /**
+   * @return the size of the tile in display pixel, i.e. as it appears to the player
+   */
   public static float getTileSize() {
     return 64.0f;
   }

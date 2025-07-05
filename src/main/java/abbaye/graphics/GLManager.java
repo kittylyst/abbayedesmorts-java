@@ -7,6 +7,7 @@ import static org.lwjgl.stb.STBImage.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memAlloc;
 
+import abbaye.Config;
 import abbaye.basic.Corners;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -43,35 +44,37 @@ public final class GLManager {
   private GLManager() {}
 
   static {
-    var manager = new GLManager();
-    manager.init("/shaders/splash.vert", "/shaders/splash.frag");
-    // Get locations for uniforms
-    manager.projectionLocation = glGetUniformLocation(manager.shaderProgram, "projection");
-    // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
-    glEnableVertexAttribArray(0);
+    if (Config.config().getGLActive()) {
+      var manager = new GLManager();
+      manager.init("/shaders/splash.vert", "/shaders/splash.frag");
+      // Get locations for uniforms
+      manager.projectionLocation = glGetUniformLocation(manager.shaderProgram, "projection");
+      // Position attribute
+      glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
+      glEnableVertexAttribArray(0);
 
-    // Texture coordinate attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
-    glEnableVertexAttribArray(1);
-    managers.put("dialog", manager);
+      // Texture coordinate attribute
+      glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
+      glEnableVertexAttribArray(1);
+      managers.put("dialog", manager);
 
-    manager = new GLManager();
-    // FIXME This is currently a shader for a solid colour not a texture map
-    manager.init("/shaders/game.vert", "/shaders/game.frag");
-    // Get locations for uniforms
-    manager.projectionLocation = glGetUniformLocation(manager.shaderProgram, "projection");
-    manager.modelLocation = glGetUniformLocation(manager.shaderProgram, "model");
+      manager = new GLManager();
+      // FIXME This is currently a shader for a solid colour not a texture map
+      manager.init("/shaders/game.vert", "/shaders/game.frag");
+      // Get locations for uniforms
+      manager.projectionLocation = glGetUniformLocation(manager.shaderProgram, "projection");
+      manager.modelLocation = glGetUniformLocation(manager.shaderProgram, "model");
 
-    // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
-    glEnableVertexAttribArray(0);
+      // Position attribute
+      glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
+      glEnableVertexAttribArray(0);
 
-    // Texture coordinate attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
-    glEnableVertexAttribArray(1);
+      // Texture coordinate attribute
+      glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
+      glEnableVertexAttribArray(1);
 
-    managers.put("game", manager);
+      managers.put("game", manager);
+    }
   }
 
   public static synchronized GLManager get(String shaderName) {
@@ -295,39 +298,29 @@ public final class GLManager {
   }
 
   /**
-   * @param tileCoords
-   * @param tileDisplaySize
-   * @param displayPosX
-   * @param displayPosY
+   * @param tileCoords - the texture coords in float (0 < u, v < 1) coords
+   * @param tileSize - the size of the tile in display pixel, i.e. as it appears to the player
+   * @param x - the x coordinate in display pixels
+   * @param y - the y coordinate in display pixels
    */
-  public void renderTile(
-      Corners tileCoords, float tileDisplaySize, float displayPosX, float displayPosY) {
-    updateTileVertices(tileCoords);
-
-    //                // Set model matrix for position and scale
-    //                float[] model = createTranslationMatrix(displayPosX, displayPosY, 0);
+  public void renderTile(Corners tileCoords, float tileSize, float x, float y) {
     //
-    //                float[] scale = createScaleMatrix(tileDisplaySize, tileDisplaySize, 1);
-    //                float[] finalModel = multiplyMatrices(model, scale);
+    //    float[] finalModel = {tileSize, 0, 0, 0,
+    //            0, tileSize, 0, 0,
+    //            0, 0, 1, 0,
+    //            x, y, Z_ZERO, 1};
 
-    float[] finalModel = {
-      tileDisplaySize,
-      0,
-      0,
-      0,
-      0,
-      tileDisplaySize,
-      0,
-      0,
-      0,
-      0,
-      1,
-      0,
-      displayPosX,
-      displayPosY,
-      Z_ZERO,
-      1
-    };
+    float[] translate = createTranslationMatrix(x, y, 0);
+    float[] scale = createScaleMatrix(tileSize, tileSize, 1);
+
+    float[] finalModel = multiplyMatrices(scale, translate);
+
+    renderTile(tileCoords, finalModel);
+  }
+
+  public void renderTile(Corners tileCoords, float[] finalModel) {
+
+    updateTileVertices(tileCoords);
 
     int modelLoc = glGetUniformLocation(shaderProgram, "model");
     glUniformMatrix4fv(modelLoc, false, finalModel);

@@ -26,6 +26,7 @@ public final class Config {
   private int level = 1;
   private int highScore = 0;
   private GameLogger logger = null;
+  private Optional<Boolean> oHeadless = Optional.empty();
 
   /** Empty properties constructor */
   private Config() {
@@ -92,6 +93,10 @@ public final class Config {
     }
   }
 
+  public void setHeadless(boolean headless) {
+    oHeadless = Optional.of(headless);
+  }
+
   // Getters for mutable state
 
   public int getLevel() {
@@ -132,6 +137,9 @@ public final class Config {
   }
 
   public boolean getGLActive() {
+    if (oHeadless.isPresent()) {
+      return !oHeadless.get();
+    }
     return getBoolean("glactive", true);
   }
 

@@ -51,7 +51,7 @@ public class Layer {
     // FIXME Check for removals first
 
     oPlayer.ifPresent(Player::update);
-    oPlayer.ifPresent(p -> System.out.println(p.getPos()));
+    //    oPlayer.ifPresent(p -> System.out.println(p.getPos()));
 
     // FIXME Update enemies
 
@@ -78,8 +78,6 @@ public class Layer {
   }
 
   ///////////////////////////
-
-  //  public void add(TextureMap texture) {}
 
   public void setPlayer(Player p) {
     oPlayer = Optional.of(p);

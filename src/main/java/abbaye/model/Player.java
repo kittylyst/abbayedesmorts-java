@@ -1,6 +1,7 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.model;
 
+import static abbaye.graphics.GLManager.*;
 import static abbaye.model.Stage.TILES_PER_COL;
 import static abbaye.model.Stage.TILES_PER_ROW;
 import static org.lwjgl.glfw.GLFW.*;
@@ -80,12 +81,18 @@ public final class Player implements Actor {
     var posX = pos.x();
     var posY = pos.y();
     var tileCoords = makeCorners(44, 11);
-    manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
+    float[] translate = createTranslationMatrix(posX, posY, 0);
+    float[] scale = createScaleMatrix(-tileDisplaySize, tileDisplaySize, 1);
+    float[] finalModel = multiplyMatrices(scale, translate);
+    manager.renderTile(tileCoords, finalModel);
 
     posX = pos.x() + tileDisplaySize;
     posY = pos.y();
     tileCoords = makeCorners(45, 11);
-    manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
+    translate = createTranslationMatrix(posX, posY, 0);
+    scale = createScaleMatrix(-tileDisplaySize, tileDisplaySize, 1);
+    finalModel = multiplyMatrices(scale, translate);
+    manager.renderTile(tileCoords, finalModel);
 
     posX = pos.x();
     posY = pos.y() + tileDisplaySize;
@@ -166,7 +173,6 @@ public final class Player implements Actor {
   @Override
   public boolean update() {
     pos = newPosition();
-    System.out.println(pos);
     if (pos.x() < 0) {
       if (stage.moveLeft()) {
         pos = new Vector2(248, pos.y());
