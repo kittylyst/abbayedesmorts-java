@@ -63,22 +63,19 @@ public final class Player implements Actor {
     if (!Config.config().getGLActive()) {
       return false;
     }
-    float u1 = (float) 400 / (8 * TILES_PER_ROW);
-    float v1 = (float) 104 / (8 * TILES_PER_COL);
-    float u2 = (float) (400 + 8) / (8 * TILES_PER_ROW);
-    float v2 = (float) (104 + 16) / (8 * TILES_PER_COL);
+    float u1 = (float) 44 / TILES_PER_ROW;
+    float v1 = (float) 11 / TILES_PER_COL;
+    float u2 = (float) 45 / TILES_PER_ROW;
+    float v2 = (float) 12 / TILES_PER_COL;
 
-    var tileCoords = new Corners(u1, v1, u2, v2);
-    System.out.println("Player: " + tileCoords);
-    tileCoords = new Corners(0.35f, 1 - 0.40f, 0.3625f, 1 - 0.50f);
-    //    tileCoords = new Corners(0.35f, 1 - 0.40f, 0.3625f, 1 - 0.50f);
+    var tileCoords = new Corners(u1, 1 - v1, u2, 1 - v2);
+    //    tileCoords = new Corners(0.352f, 0.633333f, 0.36f, 0.6f); // 1 - y coords
+    //    tileCoords = new Corners(0.35f, 0.65f, 0.3625f, 0.6f); // 1 - y coords
 
     var posX = pos.x();
     var posY = pos.y();
     var tileDisplaySize = Stage.getTileSize();
     manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
-    //    System.out.println(stage.getCorners(113));
-    //    System.out.println(stage.getCorners(115));
 
     return false;
   }
