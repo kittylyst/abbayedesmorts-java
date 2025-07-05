@@ -78,35 +78,71 @@ public final class Player implements Actor {
     }
 
     var tileDisplaySize = Stage.getTileSize();
-    var posX = pos.x();
-    var posY = pos.y();
-    var tileCoords = makeCorners(44, 11);
-    manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+    float posX, posY;
+    Corners tileCoords;
 
-    posX = pos.x() + tileDisplaySize;
-    posY = pos.y();
-    tileCoords = makeCorners(45, 11);
-    manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+    if (direction == GLFW_HAT_LEFT) {
+      posX = pos.x();
+      posY = pos.y();
+      tileCoords = makeCorners(44, 11);
+      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
 
-    posX = pos.x();
-    posY = pos.y() + tileDisplaySize;
-    tileCoords = makeCorners(44, 12);
-    manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+      posX = pos.x() + tileDisplaySize;
+      posY = pos.y();
+      tileCoords = makeCorners(45, 11);
+      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
 
-    posX = pos.x() + tileDisplaySize;
-    posY = pos.y() + tileDisplaySize;
-    tileCoords = makeCorners(45, 12);
-    manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+      posX = pos.x();
+      posY = pos.y() + tileDisplaySize;
+      tileCoords = makeCorners(44, 12);
+      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
 
-    posX = pos.x();
-    posY = pos.y() + tileDisplaySize + tileDisplaySize;
-    tileCoords = makeCorners(44, 13);
-    manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+      posX = pos.x() + tileDisplaySize;
+      posY = pos.y() + tileDisplaySize;
+      tileCoords = makeCorners(45, 12);
+      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
 
-    posX = pos.x() + tileDisplaySize;
-    posY = pos.y() + tileDisplaySize + tileDisplaySize;
-    tileCoords = makeCorners(45, 13);
-    manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+      posX = pos.x();
+      posY = pos.y() + tileDisplaySize + tileDisplaySize;
+      tileCoords = makeCorners(44, 13);
+      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+
+      posX = pos.x() + tileDisplaySize;
+      posY = pos.y() + tileDisplaySize + tileDisplaySize;
+      tileCoords = makeCorners(45, 13);
+      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+    } else {
+      posX = pos.x();
+      posY = pos.y();
+      tileCoords = makeCorners(45, 11);
+      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+
+      posX = pos.x() + tileDisplaySize;
+      posY = pos.y();
+      tileCoords = makeCorners(44, 11);
+      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+
+      posX = pos.x();
+      posY = pos.y() + tileDisplaySize;
+      tileCoords = makeCorners(45, 12);
+      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+
+      posX = pos.x() + tileDisplaySize;
+      posY = pos.y() + tileDisplaySize;
+      tileCoords = makeCorners(44, 12);
+      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+
+      posX = pos.x();
+      posY = pos.y() + tileDisplaySize + tileDisplaySize;
+      tileCoords = makeCorners(45, 13);
+      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+
+      posX = pos.x() + tileDisplaySize;
+      posY = pos.y() + tileDisplaySize + tileDisplaySize;
+      tileCoords = makeCorners(44, 13);
+      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+    }
+
 
     return false;
   }
