@@ -70,8 +70,8 @@ public final class Player implements Actor {
 
     var tileCoords = new Corners(u1, v1, u2, v2);
     System.out.println("Player: " + tileCoords);
-    tileCoords = new Corners(0.4f, 0.43f, 0.5f, 0.55f);
-    //    tileCoords = new Corners(0.096f, 0.56666664f, 0.104f, 0.5f);
+    tileCoords = new Corners(0.35f, 1 - 0.40f, 0.3625f, 1 - 0.50f);
+    //    tileCoords = new Corners(0.35f, 1 - 0.40f, 0.3625f, 1 - 0.50f);
 
     var posX = pos.x();
     var posY = pos.y();
