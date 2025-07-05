@@ -81,38 +81,32 @@ public final class Player implements Actor {
     var posX = pos.x();
     var posY = pos.y();
     var tileCoords = makeCorners(44, 11);
-    float[] translate = createTranslationMatrix(posX, posY, 0);
-    float[] scale = createScaleMatrix(-tileDisplaySize, tileDisplaySize, 1);
-    float[] finalModel = multiplyMatrices(scale, translate);
-    manager.renderTile(tileCoords, finalModel);
+    manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
 
     posX = pos.x() + tileDisplaySize;
     posY = pos.y();
     tileCoords = makeCorners(45, 11);
-    translate = createTranslationMatrix(posX, posY, 0);
-    scale = createScaleMatrix(-tileDisplaySize, tileDisplaySize, 1);
-    finalModel = multiplyMatrices(scale, translate);
-    manager.renderTile(tileCoords, finalModel);
+    manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
 
     posX = pos.x();
     posY = pos.y() + tileDisplaySize;
     tileCoords = makeCorners(44, 12);
-    manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
+    manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
 
     posX = pos.x() + tileDisplaySize;
     posY = pos.y() + tileDisplaySize;
     tileCoords = makeCorners(45, 12);
-    manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
+    manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
 
     posX = pos.x();
     posY = pos.y() + tileDisplaySize + tileDisplaySize;
     tileCoords = makeCorners(44, 13);
-    manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
+    manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
 
     posX = pos.x() + tileDisplaySize;
     posY = pos.y() + tileDisplaySize + tileDisplaySize;
     tileCoords = makeCorners(45, 13);
-    manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
+    manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
 
     return false;
   }
@@ -300,6 +294,11 @@ public final class Player implements Actor {
 
   @Override
   public Vector2 getSize() {
-    return new Vector2(8, 16);
+    return new Vector2(16, 24);
+  }
+
+  @Override
+  public int getDirection() {
+    return direction;
   }
 }
