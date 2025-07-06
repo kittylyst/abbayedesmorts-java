@@ -4,8 +4,7 @@ package abbaye.model;
 import static abbaye.model.Facing.LEFT;
 import static abbaye.model.Facing.RIGHT;
 import static abbaye.model.Room.*;
-import static abbaye.model.Stage.TILES_PER_COL;
-import static abbaye.model.Stage.TILES_PER_ROW;
+import static abbaye.model.Stage.*;
 import static abbaye.model.Vertical.*;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -36,7 +35,6 @@ public final class Player implements Actor {
   private Vertical jump = NEUTRAL;
   private float height; /* Limit of jump */
   private int animation;
-  private float gravity;
   private int[] points = new int[8]; /* Points of collision */
   private int ground; /* Pixel where is ground */
   private int[] collision = {0, 0, 0, 0}; /* Collisions, in 4 directions */
@@ -304,14 +302,17 @@ public final class Player implements Actor {
     int[] points = {0, 0, 0, 0, 0, 0, 0, 0};
     int r = 0;
 
-    points[0] = (int) ((pos.x() + 1) / 8);
-    points[1] = (int) ((pos.x() + 7) / 8);
-    points[2] = (int) ((pos.x() + 8) / 8);
-    points[3] = (int) ((pos.x() + 13) / 8);
-    points[4] = (int) ((pos.y() + 1) / 8);
-    points[5] = (int) ((pos.y() + 8) / 8);
-    points[6] = (int) ((pos.y() + 15) / 8);
-    points[7] = (int) ((pos.y() + 23) / 8);
+    float gravity = Config.config().getGravity();
+
+    float resize = Stage.getTileSize(); // 8;
+    points[0] = (int) ((pos.x() + 1) / resize);
+    points[1] = (int) ((pos.x() + 7) / resize);
+    points[2] = (int) ((pos.x() + 8) / resize);
+    points[3] = (int) ((pos.x() + 13) / resize);
+    points[4] = (int) ((pos.y() + 1) / resize);
+    points[5] = (int) ((pos.y() + 8) / resize);
+    points[6] = (int) ((pos.y() + 15) / resize);
+    points[7] = (int) ((pos.y() + 23) / resize);
 
     collision[0] = 0;
     collision[1] = 0;
@@ -326,7 +327,7 @@ public final class Player implements Actor {
       for (var n = 4; n < 8; n += 1) {
         // FIXME Are these directions correct?
         if (((points[0] != 0) && (direction == RIGHT))
-            || ((points[3] != 31) && (direction == LEFT))) {
+            || ((points[3] != NUM_COLUMNS - 1) && (direction == LEFT))) {
           blleft = stagedata[points[n]][points[0] - 1];
           blright = stagedata[points[n]][points[3] + 1];
           if (((blleft > 0) && (blleft < 100) && (blleft != 16) && (blleft != 38) && (blleft != 37))

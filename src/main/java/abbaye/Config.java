@@ -20,6 +20,7 @@ public final class Config {
   //  private static final float PLAYER_DECEL = 0.008f;
 
   private static final String DEFAULT_CONFIG_RESOURCE = "/abbaye.properties";
+  private static final float DEFAULT_GRAVITY = 16.0f;
   private static Config instance = null;
 
   private final Properties properties;
@@ -128,6 +129,10 @@ public final class Config {
     return getInt("width", SCR_WIDTH);
   }
 
+  public float getGravity() {
+    return getNumber("gravity", DEFAULT_GRAVITY);
+  }
+
   public int getScreenHeight() {
     return getInt("height", SCR_HEIGHT);
   }
@@ -167,19 +172,19 @@ public final class Config {
   }
 
   /**
-   * Get the value for a key as a double
+   * Get the value for a key as a float
    *
    * @param key
    * @param defaultValue
    * @return
    */
-  public double getNumber(String key, double defaultValue) {
+  public float getNumber(String key, float defaultValue) {
     for (var tryLevel = level; tryLevel > 0; tryLevel -= 1) {
       var tryKey = key + (level > 1 ? ".level" + tryLevel : "");
       String value = properties.getProperty(tryKey);
       if (value != null) {
         try {
-          return Double.parseDouble(value);
+          return Float.parseFloat(value);
         } catch (NumberFormatException e) {
           System.err.println("Invalid integer value for key: " + key);
         }
