@@ -85,12 +85,16 @@ public class Stage implements Renderable {
     return stagedata[level];
   }
 
-  public int getRoomX() {
-    return roomx;
-  }
+  //  public int getRoomX() {
+  //    return roomx;
+  //  }
+  //
+  //  public int getRoomY() {
+  //    return roomy;
+  //  }
 
-  public int getRoomY() {
-    return roomy;
+  public int getRoom() {
+    return roomy * NUM_ROWS + roomx;
   }
 
   public boolean moveLeft() {

@@ -1,7 +1,7 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.model;
 
-import static org.lwjgl.glfw.GLFW.GLFW_HAT_RIGHT;
+import static abbaye.model.Facing.RIGHT;
 
 import abbaye.basic.Actor;
 import abbaye.basic.BoundingBox2;
@@ -16,7 +16,7 @@ public final class Enemy implements Actor {
   // Physicality
   private Vector2 pos = new Vector2(0, 0);
   private Vector2 v = new Vector2(0, 0);
-  private int direction = GLFW_HAT_RIGHT;
+  private Facing direction = RIGHT;
 
   public static class EnemySerializer extends JsonSerializer<Enemy> {
     @Override
@@ -41,7 +41,7 @@ public final class Enemy implements Actor {
   }
 
   @Override
-  public int getDirection() {
+  public Facing getDirection() {
     return direction;
   }
 
