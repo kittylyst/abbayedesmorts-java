@@ -60,7 +60,11 @@ public class Layer {
     // Now do collision detection - check if destroyable objects have been hit
 
     // Player first
-    oPlayer.filter(Player::checkHit).ifPresent(Player::destroy);
+    try {
+      oPlayer.filter(Player::checkHit).ifPresent(Player::destroy);
+    } catch (Throwable t) {
+      oPlayer.ifPresent(System.out::println);
+    }
 
     // FIXME Now enemies
 

@@ -15,6 +15,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
+import java.util.Arrays;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 
 public final class Player implements Actor {
@@ -205,26 +206,26 @@ public final class Player implements Actor {
         pos = new Vector2(0, pos.y());
       }
     }
-    if (pos.x() > 8 * 256) {
+    if (pos.x() > 8 * 248) {
       if (stage.moveRight()) {
         pos = new Vector2(0, pos.y());
       } else {
-        pos = new Vector2(248, pos.y());
+        pos = new Vector2(240, pos.y());
       }
     }
 
     if (pos.y() < 0) {
       if (stage.moveUp()) {
-        pos = new Vector2(pos.x(), 200);
+        pos = new Vector2(pos.x(), 176);
       } else {
         pos = new Vector2(pos.x(), 0);
       }
     }
-    if (pos.y() > 8 * 200) {
+    if (pos.y() > 8 * 192) {
       if (stage.moveDown()) {
         pos = new Vector2(pos.x(), 0);
       } else {
-        pos = new Vector2(pos.x(), 200);
+        pos = new Vector2(pos.x(), 176);
       }
     }
 
@@ -326,13 +327,15 @@ public final class Player implements Actor {
     if (!crouch) {
       for (var n = 4; n < 8; n += 1) {
         // FIXME Are these directions correct?
-        if (((points[0] != 0) && (direction == RIGHT))
-            || ((points[3] != NUM_COLUMNS - 1) && (direction == LEFT))) {
+        if (((points[0] != 0) && (direction == LEFT))
+            || ((points[3] != NUM_COLUMNS - 1) && (direction == RIGHT))) {
           blleft = stagedata[points[n]][points[0] - 1];
           blright = stagedata[points[n]][points[3] + 1];
           if (((blleft > 0) && (blleft < 100) && (blleft != 16) && (blleft != 38) && (blleft != 37))
               || ((stagedata[points[4]][points[0]] == 128) || (blleft == 348))) {
-            if (pos.x() - ((points[0] - 1) * 8 + 7) < 1.1) collision[2] = 1;
+            if (pos.x() - ((points[0] - 1) * 8 + 7) < 1.1) {
+              collision[2] = 1;
+            }
           }
           if (((blright > 0)
                   && (blright < 100)
@@ -340,7 +343,9 @@ public final class Player implements Actor {
                   && (blright != 38)
                   && (blright != 37))
               || (blright == 344)) {
-            if (((points[3] + 1) * 8) - (pos.x() + 14) < 1.1) collision[3] = 1;
+            if (((points[3] + 1) * 8) - (pos.x() / 8 + 14) < 1.1) {
+              collision[3] = 1;
+            }
           }
         }
       }
@@ -349,18 +354,22 @@ public final class Player implements Actor {
     /* Collision with Jean ducking */
     if (crouch) {
       // FIXME Are these directions correct?
-      if (((points[0] != 0) && (direction == RIGHT))
-          || ((points[3] != 31) && (direction == LEFT))) {
+      if (((points[0] != 0) && (direction == LEFT))
+          || ((points[3] != NUM_COLUMNS - 1) && (direction == RIGHT))) {
         r = (int) ((pos.y() + 16) / 8);
         blleft = stagedata[r][points[0] - 1];
         blright = stagedata[r][points[3] + 1];
         if (((blleft > 0) && (blleft < 100) && (blleft != 37))
             || ((stagedata[r][points[0]] == 128) || ((blleft > 346) && (blleft < 351)))) {
-          if (pos.x() - ((points[0] - 1) * 8 + 7) < 1.1) collision[2] = 1;
+          if (pos.x() - ((points[0] - 1) * 8 + 7) < 1.1) {
+            collision[2] = 1;
+          }
         }
         if (((blright > 0) && (blright < 100) && (blright != 37))
             || ((blright > 342) && (blright < 347))) {
-          if (((points[3] + 1) * 8) - (pos.x() + 14) < 1.1) collision[3] = 1;
+          if (((points[3] + 1) * 8) - (pos.x() / 8 + 14) < 1.1) {
+            collision[3] = 1;
+          }
         }
       }
       /* Invisible wall */
@@ -412,7 +421,7 @@ public final class Player implements Actor {
 
     /* Check small platforms */
     // FIXME Are these directions correct?
-    if (direction == RIGHT) {
+    if (direction == LEFT) {
       if ((blground[3] == 38)
           && ((pos.x() + 13) < (points[3] * 8 + 5))
           //          && (push[2] == 1)
@@ -421,7 +430,7 @@ public final class Player implements Actor {
         jump = FALL;
       }
     }
-    if (direction == LEFT) {
+    if (direction == RIGHT) {
       if ((blground[0] == 38)
           && ((pos.x() + 1) > (points[0] + 2))
           //          && (push[3] == 1)
@@ -446,7 +455,9 @@ public final class Player implements Actor {
               && (blroof[1] != 16)
               && (blroof[1] != 38)
               && (blroof[1] != 37))) {
-        if ((pos.y() - 1) - ((points[4] - 1) * 8 + 7) < 1) collision[0] = 1;
+        if ((pos.y() - 1) - ((points[4] - 1) * 8 + 7) < 1) {
+          collision[0] = 1;
+        }
       }
     }
     return (collision[0] + collision[1] + collision[2] + collision[3]) > 0;
@@ -468,6 +479,48 @@ public final class Player implements Actor {
 
   public static Player of(Layer layer, Stage stage) {
     return new Player(layer, stage);
+  }
+
+  @Override
+  public String toString() {
+    return "Player{"
+        + "manager="
+        + manager
+        + ", layer="
+        + layer
+        + ", stage="
+        + stage
+        + ", pos="
+        + pos
+        + ", v="
+        + v
+        + ", crouch="
+        + crouch
+        + ", direction="
+        + direction
+        + ", jump="
+        + jump
+        + ", height="
+        + height
+        + ", animation="
+        + animation
+        + ", points="
+        + Arrays.toString(points)
+        + ", ground="
+        + ground
+        + ", collision="
+        + Arrays.toString(collision)
+        + ", checkpoint="
+        + Arrays.toString(checkpoint)
+        + ", state="
+        + Arrays.toString(state)
+        + ", flags="
+        + Arrays.toString(flags)
+        + ", death="
+        + death
+        + ", walk="
+        + walk
+        + '}';
   }
 
   // Getters

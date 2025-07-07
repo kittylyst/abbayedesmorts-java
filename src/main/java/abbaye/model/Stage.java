@@ -94,7 +94,7 @@ public class Stage implements Renderable {
   //  }
 
   public int getRoom() {
-    return roomy * NUM_ROWS + roomx;
+    return roomy * SCREENS_X + roomx;
   }
 
   public boolean moveLeft() {
