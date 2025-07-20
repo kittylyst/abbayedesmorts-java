@@ -8,6 +8,7 @@ import static abbaye.model.Stage.*;
 import static abbaye.model.Vertical.*;
 import static org.lwjgl.glfw.GLFW.*;
 
+import abbaye.AbbayeMain;
 import abbaye.Config;
 import abbaye.basic.*;
 import abbaye.graphics.GLManager;
@@ -21,10 +22,13 @@ import org.lwjgl.glfw.GLFWKeyCallbackI;
 public final class Player implements Actor {
 
   // GL fields
-  private GLManager manager = GLManager.get("game");
+  private GLManager manager;
 
   private Layer layer;
   private Stage stage;
+
+  // FIXME
+  private int counter = 0;
 
   // Physicality
   private Vector2 pos = new Vector2(0, 0);
@@ -46,6 +50,13 @@ public final class Player implements Actor {
   private boolean walk = false;
 
   //  int push[4]; /* Pulsaciones de teclas */
+
+  @Override
+  public void init() {
+    if (AbbayeMain.isGlEnabled()) {
+      manager = GLManager.get("game");
+    }
+  }
 
   @Override
   public void destroy() {
@@ -142,6 +153,10 @@ public final class Player implements Actor {
   }
 
   public Vector2 newPosition() {
+    if (checkCollision()) {
+      System.out.println("Collision detected: " + Arrays.toString(collision));
+    }
+
     float dx = 0;
     float dy = 0;
 
@@ -221,11 +236,11 @@ public final class Player implements Actor {
         pos = new Vector2(pos.x(), 0);
       }
     }
-    if (pos.y() > 8 * 192) {
+    if (pos.y() > 8 * 200) {
       if (stage.moveDown()) {
         pos = new Vector2(pos.x(), 0);
       } else {
-        pos = new Vector2(pos.x(), 176);
+        pos = new Vector2(pos.x(), 8 * 176);
       }
     }
 
@@ -296,6 +311,11 @@ public final class Player implements Actor {
   }
 
   public boolean checkHit() {
+    return false;
+  }
+
+  // FIXME This is currently for collisions with walls, but we have no enemies in the game yet
+  public boolean checkCollision() {
     int blleft = 0;
     int blright = 0;
     int[] blground = {0, 0, 0, 0};
@@ -305,7 +325,7 @@ public final class Player implements Actor {
 
     float gravity = Config.config().getGravity();
 
-    float resize = Stage.getTileSize(); // 8;
+    float resize = Stage.getTileSize();
     points[0] = (int) ((pos.x() + 1) / resize);
     points[1] = (int) ((pos.x() + 7) / resize);
     points[2] = (int) ((pos.x() + 8) / resize);
@@ -331,6 +351,16 @@ public final class Player implements Actor {
             || ((points[3] != NUM_COLUMNS - 1) && (direction == RIGHT))) {
           blleft = stagedata[points[n]][points[0] - 1];
           blright = stagedata[points[n]][points[3] + 1];
+          if (counter++ % 10 == 0) {
+            System.out.println(
+                pos
+                    + " ; blleft: "
+                    + blleft
+                    + " ; blright: "
+                    + blright
+                    + " ; "
+                    + Arrays.toString(points));
+          }
           if (((blleft > 0) && (blleft < 100) && (blleft != 16) && (blleft != 38) && (blleft != 37))
               || ((stagedata[points[4]][points[0]] == 128) || (blleft == 348))) {
             if (pos.x() - ((points[0] - 1) * 8 + 7) < 1.1) {
@@ -401,10 +431,13 @@ public final class Player implements Actor {
             || ((blground[2] > 0) && (blground[2] < 100))
             || ((blground[3] > 0) && (blground[3] < 100))) {
           ground = (points[7] + 1) * 8;
-          if (points[7] + 1 > 21) /* Dirty trick to make Jean go bottom of the screen */
+          if (points[7] + 1 > 21) {
+            /* Dirty trick to make Jean go bottom of the screen */
             ground = 300;
-          if ((ground - 1) - (pos.y() + 23) > 1.2) pos = new Vector2(pos.x(), pos.y() + gravity);
-          else {
+          }
+          if ((ground - 1) - (pos.y() + 23) > 1.2) {
+            pos = new Vector2(pos.x(), pos.y() + gravity);
+          } else {
             /* Near ground */
             pos = new Vector2(pos.x(), pos.y() + (ground - 1) - (pos.y() + 23));
             height = 0;
@@ -412,7 +445,7 @@ public final class Player implements Actor {
             flags[5] = 0;
           }
         } else {
-          /* In air, ground near */
+          /* In air, ground not near */
           pos = new Vector2(pos.x(), pos.y() + gravity);
           jump = FALL;
         }
@@ -523,11 +556,15 @@ public final class Player implements Actor {
         + '}';
   }
 
-  // Getters
+  // Getters and setters
 
   @Override
   public Vector2 getPos() {
     return pos;
+  }
+
+  public void setPos(Vector2 pos) {
+    this.pos = pos;
   }
 
   @Override

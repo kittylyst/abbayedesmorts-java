@@ -51,17 +51,7 @@ public final class Enemy implements Actor {
   }
 
   @Override
-  public void init() {
-    Actor.super.init();
-  }
-
-  @Override
   public boolean render() {
     return false;
-  }
-
-  @Override
-  public boolean update() {
-    return Actor.super.update();
   }
 }

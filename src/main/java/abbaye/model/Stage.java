@@ -81,6 +81,10 @@ public class Stage implements Renderable {
     return renderer.render();
   }
 
+  /**
+   * @param level
+   * @return 2d array of tile ids in [x][y] order
+   */
   public int[][] getScreen(int level) {
     return stagedata[level];
   }
