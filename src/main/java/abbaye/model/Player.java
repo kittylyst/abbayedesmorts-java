@@ -41,7 +41,7 @@ public final class Player implements Actor {
   private float height; /* Limit of jump */
   private int animation;
   private int[] points = new int[8]; /* Points of collision */
-  private int ground; /* Pixel where is ground */
+  private int ground; /* Y-coordinate pixel where the ground is beneath the player */
   private int[] collision = {0, 0, 0, 0}; /* Collisions, in 4 directions */
   private int[] checkpoint = new int[4];
   private int[] state = new int[2]; /* Vidas y cruces */
@@ -180,8 +180,11 @@ public final class Player implements Actor {
     if (direction == RIGHT && walk) {
       if (collision[3] == 0) {
         if (jump == NEUTRAL) {
-          if (animation < 13) animation += 1;
-          else animation = 0;
+          if (animation < 13) {
+            animation += 1;
+          } else {
+            animation = 0;
+          }
         }
         if (crouch) {
           dx += 0.30;
@@ -195,8 +198,11 @@ public final class Player implements Actor {
     if (direction == LEFT && walk) {
       if (collision[2] == 0) {
         if (jump == NEUTRAL) {
-          if (animation < 13) animation += 1;
-          else animation = 0;
+          if (animation < 13) {
+            animation += 1;
+          } else {
+            animation = 0;
+          }
         }
         if (crouch) {
           dx -= 0.30;
@@ -205,8 +211,6 @@ public final class Player implements Actor {
         }
       }
     }
-    //    System.out.println("direction: "+ direction +" ; walk: "+ walk +" ; dx: "+ dx +" ; dy: "+
-    // dy);
 
     return new Vector2(pos.x() + getMoveSpeed() * dx, pos.y() + getMoveSpeed() * dy);
   }
@@ -314,7 +318,11 @@ public final class Player implements Actor {
     return false;
   }
 
-  // FIXME This is currently for collisions with walls, but we have no enemies in the game yet
+  /**
+   *  This is currently only for collisions with walls, but note that we have no enemies in the game yet
+   *
+   * @return
+   */
   public boolean checkCollision() {
     int blleft = 0;
     int blright = 0;
@@ -358,7 +366,7 @@ public final class Player implements Actor {
                     + blleft
                     + " ; blright: "
                     + blright
-                    + " ; "
+                    + " ; " + ground +" ; "
                     + Arrays.toString(points));
           }
           if (((blleft > 0) && (blleft < 100) && (blleft != 16) && (blleft != 38) && (blleft != 37))
@@ -430,12 +438,12 @@ public final class Player implements Actor {
             || ((blground[1] > 0) && (blground[1] < 100))
             || ((blground[2] > 0) && (blground[2] < 100))
             || ((blground[3] > 0) && (blground[3] < 100))) {
-          ground = (points[7] + 1) * 8;
+          ground = (points[7] + 1) * 8 * 8;
           if (points[7] + 1 > 21) {
             /* Dirty trick to make Jean go bottom of the screen */
-            ground = 300;
+            ground = 300 * 8;
           }
-          if ((ground - 1) - (pos.y() + 23) > 1.2) {
+          if ((ground - 1) - (pos.y() + 23) > 1.2 * 64) {
             pos = new Vector2(pos.x(), pos.y() + gravity);
           } else {
             /* Near ground */
