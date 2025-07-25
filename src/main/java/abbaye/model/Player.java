@@ -319,7 +319,8 @@ public final class Player implements Actor {
   }
 
   /**
-   *  This is currently only for collisions with walls, but note that we have no enemies in the game yet
+   * This is currently only for collisions with walls, but note that we have no enemies in the game
+   * yet
    *
    * @return
    */
@@ -334,14 +335,14 @@ public final class Player implements Actor {
     float gravity = Config.config().getGravity();
 
     float resize = Stage.getTileSize();
-    points[0] = (int) ((pos.x() + 1) / resize);
-    points[1] = (int) ((pos.x() + 7) / resize);
-    points[2] = (int) ((pos.x() + 8) / resize);
-    points[3] = (int) ((pos.x() + 13) / resize);
-    points[4] = (int) ((pos.y() + 1) / resize);
-    points[5] = (int) ((pos.y() + 8) / resize);
-    points[6] = (int) ((pos.y() + 15) / resize);
-    points[7] = (int) ((pos.y() + 23) / resize);
+    points[0] = (int) ((pos.x() + 1 * PIXELS_PER_TILE) / resize);
+    points[1] = (int) ((pos.x() + 7 * PIXELS_PER_TILE) / resize);
+    points[2] = (int) ((pos.x() + 8 * PIXELS_PER_TILE) / resize);
+    points[3] = (int) ((pos.x() + 13 * PIXELS_PER_TILE) / resize);
+    points[4] = (int) ((pos.y() + 1 * PIXELS_PER_TILE) / resize);
+    points[5] = (int) ((pos.y() + 8 * PIXELS_PER_TILE) / resize);
+    points[6] = (int) ((pos.y() + 15 * PIXELS_PER_TILE) / resize);
+    points[7] = (int) ((pos.y() + 23 * PIXELS_PER_TILE) / resize);
 
     collision[0] = 0;
     collision[1] = 0;
@@ -366,12 +367,14 @@ public final class Player implements Actor {
                     + blleft
                     + " ; blright: "
                     + blright
-                    + " ; " + ground +" ; "
+                    + " ; ground: "
+                    + ground
+                    + " ; "
                     + Arrays.toString(points));
           }
           if (((blleft > 0) && (blleft < 100) && (blleft != 16) && (blleft != 38) && (blleft != 37))
               || ((stagedata[points[4]][points[0]] == 128) || (blleft == 348))) {
-            if (pos.x() - ((points[0] - 1) * 8 + 7) < 1.1) {
+            if (pos.x() - ((points[0] - 1) * PIXELS_PER_TILE + 7) < 1.1) {
               collision[2] = 1;
             }
           }
@@ -381,7 +384,7 @@ public final class Player implements Actor {
                   && (blright != 38)
                   && (blright != 37))
               || (blright == 344)) {
-            if (((points[3] + 1) * 8) - (pos.x() / 8 + 14) < 1.1) {
+            if (((points[3] + 1) * PIXELS_PER_TILE) - (pos.x() / PIXELS_PER_TILE + 14) < 1.1) {
               collision[3] = 1;
             }
           }
@@ -438,16 +441,16 @@ public final class Player implements Actor {
             || ((blground[1] > 0) && (blground[1] < 100))
             || ((blground[2] > 0) && (blground[2] < 100))
             || ((blground[3] > 0) && (blground[3] < 100))) {
-          ground = (points[7] + 1) * 8 * 8;
+          ground = (points[7] + 1) * (int) Stage.getTileSize();
           if (points[7] + 1 > 21) {
             /* Dirty trick to make Jean go bottom of the screen */
-            ground = 300 * 8;
+            ground = 300 * PIXELS_PER_TILE;
           }
-          if ((ground - 1) - (pos.y() + 23) > 1.2 * 64) {
+          if (ground - pos.y() - 24 > gravity * (int) Stage.getTileSize()) {
             pos = new Vector2(pos.x(), pos.y() + gravity);
           } else {
             /* Near ground */
-            pos = new Vector2(pos.x(), pos.y() + (ground - 1) - (pos.y() + 23));
+            pos = new Vector2(pos.x(), ground - 3 * PIXELS_PER_TILE * 8);
             height = 0;
             jump = NEUTRAL;
             flags[5] = 0;
@@ -464,7 +467,7 @@ public final class Player implements Actor {
     // FIXME Are these directions correct?
     if (direction == LEFT) {
       if ((blground[3] == 38)
-          && ((pos.x() + 13) < (points[3] * 8 + 5))
+          && ((pos.x() + 13) < (points[3] * PIXELS_PER_TILE + 5))
           //          && (push[2] == 1)
           && (jump == NEUTRAL)) {
         pos = new Vector2(pos.x(), pos.y() + gravity);
@@ -496,7 +499,7 @@ public final class Player implements Actor {
               && (blroof[1] != 16)
               && (blroof[1] != 38)
               && (blroof[1] != 37))) {
-        if ((pos.y() - 1) - ((points[4] - 1) * 8 + 7) < 1) {
+        if ((pos.y() - 1) - ((points[4] - 1) * PIXELS_PER_TILE + 7) < 1) {
           collision[0] = 1;
         }
       }
@@ -514,8 +517,7 @@ public final class Player implements Actor {
   private Player(Layer layer, Stage stage) {
     this.layer = layer;
     this.stage = stage;
-    this.pos =
-        new Vector2(Config.config().getScreenWidth() / 2, Config.config().getScreenHeight() / 2);
+    this.pos = new Vector2(Config.config().getScreenWidth() / 2, 1120.0f); // FIXME
   }
 
   public static Player of(Layer layer, Stage stage) {

@@ -23,6 +23,7 @@ public class Stage implements Renderable {
   public static final int TILES_PER_ROW = 125; // Calculated tiles per row // atlasWidth / tileSize;
   public static final int TILES_PER_COL =
       30; // Calculated tiles per column // atlasHeight / tileSize;
+  public static final int PIXELS_PER_TILE = 8;
 
   private int[][][] stagedata = new int[NUM_SCREENS][NUM_ROWS][NUM_COLUMNS];
   private int roomx = 0;
