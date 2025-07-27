@@ -12,6 +12,7 @@ import abbaye.AbbayeMain;
 import abbaye.Config;
 import abbaye.basic.*;
 import abbaye.graphics.GLManager;
+import abbaye.logs.GameLogger;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -21,11 +22,16 @@ import org.lwjgl.glfw.GLFWKeyCallbackI;
 
 public final class Player implements Actor {
 
+  public static final int RIGHT_EDGE = 243;
+  public static final int LEFT_EDGE = 0;
+  public static final int BOTTOM_EDGE = 176;
+  public static final int TOP_EDGE = 0;
   // GL fields
   private GLManager manager;
 
   private Layer layer;
   private Stage stage;
+  private GameLogger logger = Config.config().getLogger();
 
   // FIXME
   private int counter = 0;
@@ -42,7 +48,9 @@ public final class Player implements Actor {
   private int animation;
   private int[] points = new int[8]; /* Points of collision */
   private int ground; /* Y-coordinate pixel where the ground is beneath the player */
-  private int[] collision = {0, 0, 0, 0}; /* Collisions, in 4 directions */
+  private int[] collision = {
+    0, 0, 0, 0
+  }; /* Collisions in directions UDLR - D is unused and handled by gravity effects */
   private int[] checkpoint = new int[4];
   private int[] state = new int[2]; /* Vidas y cruces */
   private int[] flags = new int[7];
@@ -60,7 +68,7 @@ public final class Player implements Actor {
 
   @Override
   public void destroy() {
-    System.out.println("Collision detected, should destroy");
+    logger.info("Collision detected, should destroy");
   }
 
   @Override
@@ -154,7 +162,7 @@ public final class Player implements Actor {
 
   public Vector2 newPosition() {
     if (checkCollision()) {
-      System.out.println("Collision detected: " + Arrays.toString(collision));
+      logger.info("Collision detected: " + Arrays.toString(collision));
     }
 
     float dx = 0;
@@ -217,37 +225,36 @@ public final class Player implements Actor {
 
   @Override
   public boolean update() {
-    pos = newPosition();
-    if (pos.x() < 0) {
+    if (pos.x() < LEFT_EDGE) {
       if (stage.moveLeft()) {
-        pos = new Vector2(248, pos.y());
+        pos = new Vector2(PIXELS_PER_TILE * (RIGHT_EDGE - 1), pos.y());
       } else {
         pos = new Vector2(0, pos.y());
       }
     }
-    if (pos.x() > 8 * 248) {
+    if (pos.x() >= PIXELS_PER_TILE * RIGHT_EDGE) {
       if (stage.moveRight()) {
         pos = new Vector2(0, pos.y());
       } else {
-        pos = new Vector2(240, pos.y());
+        pos = new Vector2(PIXELS_PER_TILE * RIGHT_EDGE, pos.y());
       }
     }
-
-    if (pos.y() < 0) {
+    if (pos.y() < TOP_EDGE) {
       if (stage.moveUp()) {
-        pos = new Vector2(pos.x(), 176);
+        pos = new Vector2(pos.x(), PIXELS_PER_TILE * (BOTTOM_EDGE - 1));
       } else {
-        pos = new Vector2(pos.x(), 0);
+        pos = new Vector2(pos.x(), TOP_EDGE);
       }
     }
-    if (pos.y() > 8 * 200) {
+    if (pos.y() > PIXELS_PER_TILE * BOTTOM_EDGE) {
       if (stage.moveDown()) {
-        pos = new Vector2(pos.x(), 0);
+        pos = new Vector2(pos.x(), TOP_EDGE);
       } else {
-        pos = new Vector2(pos.x(), 8 * 176);
+        pos = new Vector2(pos.x(), PIXELS_PER_TILE * BOTTOM_EDGE);
       }
     }
 
+    pos = newPosition();
     return true;
   }
 
@@ -354,14 +361,17 @@ public final class Player implements Actor {
 
     /* Left & Right collisions */
     if (!crouch) {
+      CHECKS:
       for (var n = 4; n < 8; n += 1) {
-        // FIXME Are these directions correct?
-        if (((points[0] != 0) && (direction == LEFT))
-            || ((points[3] != NUM_COLUMNS - 1) && (direction == RIGHT))) {
+        if ((points[0] <= 0) || (points[3] + 1 >= NUM_COLUMNS)) {
+          continue CHECKS;
+        }
+        if (((points[0] > 0) && (direction == LEFT))
+            || ((points[3] + 1 < NUM_COLUMNS) && (direction == RIGHT))) {
           blleft = stagedata[points[n]][points[0] - 1];
           blright = stagedata[points[n]][points[3] + 1];
           if (counter++ % 10 == 0) {
-            System.out.println(
+            logger.debug(
                 pos
                     + " ; blleft: "
                     + blleft
