@@ -24,7 +24,7 @@ public final class Player implements Actor {
 
   public static final int RIGHT_EDGE = 243;
   public static final int LEFT_EDGE = 0;
-  public static final int BOTTOM_EDGE = 176;
+  public static final int BOTTOM_EDGE = 146;
   public static final int TOP_EDGE = 0;
   // GL fields
   private GLManager manager;
@@ -241,16 +241,16 @@ public final class Player implements Actor {
     }
     if (pos.y() < TOP_EDGE) {
       if (stage.moveUp()) {
-        pos = new Vector2(pos.x(), PIXELS_PER_TILE * (BOTTOM_EDGE - 1));
+        pos = new Vector2(pos.x(), PIXELS_PER_TILE * (BOTTOM_EDGE - 3));
       } else {
         pos = new Vector2(pos.x(), TOP_EDGE);
       }
     }
-    if (pos.y() > PIXELS_PER_TILE * BOTTOM_EDGE) {
+    if (pos.y() > PIXELS_PER_TILE * (BOTTOM_EDGE - 3)) {
       if (stage.moveDown()) {
         pos = new Vector2(pos.x(), TOP_EDGE);
       } else {
-        pos = new Vector2(pos.x(), PIXELS_PER_TILE * BOTTOM_EDGE);
+        pos = new Vector2(pos.x(), PIXELS_PER_TILE * (BOTTOM_EDGE - 3));
       }
     }
 
@@ -363,8 +363,8 @@ public final class Player implements Actor {
     if (!crouch) {
       CHECKS:
       for (var n = 4; n < 8; n += 1) {
-        if ((points[0] <= 0) || (points[3] + 1 >= NUM_COLUMNS)) {
-          continue CHECKS;
+        if ((points[0] <= 0) || (points[3] + 1 >= NUM_COLUMNS) || (points[n] + 1 >= NUM_ROWS)) {
+          break CHECKS;
         }
         if (((points[0] > 0) && (direction == LEFT))
             || ((points[3] + 1 < NUM_COLUMNS) && (direction == RIGHT))) {
@@ -494,11 +494,11 @@ public final class Player implements Actor {
       }
     }
 
-    /* Touch roof collision */
-    blroof[0] = stagedata[points[4] - 1][points[0]];
-    blroof[1] = stagedata[points[4] - 1][points[3]];
-
     if ((jump == JUMP) && (points[4] > 0)) {
+      /* Touch roof collision */
+      blroof[0] = stagedata[points[4] - 1][points[0]];
+      blroof[1] = stagedata[points[4] - 1][points[3]];
+
       if (((blroof[0] > 0)
               && (blroof[0] < 100)
               && (blroof[0] != 16)
@@ -527,7 +527,7 @@ public final class Player implements Actor {
   private Player(Layer layer, Stage stage) {
     this.layer = layer;
     this.stage = stage;
-    this.pos = new Vector2(Config.config().getScreenWidth() / 2, 1120.0f); // FIXME
+    this.pos = new Vector2(Config.config().getScreenWidth() / 2, 1088.0f); // FIXME
   }
 
   public static Player of(Layer layer, Stage stage) {
