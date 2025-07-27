@@ -2,10 +2,11 @@
 package abbaye.basic;
 
 import static abbaye.graphics.GLManager.*;
-import static org.lwjgl.glfw.GLFW.GLFW_HAT_RIGHT;
+import static abbaye.model.Facing.RIGHT;
 
 import abbaye.AbbayeMain;
 import abbaye.model.Enemy;
+import abbaye.model.Facing;
 import abbaye.model.Player;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -35,7 +36,7 @@ public sealed interface Actor extends Renderable permits Player, Enemy {
   default float[] renderMatrix(float posX, float posY, float tileDisplaySize) {
     float[] translate = createTranslationMatrix(posX, posY, 0);
     int horizontalFlip = 1;
-    if (getDirection() == GLFW_HAT_RIGHT) {
+    if (getDirection() == RIGHT) {
       horizontalFlip = -1;
     }
     float[] scale = createScaleMatrix(horizontalFlip * tileDisplaySize, tileDisplaySize, 1);
@@ -50,7 +51,7 @@ public sealed interface Actor extends Renderable permits Player, Enemy {
 
   Vector2 getV();
 
-  int getDirection();
+  Facing getDirection();
 
   Vector2 getSize();
 

@@ -207,6 +207,7 @@ public class AbbayeMain {
     //    font.buildFont("Courier New", 24);
 
     Player p = Player.of(layer, stage);
+    p.init();
     //    p.setFont(font);
     layer.setPlayer(p);
     layer.init();

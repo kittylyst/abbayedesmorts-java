@@ -23,6 +23,7 @@ public class Stage implements Renderable {
   public static final int TILES_PER_ROW = 125; // Calculated tiles per row // atlasWidth / tileSize;
   public static final int TILES_PER_COL =
       30; // Calculated tiles per column // atlasHeight / tileSize;
+  public static final int PIXELS_PER_TILE = 8;
 
   private int[][][] stagedata = new int[NUM_SCREENS][NUM_ROWS][NUM_COLUMNS];
   private int roomx = 0;
@@ -81,16 +82,24 @@ public class Stage implements Renderable {
     return renderer.render();
   }
 
+  /**
+   * @param level
+   * @return 2d array of tile ids in [x][y] order
+   */
   public int[][] getScreen(int level) {
     return stagedata[level];
   }
 
-  public int getRoomX() {
-    return roomx;
-  }
+  //  public int getRoomX() {
+  //    return roomx;
+  //  }
+  //
+  //  public int getRoomY() {
+  //    return roomy;
+  //  }
 
-  public int getRoomY() {
-    return roomy;
+  public int getRoom() {
+    return roomy * SCREENS_X + roomx;
   }
 
   public boolean moveLeft() {
