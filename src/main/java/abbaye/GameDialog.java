@@ -8,11 +8,14 @@ import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
+import static org.lwjgl.system.MemoryStack.stackPush;
 
 import abbaye.basic.Corners;
 import abbaye.graphics.GLManager;
 import abbaye.graphics.OGLFont;
 import abbaye.model.Player;
+import java.nio.IntBuffer;
+import org.lwjgl.system.MemoryStack;
 
 public class GameDialog {
   public enum State {
@@ -45,10 +48,10 @@ public class GameDialog {
   }
 
   private static float[] PROJECTION_MATRIX = {
-    1.5f, 0.0f, Z_ZERO, 0.0f,
-    0.0f, 1.5f, Z_ZERO, 0.0f,
+    6.0f, 0.0f, Z_ZERO, 0.0f,
+    0.0f, 6.0f, Z_ZERO, 0.0f,
     0.0f, 0.0f, Z_ZERO, 0.0f,
-    0.0f, 0.0f, Z_ZERO, 1.0f
+    -1.0f, -1.0f, Z_ZERO, 1.0f
   };
 
   public void render() {
@@ -58,6 +61,13 @@ public class GameDialog {
         // True if we're testing
         if (mainClass == null) {
           return;
+        }
+
+        try (MemoryStack stack = stackPush()) {
+          IntBuffer width = stack.mallocInt(1);
+          IntBuffer height = stack.mallocInt(1);
+          glfwGetFramebufferSize(window, width, height);
+          glViewport(0, 0, width.get(0), height.get(0));
         }
 
         var shaderProgram = glManager.getShaderProgram();
@@ -73,8 +83,7 @@ public class GameDialog {
         glBindTexture(GL_TEXTURE_2D, introSplashTexture);
         glBindVertexArray(glManager.getVAO());
 
-        // FIXME Positioning
-        glManager.renderTile(new Corners(0, 0, 1.0f, 0.5f), PROJECTION_MATRIX);
+        glManager.renderTile(new Corners(-1.0f, -1.0f, 2.0f, 0.5f), PROJECTION_MATRIX);
       }
       case END -> {
         // Used for testing
