@@ -39,32 +39,32 @@ public class StageRenderer implements Renderable {
       // Set up orthographic projection
       float[] projection = createOrthographicMatrix(0, width.get(0), height.get(0), 0, -1, 1);
       glUniformMatrix4fv(manager.getProjectionLocation(), false, projection);
-
-      // Bind texture
-      glBindTexture(GL_TEXTURE_2D, tilesTexture);
-      glBindVertexArray(manager.getVAO());
-
-      var shaderProgram = manager.getShaderProgram();
-      glUseProgram(shaderProgram);
-
-      // FIXME Are these tiles square?
-      var tileDisplaySize = Stage.getTileSize();
-
-      // Render each tile of this room
-      for (int y = 0; y < Stage.NUM_ROWS; y++) {
-        for (int x = 0; x < Stage.NUM_COLUMNS; x++) {
-          var tileCoords = tilemap.getCorners(x, y);
-
-          float displayPosX = x * tileDisplaySize;
-          float displayPosY = y * tileDisplaySize;
-
-          manager.renderTile(tileCoords, tileDisplaySize, displayPosX, displayPosY);
-        }
-      }
-
-      glBindVertexArray(manager.getVAO());
-      glUseProgram(manager.getShaderProgram());
     }
+
+    // Bind texture
+    glBindTexture(GL_TEXTURE_2D, tilesTexture);
+    glBindVertexArray(manager.getVAO());
+
+    var shaderProgram = manager.getShaderProgram();
+    glUseProgram(shaderProgram);
+
+    var tileDisplaySize = Stage.getTileSize();
+
+    // Render each tile of this room
+    for (int y = 0; y < Stage.NUM_ROWS; y += 1) {
+      for (int x = 0; x < Stage.NUM_COLUMNS; x += 1) {
+        var tileCoords = tilemap.getCorners(x, y);
+
+        float displayPosX = x * tileDisplaySize;
+        float displayPosY = y * tileDisplaySize;
+
+        manager.renderTile(tileCoords, tileDisplaySize, displayPosX, displayPosY);
+      }
+    }
+
+    glBindVertexArray(manager.getVAO());
+    glUseProgram(manager.getShaderProgram());
+
     return true;
   }
 

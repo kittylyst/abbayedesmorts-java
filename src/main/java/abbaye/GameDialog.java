@@ -1,7 +1,7 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye;
 
-import static abbaye.graphics.GLManager.Z_ZERO;
+import static abbaye.graphics.GLManager.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
@@ -9,6 +9,7 @@ import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
+import abbaye.basic.Corners;
 import abbaye.graphics.GLManager;
 import abbaye.graphics.OGLFont;
 import abbaye.model.Player;
@@ -58,30 +59,22 @@ public class GameDialog {
         if (mainClass == null) {
           return;
         }
-        // Setup projection matrix (orthographic)
-        //        if (glManager == null) {
-        //          state = State.INACTIVE;
-        //          return;
-        //        }
+
         var shaderProgram = glManager.getShaderProgram();
         glUseProgram(shaderProgram);
-        var projectionLocation = glGetUniformLocation(shaderProgram, "projection");
-
-        glUniformMatrix4fv(projectionLocation, false, PROJECTION_MATRIX);
-
         // Set texture uniform
         glUniform1i(glGetUniformLocation(shaderProgram, "splashTexture"), 0);
 
         // Set alpha uniform for fade effect
-        glUniform1f(glGetUniformLocation(glManager.getShaderProgram(), "alpha"), 1.0f);
+        glUniform1f(glGetUniformLocation(shaderProgram, "alpha"), 1.0f);
 
         // Bind texture
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, introSplashTexture);
-
-        // Draw quad
         glBindVertexArray(glManager.getVAO());
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        // FIXME Positioning
+        glManager.renderTile(new Corners(0, 0, 1.0f, 0.5f), PROJECTION_MATRIX);
       }
       case END -> {
         // Used for testing

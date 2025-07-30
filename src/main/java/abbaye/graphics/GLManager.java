@@ -45,6 +45,7 @@ public final class GLManager {
 
   static {
     if (Config.config().getGLActive()) {
+      // Splash screen shaders
       var manager = new GLManager();
       manager.init("/shaders/splash.vert", "/shaders/splash.frag");
       // Get locations for uniforms
@@ -58,8 +59,8 @@ public final class GLManager {
       glEnableVertexAttribArray(1);
       managers.put("dialog", manager);
 
+      // Main game shaders
       manager = new GLManager();
-      // FIXME This is currently a shader for a solid colour not a texture map
       manager.init("/shaders/game.vert", "/shaders/game.frag");
       // Get locations for uniforms
       manager.projectionLocation = glGetUniformLocation(manager.shaderProgram, "projection");
@@ -72,7 +73,6 @@ public final class GLManager {
       // Texture coordinate attribute
       glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
       glEnableVertexAttribArray(1);
-
       managers.put("game", manager);
     }
   }
@@ -318,8 +318,7 @@ public final class GLManager {
     renderTile(tileCoords, finalModel);
   }
 
-  public void renderTile(Corners tileCoords, float[] finalModel) {
-
+  public void renderTile(Corners tileCoords, final float[] finalModel) {
     updateTileVertices(tileCoords);
 
     int modelLoc = glGetUniformLocation(shaderProgram, "model");

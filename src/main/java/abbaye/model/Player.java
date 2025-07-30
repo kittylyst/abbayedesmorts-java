@@ -91,6 +91,10 @@ public final class Player implements Actor {
       return false;
     }
 
+    if (counter % 100 == 0) {
+      System.out.println(stage.getCache());
+    }
+
     var tileDisplaySize = Stage.getTileSize();
     float posX, posY;
     Corners tileCoords;
