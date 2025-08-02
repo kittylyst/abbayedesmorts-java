@@ -20,9 +20,8 @@ public class Stage implements Renderable {
   public static final int NUM_COLUMNS = 32;
   public static final int NUM_ROWS = 22;
 
-  public static final int TILES_PER_ROW = 125; // Calculated tiles per row // atlasWidth / tileSize;
-  public static final int TILES_PER_COL =
-      30; // Calculated tiles per column // atlasHeight / tileSize;
+  public static final int TILES_PER_ROW = 125;
+  public static final int TILES_PER_COL = 30;
   public static final int PIXELS_PER_TILE = 8;
 
   private int[][][] stagedata = new int[NUM_SCREENS][NUM_ROWS][NUM_COLUMNS];
@@ -79,7 +78,8 @@ public class Stage implements Renderable {
 
   @Override
   public boolean render() {
-    return renderer.render();
+    var out = renderer.render();
+    return out;
   }
 
   /**
@@ -89,14 +89,6 @@ public class Stage implements Renderable {
   public int[][] getScreen(int level) {
     return stagedata[level];
   }
-
-  //  public int getRoomX() {
-  //    return roomx;
-  //  }
-  //
-  //  public int getRoomY() {
-  //    return roomy;
-  //  }
 
   public int getRoom() {
     return roomy * SCREENS_X + roomx;
@@ -195,8 +187,8 @@ public class Stage implements Renderable {
     }
   }
 
-  public Corners getCorners(int tileType) {
-    return cache.get(tileType);
+  public Map<Integer, Corners> getCache() {
+    return cache;
   }
 
   public Corners getCorners(int x, int y) {
