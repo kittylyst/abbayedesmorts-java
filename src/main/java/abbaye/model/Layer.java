@@ -17,6 +17,7 @@ public class Layer {
   private Optional<Stage> oStage = Optional.empty();
 
   public void init() {
+    // Init order shouldn't matter (where render order does)
     for (var gObj : getRenderables()) {
       gObj.init();
     }
