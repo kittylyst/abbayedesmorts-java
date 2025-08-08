@@ -10,7 +10,6 @@ import abbaye.graphics.StageRenderer;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
-import org.lwjgl.glfw.GLFWKeyCallbackI;
 
 /** The stage shows the layout of the furniture of the current screen */
 public class Stage implements Renderable {
@@ -25,8 +24,9 @@ public class Stage implements Renderable {
   public static final int PIXELS_PER_TILE = 8;
 
   private int[][][] stagedata = new int[NUM_SCREENS][NUM_ROWS][NUM_COLUMNS];
-  private int roomx = 0;
-  private int roomy = 1;
+  // Initial room coordinates
+  private int roomx = 1;
+  private int roomy = 2;
 
   private Map<Integer, Corners> cache = new HashMap<>();
 
@@ -124,41 +124,6 @@ public class Stage implements Renderable {
       return true;
     }
     return false;
-  }
-
-  public GLFWKeyCallbackI moveCallback() {
-    return (window, key, scancode, action, mods) -> {
-      if (action == GLFW_RELEASE) {
-        switch (key) {
-          case GLFW_KEY_ESCAPE:
-            {
-              glfwSetWindowShouldClose(window, true);
-              break;
-            }
-          case GLFW_KEY_RIGHT:
-            {
-              moveRight();
-              break;
-            }
-          case GLFW_KEY_LEFT:
-            {
-              moveLeft();
-              break;
-            }
-          case GLFW_KEY_DOWN:
-            {
-              moveDown();
-              break;
-            }
-          case GLFW_KEY_UP:
-            {
-              moveUp();
-              break;
-            }
-          default:
-        }
-      }
-    };
   }
 
   /**
