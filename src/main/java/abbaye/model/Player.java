@@ -100,6 +100,8 @@ public final class Player implements Actor {
     Corners tileCoords;
 
     if (direction == LEFT) {
+      // posX and posY represent where we're going to render
+      // tileCoords represents where in the tile texture to pick out the player tile that we'll render
       posX = pos.x();
       posY = pos.y();
       tileCoords = makeCorners(44, 11);
@@ -413,7 +415,7 @@ public final class Player implements Actor {
       // FIXME Are these directions correct?
       if (((points[0] != 0) && (direction == LEFT))
           || ((points[3] != NUM_COLUMNS - 1) && (direction == RIGHT))) {
-        r = (int) ((pos.y() + 16) / 8);
+        r = (int) ((pos.y() + 16) / Stage.getTileSize());
         blleft = stagedata[r][points[0] - 1];
         blright = stagedata[r][points[3] + 1];
         if (((blleft > 0) && (blleft < 100) && (blleft != 37))
