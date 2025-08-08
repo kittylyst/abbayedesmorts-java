@@ -5,6 +5,7 @@ import abbaye.AbbayeMain;
 import abbaye.Config;
 import abbaye.basic.Actor;
 import abbaye.basic.Renderable;
+import abbaye.logs.GameLogger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +16,9 @@ public class Layer {
 
   private Optional<Player> oPlayer = Optional.empty();
   private Optional<Stage> oStage = Optional.empty();
+  private Optional<StatusDisplay> oStatus = Optional.empty();
+
+  private GameLogger logger = Config.config().getLogger();
 
   public void init() {
     // Init order shouldn't matter (where render order does)
@@ -38,6 +42,7 @@ public class Layer {
     // Order matters!
     oStage.ifPresent(Stage::render);
     oPlayer.ifPresent(Player::render);
+    oStatus.ifPresent(StatusDisplay::render);
 
     // Render other stuff
     for (var gObj : misc) {
@@ -70,7 +75,7 @@ public class Layer {
     try {
       oPlayer.filter(Player::checkHit).ifPresent(Player::destroy);
     } catch (Throwable t) {
-      oPlayer.ifPresent(System.out::println);
+      oPlayer.ifPresent(p -> logger.error("Player threw: " + p, t));
     }
 
     // FIXME Now enemies
@@ -96,5 +101,9 @@ public class Layer {
 
   public void setStage(Stage stage) {
     oStage = Optional.of(stage);
+  }
+
+  public void setStatus(StatusDisplay status) {
+    oStatus = Optional.of(status);
   }
 }

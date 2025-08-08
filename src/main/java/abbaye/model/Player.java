@@ -101,7 +101,8 @@ public final class Player implements Actor {
 
     if (direction == LEFT) {
       // posX and posY represent where we're going to render
-      // tileCoords represents where in the tile texture to pick out the player tile that we'll render
+      // tileCoords represents where in the tile texture to pick out the player tile that we'll
+      // render
       posX = pos.x();
       posY = pos.y();
       tileCoords = makeCorners(44, 11);
@@ -652,5 +653,9 @@ public final class Player implements Actor {
   @Override
   public Facing getDirection() {
     return direction;
+  }
+
+  public int getLives() {
+    return lives;
   }
 }
