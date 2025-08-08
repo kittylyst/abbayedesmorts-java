@@ -7,12 +7,12 @@ public enum Room {
   ROOM_TOWER(2, "Tower of the Bell"),
   ROOM_WINE(3, "Wine supplies"),
   ROOM_THEEND(4, "THE END"),
-  ROOM_ESCAPE(5, "Escape!!!"), // 5 - (0,1) entry point
+  ROOM_ESCAPE(5, "Escape!!!"), // 5 - (1,0) entry point
   ROOM_CLOSE(6, "Death is close"),
   ROOM_CHURCH(7, "Abandoned church"),
   ROOM_ALTAR(8, "The Altar"),
   ROOM_HANGMAN(9, "Hangman Tree"),
-  ROOM_BEAST(10, "Pestilent Beast"), // 10 - (0,2)
+  ROOM_BEAST(10, "Pestilent Beast"), // 10 - (2,0)
   ROOM_CAVE(11, "Cave of illusions"),
   ROOM_RUINS(12, "Plagued ruins"),
   ROOM_CATACOMBS(13, "Catacombs"),
