@@ -14,8 +14,10 @@ public class Layer {
   private final List<Renderable> misc = new ArrayList<>();
 
   private Optional<Player> oPlayer = Optional.empty();
+  private Optional<Stage> oStage = Optional.empty();
 
   public void init() {
+    // Init order shouldn't matter (where render order does)
     for (var gObj : getRenderables()) {
       gObj.init();
     }
@@ -25,6 +27,7 @@ public class Layer {
     var renderables = new ArrayList<Renderable>();
     renderables.addAll(misc);
     oPlayer.ifPresent(renderables::add);
+    oStage.ifPresent(renderables::add);
     //    for (var formation : formations) {
     //      renderables.addAll(formation.getEnemies());
     //    }
@@ -32,8 +35,12 @@ public class Layer {
   }
 
   public void render() {
+    // Order matters!
+    oStage.ifPresent(Stage::render);
     oPlayer.ifPresent(Player::render);
-    for (var gObj : getRenderables()) {
+
+    // Render other stuff
+    for (var gObj : misc) {
       gObj.render();
     }
   }
@@ -85,5 +92,9 @@ public class Layer {
 
   public void setPlayer(Player p) {
     oPlayer = Optional.of(p);
+  }
+
+  public void setStage(Stage stage) {
+    oStage = Optional.of(stage);
   }
 }

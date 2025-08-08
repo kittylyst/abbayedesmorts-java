@@ -188,7 +188,6 @@ public class AbbayeMain {
         if (gameDialog.isActive()) {
           gameDialog.render();
         } else {
-          stage.render();
           layer.render();
         }
 
@@ -210,6 +209,7 @@ public class AbbayeMain {
     p.init();
     //    p.setFont(font);
     layer.setPlayer(p);
+    layer.setStage(stage);
     layer.init();
 
     gameDialog.setPlayer(p);
