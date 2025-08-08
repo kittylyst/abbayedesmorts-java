@@ -54,7 +54,6 @@ public final class Player implements Actor {
   private int[] checkpoint = new int[4];
   private int[] state = new int[2]; /* Vidas y cruces */
   private int[] flags = new int[7];
-  private int death;
   private boolean walk = false;
 
   //  int push[4]; /* Pulsaciones de teclas */
@@ -91,7 +90,7 @@ public final class Player implements Actor {
       return false;
     }
 
-    if (counter % 100 == 0) {
+    if (counter % 500 == 0) {
       System.out.println(stage.getCache());
     }
 
@@ -330,8 +329,7 @@ public final class Player implements Actor {
   }
 
   /**
-   * This is currently only for collisions with walls, but note that we have no enemies in the game
-   * yet
+   * This is (only) for collisions with walls
    *
    * @return
    */
@@ -521,6 +519,46 @@ public final class Player implements Actor {
     return (collision[0] + collision[1] + collision[2] + collision[3]) > 0;
   }
 
+  public boolean touchStaticObject() {
+    int room = stage.getRoom();
+    var stagedata = stage.getScreen(room);
+    
+    /* Touch hearts */
+    if (room == ROOM_ASHES.index()) {
+      if (((stagedata[y+1][x] > 400) && (stagedata[y+1][x] < 405)) || ((stagedata[y+1][x+1] > 400) && (stagedata[y+1][x+1] < 405))) {
+        if (x > 160) {
+          stagedata[7][23] = 0;
+          stagedata[7][24] = 0;
+          stagedata[8][23] = 0;
+          stagedata[8][24] = 0;
+        }
+        else {
+          stagedata[18][8] = 0;
+          stagedata[18][9] = 0;
+          stagedata[19][8] = 0;
+          stagedata[19][9] = 0;
+        }
+        if (state[0] < 9)
+          state[0] += 1;
+//        Mix_PlayChannel(-1, fx[2], 0);
+      }
+    }
+		else {
+      if (((stagedata[y+1][x] > 400) && (stagedata[y+1][x] < 405)) || ((stagedata[y+1][x+1] > 400) && (stagedata[y+1][x+1] < 405))) {
+        for (var v=0; v<22; v++) {
+          for (var h=0;h<32;h++) {
+            if ((stagedata[v][h] > 400) && (stagedata[v][h] < 405))
+            stagedata[v][h] = 0;
+          }
+        }
+        if (state[0] < 9) {
+          state[0] += 1;
+//        Mix_PlayChannel(-1, fx[2], 0);
+        }
+      }
+    }
+  }
+  
   public static class PlayerSerializer extends JsonSerializer<Player> {
     @Override
     public void serialize(
@@ -573,8 +611,6 @@ public final class Player implements Actor {
         + Arrays.toString(state)
         + ", flags="
         + Arrays.toString(flags)
-        + ", death="
-        + death
         + ", walk="
         + walk
         + '}';
