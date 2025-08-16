@@ -42,6 +42,7 @@ public class Layer {
     // Order matters!
     oStage.ifPresent(Stage::render);
     oPlayer.ifPresent(Player::render);
+    // Status display needs to bind a different texture map (the fonts)
     oStatus.ifPresent(StatusDisplay::render);
 
     // Render other stuff
@@ -105,5 +106,9 @@ public class Layer {
 
   public void setStatus(StatusDisplay status) {
     oStatus = Optional.of(status);
+  }
+
+  public void cleanup() {
+    oStage.ifPresent(Stage::cleanup);
   }
 }

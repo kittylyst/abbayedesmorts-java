@@ -12,7 +12,6 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 
 import abbaye.basic.Corners;
 import abbaye.graphics.GLManager;
-import abbaye.graphics.OGLFont;
 import abbaye.model.Player;
 import java.nio.IntBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -30,12 +29,8 @@ public class GameDialog {
 
   private final int introSplashTexture;
 
-  private OGLFont font;
   private State state;
   private Player player;
-
-  private static final int SPLASH_SIZE_X = 256;
-  private static final int SPLASH_SIZE_Y = 384;
 
   public GameDialog(Player pl, AbbayeMain main) {
     player = pl;
@@ -117,19 +112,13 @@ public class GameDialog {
   public void startTurn() {
     state = State.INACTIVE;
     glfwSetKeyCallback(window, mainClass.getLayer().moveCallback());
-    //    glfwSetKeyCallback(window, mainClass.getStage().moveCallback());
   }
 
   public void setPlayer(Player player) {
     this.player = player;
   }
 
-  public void setFont(OGLFont font) {
-    this.font = font;
-  }
-
   public boolean isActive() {
-    //    return false;
     return !(state == State.INACTIVE);
   }
 }

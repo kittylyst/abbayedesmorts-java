@@ -8,7 +8,6 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 import abbaye.basic.Clock;
-import abbaye.graphics.OGLFont;
 import abbaye.model.*;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,7 +28,6 @@ public class AbbayeMain {
 
   private boolean fullscreen = false;
   private final String windowTitle = "Abbaye Des Mortes";
-  private Stage stage = new Stage();
   private Layer layer = new Layer();
   private GameDialog gameDialog;
   private long window;
@@ -94,7 +92,6 @@ public class AbbayeMain {
       System.exit(1);
     }
     gameDialog = new GameDialog(null, this);
-    stage.load(window);
     glfwSetKeyCallback(
         window,
         (w, key, scancode, action, mods) -> {
@@ -201,8 +198,8 @@ public class AbbayeMain {
   }
 
   void initLayer() {
-    var font = new OGLFont();
-    //    font.buildFont("Courier New", 24);
+    var stage = new Stage();
+    stage.load(window);
 
     var p = Player.of(layer, stage);
     p.init();
@@ -216,12 +213,10 @@ public class AbbayeMain {
     layer.init();
 
     gameDialog.setPlayer(p);
-    gameDialog.setFont(font);
-    //    gameDialog.reset();
   }
 
   private void cleanup() {
-    stage.cleanup();
+    layer.cleanup();
     glfwFreeCallbacks(window);
     glfwDestroyWindow(window);
     glfwTerminate();
@@ -232,9 +227,9 @@ public class AbbayeMain {
     return window;
   }
 
-  public Stage getStage() {
-    return stage;
-  }
+  //  public Stage getStage() {
+  //    return stage;
+  //  }
 
   public Layer getLayer() {
     return layer;
