@@ -20,7 +20,7 @@ public class StatusDisplay implements Renderable {
   private GLManager manager;
   private int texture;
 
-  public record Glyph(int width, int height, int x, int y, float advance) {}
+  public record Glyph(char c, int width, int height, Corners corners) {}
 
   /** Contains the glyphs for each char. */
   private final Map<Character, Glyph> glyphs = new HashMap<>();
@@ -42,9 +42,12 @@ public class StatusDisplay implements Renderable {
       manager = GLManager.get("game");
       texture = GLManager.loadTexture("/fonts.png", true, true);
     }
-    //    for (var i = 0; i < 10; i += 1) {
-    //      glyphs.put(i, new Glyph());
-    //    }
+    for (byte i = 0; i < 10; i += 1) {
+      char c = (char) ('0' + i);
+      float u = i * 0.07f;
+      var corners = new Corners(u, 0, u + 0.05f, 0.05f);
+      glyphs.put(c, new Glyph(c, 64, 64, corners));
+    }
   }
 
   @Override
@@ -52,20 +55,12 @@ public class StatusDisplay implements Renderable {
     manager.bindTexture(texture);
 
     var scoreText = "" + player.getLives(); // "Lives: " +
-    logger.info(scoreText);
+    //    logger.info(scoreText);
     if (!Config.config().getGLActive()) {
       return false;
     }
-    // FIXME
-    //        renderText(scoreText, 0, 0);
-    var tileDisplaySize = Stage.getTileSize();
-    for (var i = 0; i < 10; i += 1) {
-      float u = i * 0.05f;
-      var tileCoords = new Corners(u, 0.8f, u + 0.05f, 0.85f);
-      var m1 = createTranslationMatrix(i * tileDisplaySize, 22 * tileDisplaySize, 0);
-      float[] scale = createScaleMatrix(tileDisplaySize, tileDisplaySize, 1);
-      manager.renderTile(tileCoords, multiplyMatrices(scale, m1));
-    }
+    // FIXME x and y
+    renderText(scoreText, 0, 0);
 
     return false;
   }
@@ -88,12 +83,14 @@ public class StatusDisplay implements Renderable {
       drawY += textHeight - fontHeight;
     }
 
+    var tileDisplaySize = Stage.getTileSize();
     for (int i = 0; i < text.length(); i++) {
+      drawX = i * tileDisplaySize;
       char ch = text.charAt(i);
       if (ch == '\n') {
         /* Line feed, set x and y to draw at the next line */
         drawY -= fontHeight;
-        drawX = x;
+        //        drawX = x;
         continue;
       }
       if (ch == '\r') {
@@ -102,12 +99,10 @@ public class StatusDisplay implements Renderable {
       }
       Glyph g = glyphs.get(ch);
 
-      // glyphCoords represents where in the tile texture to pick out the player tile that we'll
-      // render
-      //      var glyphCoords = g.getCorners(44, 11);
-      //      manager.renderTile(glyphCoords, renderMatrix(drawX, drawY, Stage.getTileSize()));
-
-      drawX += g.width();
+      var m1 = createTranslationMatrix(drawX, 24 * tileDisplaySize, 0);
+      float[] scale = createScaleMatrix(tileDisplaySize, -tileDisplaySize, 1);
+      manager.renderTile(g.corners(), multiplyMatrices(scale, m1));
+      //      drawX += g.width();
     }
   }
 
@@ -171,15 +166,4 @@ public class StatusDisplay implements Renderable {
   public int getFontHeight() {
     return fontHeight;
   }
-
-  //  /**
-  //   * Draw text at the specified position.
-  //   *
-  //   * @param text Text to draw
-  //   * @param x X coordinate of the text position
-  //   * @param y Y coordinate of the text position
-  //   */
-  //  public void drawText(CharSequence text, float x, float y) {
-  //    drawText(text, x, y, Color.WHITE);
-  //  }
 }
