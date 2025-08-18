@@ -361,4 +361,15 @@ public final class GLManager {
     }
     return result;
   }
+
+  /**
+   * Bind texture for render - fonts use a different texture
+   *
+   * @param texture
+   */
+  public void bindTexture(int texture) {
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glBindVertexArray(VAO);
+    glUseProgram(shaderProgram);
+  }
 }

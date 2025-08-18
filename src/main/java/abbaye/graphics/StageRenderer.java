@@ -41,12 +41,7 @@ public class StageRenderer implements Renderable {
       glUniformMatrix4fv(manager.getProjectionLocation(), false, projection);
     }
 
-    // Bind texture
-    glBindTexture(GL_TEXTURE_2D, tilesTexture);
-    glBindVertexArray(manager.getVAO());
-
-    var shaderProgram = manager.getShaderProgram();
-    glUseProgram(shaderProgram);
+    manager.bindTexture(tilesTexture);
 
     var tileDisplaySize = Stage.getTileSize();
 
@@ -61,9 +56,6 @@ public class StageRenderer implements Renderable {
         manager.renderTile(tileCoords, tileDisplaySize, displayPosX, displayPosY);
       }
     }
-
-    glBindVertexArray(manager.getVAO());
-    glUseProgram(manager.getShaderProgram());
 
     return true;
   }
@@ -81,12 +73,12 @@ public class StageRenderer implements Renderable {
     matrix[14] = -(far + near) / (far - near);
     matrix[15] = 1.0f;
 
-    float[] projectionMatrix = {
-      1.0f, 0.0f, 0.0f, 0.0f,
-      0.0f, 1.0f, 0.0f, 0.0f,
-      0.0f, 0.0f, -1.0f, 0.0f,
-      0.0f, 0.0f, 0.0f, 1.0f
-    };
+    //    float[] projectionMatrix = {
+    //      1.0f, 0.0f, 0.0f, 0.0f,
+    //      0.0f, 1.0f, 0.0f, 0.0f,
+    //      0.0f, 0.0f, -1.0f, 0.0f,
+    //      0.0f, 0.0f, 0.0f, 1.0f
+    //    };
 
     return matrix;
   }

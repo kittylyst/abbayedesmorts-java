@@ -2,7 +2,6 @@
 package abbaye.basic;
 
 import static abbaye.graphics.GLManager.*;
-import static abbaye.model.Facing.RIGHT;
 
 import abbaye.AbbayeMain;
 import abbaye.model.Enemy;
@@ -31,16 +30,6 @@ public sealed interface Actor extends Renderable permits Player, Enemy {
     return new Vector2(
         (float) (getPos().x() + getV().x() * Clock.getFrameInterval() * getMoveSpeed()),
         (float) (getPos().y() + getV().y() * Clock.getFrameInterval() * getMoveSpeed()));
-  }
-
-  default float[] renderMatrix(float posX, float posY, float tileDisplaySize) {
-    float[] translate = createTranslationMatrix(posX, posY, 0);
-    int horizontalFlip = 1;
-    if (getDirection() == RIGHT) {
-      horizontalFlip = -1;
-    }
-    float[] scale = createScaleMatrix(horizontalFlip * tileDisplaySize, tileDisplaySize, 1);
-    return multiplyMatrices(scale, translate);
   }
 
   default float getMoveSpeed() {

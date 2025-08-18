@@ -32,9 +32,7 @@ public class Layer {
     renderables.addAll(misc);
     oPlayer.ifPresent(renderables::add);
     oStage.ifPresent(renderables::add);
-    //    for (var formation : formations) {
-    //      renderables.addAll(formation.getEnemies());
-    //    }
+
     return renderables;
   }
 

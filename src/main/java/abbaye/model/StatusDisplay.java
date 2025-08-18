@@ -1,8 +1,11 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.model;
 
+import static abbaye.graphics.GLManager.*;
+
 import abbaye.AbbayeMain;
 import abbaye.Config;
+import abbaye.basic.Corners;
 import abbaye.basic.Renderable;
 import abbaye.graphics.GLManager;
 import abbaye.logs.GameLogger;
@@ -22,9 +25,6 @@ public class StatusDisplay implements Renderable {
   /** Contains the glyphs for each char. */
   private final Map<Character, Glyph> glyphs = new HashMap<>();
 
-  /** Contains the font texture. */
-  //  private Texture texture;
-
   /** Height of the font. */
   private int fontHeight;
 
@@ -42,17 +42,30 @@ public class StatusDisplay implements Renderable {
       manager = GLManager.get("game");
       texture = GLManager.loadTexture("/fonts.png", true, true);
     }
+    //    for (var i = 0; i < 10; i += 1) {
+    //      glyphs.put(i, new Glyph());
+    //    }
   }
 
   @Override
   public boolean render() {
+    manager.bindTexture(texture);
+
     var scoreText = "" + player.getLives(); // "Lives: " +
     logger.info(scoreText);
     if (!Config.config().getGLActive()) {
       return false;
     }
     // FIXME
-    //    renderText(scoreText, 0, 0);
+    //        renderText(scoreText, 0, 0);
+    var tileDisplaySize = Stage.getTileSize();
+    for (var i = 0; i < 10; i += 1) {
+      float u = i * 0.05f;
+      var tileCoords = new Corners(u, 0.8f, u + 0.05f, 0.85f);
+      var m1 = createTranslationMatrix(i * tileDisplaySize, 22 * tileDisplaySize, 0);
+      float[] scale = createScaleMatrix(tileDisplaySize, tileDisplaySize, 1);
+      manager.renderTile(tileCoords, multiplyMatrices(scale, m1));
+    }
 
     return false;
   }
