@@ -204,7 +204,7 @@ public class AbbayeMain {
     var p = Player.of(layer, stage);
     p.init();
 
-    var status = StatusDisplay.of(p);
+    var status = StatusDisplay.of(p, stage);
     status.init();
 
     layer.setPlayer(p);

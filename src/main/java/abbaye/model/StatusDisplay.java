@@ -15,6 +15,7 @@ import java.util.Map;
 public class StatusDisplay implements Renderable {
 
   private final Player player;
+  private final Stage stage;
 
   private GameLogger logger = Config.config().getLogger();
   private GLManager manager;
@@ -22,18 +23,21 @@ public class StatusDisplay implements Renderable {
 
   public record Glyph(char c, int width, int height, Corners corners) {}
 
-  /** Contains the glyphs for each char. */
-  private final Map<Character, Glyph> glyphs = new HashMap<>();
+  /** Glyphs for each char (digits) for hearts and crosses */
+  private final Map<Character, Glyph> digitGlyphs = new HashMap<>();
+
+  private final Map<Integer, Glyph> roomTitles = new HashMap<>();
 
   /** Height of the font. */
   private int fontHeight;
 
-  private StatusDisplay(Player player) {
+  private StatusDisplay(Player player, Stage stage) {
     this.player = player;
+    this.stage = stage;
   }
 
-  public static StatusDisplay of(Player p) {
-    return new StatusDisplay(p);
+  public static StatusDisplay of(Player p, Stage s) {
+    return new StatusDisplay(p, s);
   }
 
   @Override
@@ -46,7 +50,13 @@ public class StatusDisplay implements Renderable {
       char c = (char) ('0' + i);
       float u = i * 0.07f;
       var corners = new Corners(u, 0, u + 0.05f, 0.05f);
-      glyphs.put(c, new Glyph(c, 64, 64, corners));
+      digitGlyphs.put(c, new Glyph(c, 64, 64, corners));
+    }
+
+    for (int i = 1; i <= 20; i += 1) {
+      float v = (i - 1) * 0.07f;
+      var corners = new Corners(0, v, 1.0f, v + 0.05f);
+      roomTitles.put(i, new Glyph((char) ('0' + i), 64, 64, corners));
     }
   }
 
@@ -61,6 +71,13 @@ public class StatusDisplay implements Renderable {
     }
     // FIXME x and y
     renderText(scoreText, 0, 0);
+
+    // Render room title
+    Glyph g = roomTitles.get(stage.getRoom());
+    var tileDisplaySize = Stage.getTileSize();
+    var m1 = createTranslationMatrix(0, 25 * tileDisplaySize, 0);
+    float[] scale = createScaleMatrix(10 * tileDisplaySize, -tileDisplaySize, 1);
+    manager.renderTile(g.corners(), multiplyMatrices(scale, m1));
 
     return false;
   }
@@ -97,7 +114,7 @@ public class StatusDisplay implements Renderable {
         /* Carriage return, just skip it */
         continue;
       }
-      Glyph g = glyphs.get(ch);
+      Glyph g = digitGlyphs.get(ch);
 
       var m1 = createTranslationMatrix(drawX, 24 * tileDisplaySize, 0);
       float[] scale = createScaleMatrix(tileDisplaySize, -tileDisplaySize, 1);
@@ -128,7 +145,7 @@ public class StatusDisplay implements Renderable {
         /* Carriage return, just skip it */
         continue;
       }
-      Glyph g = glyphs.get(c);
+      Glyph g = digitGlyphs.get(c);
       lineWidth += g.width();
     }
     width = Math.max(width, lineWidth);
@@ -156,7 +173,7 @@ public class StatusDisplay implements Renderable {
         /* Carriage return, just skip it */
         continue;
       }
-      Glyph g = glyphs.get(c);
+      Glyph g = digitGlyphs.get(c);
       lineHeight = Math.max(lineHeight, g.height());
     }
     height += lineHeight;
