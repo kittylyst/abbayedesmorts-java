@@ -39,8 +39,6 @@ public final class GLManager {
     //    0, 1, 2, 2, 3, 0
   };
 
-  private static Map<String, Integer> textures = new HashMap<>();
-
   private GLManager() {}
 
   static {
@@ -230,12 +228,8 @@ public final class GLManager {
 
       ByteBuffer image = null;
       if (isResource) {
-        // Load resource as ByteBuffer
+        // Load resource as ByteBuffer or throw
         var imageBuffer = loadResourceAsBuffer(path);
-        if (imageBuffer == null) {
-          System.err.println("Failed to load resource: " + path);
-          return -1;
-        }
         image = stbi_load_from_memory(imageBuffer, width, height, channels, 4);
       } else {
         image = stbi_load(path, width, height, channels, 4);
@@ -297,6 +291,9 @@ public final class GLManager {
     }
   }
 
+  /////////////////////////////////////////
+  // Render methods
+
   /**
    * @param tileCoords - the texture coords in float (0 < u, v < 1) coords
    * @param tileSize - the size of the tile in display pixel, i.e. as it appears to the player
@@ -304,12 +301,6 @@ public final class GLManager {
    * @param y - the y coordinate in display pixels
    */
   public void renderTile(Corners tileCoords, float tileSize, float x, float y) {
-    //
-    //    float[] finalModel = {tileSize, 0, 0, 0,
-    //            0, tileSize, 0, 0,
-    //            0, 0, 1, 0,
-    //            x, y, Z_ZERO, 1};
-
     float[] translate = createTranslationMatrix(x, y, 0);
     float[] scale = createScaleMatrix(tileSize, tileSize, 1);
 
@@ -369,5 +360,16 @@ public final class GLManager {
       }
     }
     return result;
+  }
+
+  /**
+   * Bind texture for render - fonts use a different texture
+   *
+   * @param texture
+   */
+  public void bindTexture(int texture) {
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glBindVertexArray(VAO);
+    glUseProgram(shaderProgram);
   }
 }

@@ -1,6 +1,7 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.model;
 
+import static abbaye.graphics.GLManager.*;
 import static abbaye.model.Facing.LEFT;
 import static abbaye.model.Facing.RIGHT;
 import static abbaye.model.Room.*;
@@ -76,15 +77,6 @@ public final class Player implements Actor {
     return new BoundingBox2(Vector2.ORIGIN, Vector2.ORIGIN); // pos, size);
   }
 
-  static Corners makeCorners(int tileX, int tileY) {
-    float u1 = (float) tileX / TILES_PER_ROW;
-    float v1 = (float) tileY / TILES_PER_COL;
-    float u2 = (float) (tileX + 1) / TILES_PER_ROW;
-    float v2 = (float) (tileY + 1) / TILES_PER_COL;
-
-    return new Corners(u1, 1 - v1, u2, 1 - v2);
-  }
-
   @Override
   public boolean render() {
     if (!Config.config().getGLActive()) {
@@ -101,69 +93,82 @@ public final class Player implements Actor {
 
     if (direction == LEFT) {
       // posX and posY represent where we're going to render
-      // tileCoords represents where in the tile texture to pick out the player tile that we'll render
+      // tileCoords represents where in the tile texture to pick out the player tile that we'll
+      // render
       posX = pos.x();
       posY = pos.y();
       tileCoords = makeCorners(44, 11);
-      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y();
       tileCoords = makeCorners(45, 11);
-      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
 
       posX = pos.x();
       posY = pos.y() + tileDisplaySize;
       tileCoords = makeCorners(44, 12);
-      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y() + tileDisplaySize;
       tileCoords = makeCorners(45, 12);
-      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
 
       posX = pos.x();
       posY = pos.y() + tileDisplaySize + tileDisplaySize;
       tileCoords = makeCorners(44, 13);
-      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y() + tileDisplaySize + tileDisplaySize;
       tileCoords = makeCorners(45, 13);
-      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
     } else {
       posX = pos.x();
       posY = pos.y();
       tileCoords = makeCorners(45, 11);
-      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y();
       tileCoords = makeCorners(44, 11);
-      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
 
       posX = pos.x();
       posY = pos.y() + tileDisplaySize;
       tileCoords = makeCorners(45, 12);
-      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y() + tileDisplaySize;
       tileCoords = makeCorners(44, 12);
-      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
 
       posX = pos.x();
       posY = pos.y() + tileDisplaySize + tileDisplaySize;
       tileCoords = makeCorners(45, 13);
-      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y() + tileDisplaySize + tileDisplaySize;
       tileCoords = makeCorners(44, 13);
-      manager.renderTile(tileCoords, renderMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
     }
 
     return false;
+  }
+
+  // Needs to take into account which way a player is facing.
+  // May need to move this to Actor if we need to do the same trick for enemies
+  float[] playerMatrix(float posX, float posY, float tileDisplaySize) {
+    float[] translate = createTranslationMatrix(posX, posY, 0);
+    int horizontalFlip = 1;
+    if (getDirection() == RIGHT) {
+      horizontalFlip = -1;
+    }
+    float[] scale = createScaleMatrix(horizontalFlip * tileDisplaySize, tileDisplaySize, 1);
+    return multiplyMatrices(scale, translate);
   }
 
   public Vector2 newPosition() {
@@ -652,5 +657,9 @@ public final class Player implements Actor {
   @Override
   public Facing getDirection() {
     return direction;
+  }
+
+  public int getLives() {
+    return lives;
   }
 }

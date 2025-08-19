@@ -261,4 +261,13 @@ public class Stage implements Renderable {
     cache.putIfAbsent(tileType, out);
     return out;
   }
+
+  public static Corners makeCorners(int tileX, int tileY) {
+    float u1 = (float) tileX / TILES_PER_ROW;
+    float v1 = (float) tileY / TILES_PER_COL;
+    float u2 = (float) (tileX + 1) / TILES_PER_ROW;
+    float v2 = (float) (tileY + 1) / TILES_PER_COL;
+
+    return new Corners(u1, 1 - v1, u2, 1 - v2);
+  }
 }

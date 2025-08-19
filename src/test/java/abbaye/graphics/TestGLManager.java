@@ -13,7 +13,7 @@ public class TestGLManager {
   @Test
   public void testMatrices() {
     Config.config().setHeadless(true);
-    AbbayeMain.glInit();
+    AbbayeMain.glStaticInit();
 
     var tileSize = 0.7f;
     var x = 0.6f;

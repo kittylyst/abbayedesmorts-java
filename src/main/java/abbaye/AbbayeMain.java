@@ -8,11 +8,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 import abbaye.basic.Clock;
-import abbaye.graphics.OGLFont;
-import abbaye.model.Enemy;
-import abbaye.model.Layer;
-import abbaye.model.Player;
-import abbaye.model.Stage;
+import abbaye.model.*;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -32,7 +28,6 @@ public class AbbayeMain {
 
   private boolean fullscreen = false;
   private final String windowTitle = "Abbaye Des Mortes";
-  private Stage stage = new Stage();
   private Layer layer = new Layer();
   private GameDialog gameDialog;
   private long window;
@@ -90,58 +85,13 @@ public class AbbayeMain {
 
   void init() {
     try {
+      glStaticInit();
       glInit();
-
-      var config = Config.config();
-      var width = config.getScreenWidth();
-      var height = config.getScreenHeight();
-      window = glfwCreateWindow(width, height, windowTitle, NULL, NULL);
-      if (window == NULL) {
-        throw new RuntimeException("Failed to create the GLFW window");
-      }
-
-      glfwSetKeyCallback(
-          window,
-          (window, key, scancode, action, mods) -> {
-            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-              glfwSetWindowShouldClose(window, true);
-            }
-          });
-
-      try (MemoryStack stack = stackPush()) {
-        IntBuffer pWidth = stack.mallocInt(1);
-        IntBuffer pHeight = stack.mallocInt(1);
-
-        glfwGetWindowSize(window, pWidth, pHeight);
-
-        GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-
-        glfwSetWindowPos(
-            window, (vidmode.width() - pWidth.get(0)) / 2, (vidmode.height() - pHeight.get(0)) / 2);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-
-      glfwMakeContextCurrent(window);
-      glfwSwapInterval(1);
-      glfwShowWindow(window);
-
-      GL.createCapabilities();
-
-      // Set viewport
-      glViewport(0, 0, width, height);
-
-      // Enable textures and blending
-      glEnable(GL_TEXTURE_2D);
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     } catch (Exception e) {
       e.printStackTrace();
       System.exit(1);
     }
     gameDialog = new GameDialog(null, this);
-    stage.load(window);
     glfwSetKeyCallback(
         window,
         (w, key, scancode, action, mods) -> {
@@ -158,7 +108,7 @@ public class AbbayeMain {
     Clock.updateTimer();
   }
 
-  public static void glInit() {
+  public static void glStaticInit() {
     GLFWErrorCallback.createPrint(System.err).set();
 
     // Initialize GLFW. Most GLFW functions will not work before doing this.
@@ -172,6 +122,52 @@ public class AbbayeMain {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  }
+
+  public void glInit() {
+    var config = Config.config();
+    var width = config.getScreenWidth();
+    var height = config.getScreenHeight();
+    window = glfwCreateWindow(width, height, windowTitle, NULL, NULL);
+    if (window == NULL) {
+      throw new RuntimeException("Failed to create the GLFW window");
+    }
+
+    glfwSetKeyCallback(
+        window,
+        (window, key, scancode, action, mods) -> {
+          if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
+            glfwSetWindowShouldClose(window, true);
+          }
+        });
+
+    try (MemoryStack stack = stackPush()) {
+      IntBuffer pWidth = stack.mallocInt(1);
+      IntBuffer pHeight = stack.mallocInt(1);
+
+      glfwGetWindowSize(window, pWidth, pHeight);
+
+      GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+      glfwSetWindowPos(
+          window, (vidmode.width() - pWidth.get(0)) / 2, (vidmode.height() - pHeight.get(0)) / 2);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
+    glfwShowWindow(window);
+
+    GL.createCapabilities();
+
+    // Set viewport
+    glViewport(0, 0, width, height);
+
+    // Enable textures and blending
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   }
 
   /** Main game loop method */
@@ -202,23 +198,25 @@ public class AbbayeMain {
   }
 
   void initLayer() {
-    var font = new OGLFont();
-    //    font.buildFont("Courier New", 24);
+    var stage = new Stage();
+    stage.load(window);
 
-    Player p = Player.of(layer, stage);
+    var p = Player.of(layer, stage);
     p.init();
-    //    p.setFont(font);
+
+    var status = StatusDisplay.of(p, stage);
+    status.init();
+
     layer.setPlayer(p);
     layer.setStage(stage);
+    layer.setStatus(status);
     layer.init();
 
     gameDialog.setPlayer(p);
-    gameDialog.setFont(font);
-    //    gameDialog.reset();
   }
 
   private void cleanup() {
-    stage.cleanup();
+    layer.cleanup();
     glfwFreeCallbacks(window);
     glfwDestroyWindow(window);
     glfwTerminate();
@@ -229,9 +227,9 @@ public class AbbayeMain {
     return window;
   }
 
-  public Stage getStage() {
-    return stage;
-  }
+  //  public Stage getStage() {
+  //    return stage;
+  //  }
 
   public Layer getLayer() {
     return layer;
