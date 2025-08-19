@@ -12,6 +12,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 
 import abbaye.basic.Corners;
 import abbaye.graphics.GLManager;
+import abbaye.graphics.Texture;
 import abbaye.model.Player;
 import java.nio.IntBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -27,7 +28,7 @@ public class GameDialog {
   private final GLManager glManager;
   private final long window;
 
-  private final int introSplashTexture;
+  private final Texture introSplash;
 
   private State state;
   private Player player;
@@ -35,7 +36,7 @@ public class GameDialog {
   public GameDialog(Player pl, AbbayeMain main) {
     player = pl;
     mainClass = main;
-    introSplashTexture = GLManager.loadTexture("/intro.png", true, true);
+    introSplash = Texture.of("/intro.png", true, true);
     glManager = GLManager.get("dialog");
     state = State.INACTIVE;
     window = main.getWindow();
@@ -75,7 +76,7 @@ public class GameDialog {
 
         // Bind texture
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, introSplashTexture);
+        glManager.bindTexture(introSplash);
         glBindVertexArray(glManager.getVAO());
 
         glManager.renderTile(new Corners(-1.0f, -1.0f, 2.0f, 0.5f), PROJECTION_MATRIX);
@@ -86,14 +87,7 @@ public class GameDialog {
           return;
         }
 
-        //        final var score = player.getScore();
-        //        Config.config().setHighScore(score);
-
-        //        font.print("Game Over", new Vector2(250, 150));
-        //        font.print("Score: " + score, new Vector2(120, 200));
-        //        font.print("High Score: " + Config.config().getHighScore(), new Vector2(330,
-        // 200));
-        //        font.print("Press TAB to play again", new Vector2(100, 260));
+        //  FIXME Game Over screen
 
         if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) {
           reset();

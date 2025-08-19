@@ -8,6 +8,7 @@ import abbaye.Config;
 import abbaye.basic.Corners;
 import abbaye.basic.Renderable;
 import abbaye.graphics.GLManager;
+import abbaye.graphics.Texture;
 import abbaye.logs.GameLogger;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +20,7 @@ public class StatusDisplay implements Renderable {
 
   private GameLogger logger = Config.config().getLogger();
   private GLManager manager;
-  private int texture;
+  private Texture fonts;
 
   public record Glyph(String name, int width, int height, Corners corners) {}
 
@@ -46,7 +47,7 @@ public class StatusDisplay implements Renderable {
   public void init() {
     if (AbbayeMain.isGlEnabled()) {
       manager = GLManager.get("game");
-      texture = GLManager.loadTexture("/fonts.png", true, true);
+      fonts = Texture.of("/fonts.png", true, true);
     }
     for (byte i = 0; i < 10; i += 1) {
       char c = (char) ('0' + i);
@@ -70,20 +71,19 @@ public class StatusDisplay implements Renderable {
 
   @Override
   public boolean render() {
-    manager.bindTexture(texture);
+    manager.bindTexture(fonts);
 
-    var scoreText = "" + player.getLives(); // "Lives: " +
-    //    logger.info(scoreText);
     if (!Config.config().getGLActive()) {
       return false;
     }
+    var scoreText = "" + player.getLives();
     // FIXME x and y
     renderText(scoreText, 0, 0);
 
     // Render room title
     Glyph roomLegend = roomTitles.get(stage.getRoom());
     var tileDisplaySize = Stage.getTileSize();
-    var m1 = createTranslationMatrix(0, 25 * tileDisplaySize, 0);
+    var m1 = createTranslationMatrix(5 * tileDisplaySize, 25 * tileDisplaySize, 0);
     float[] scale = createScaleMatrix(10 * tileDisplaySize, -tileDisplaySize, 1);
     manager.renderTile(roomLegend.corners(), multiplyMatrices(scale, m1));
 

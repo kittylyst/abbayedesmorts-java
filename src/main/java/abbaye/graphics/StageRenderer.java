@@ -3,7 +3,6 @@ package abbaye.graphics;
 
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 import abbaye.basic.Renderable;
@@ -13,7 +12,7 @@ import org.lwjgl.system.MemoryStack;
 
 public class StageRenderer implements Renderable {
   private final long window;
-  private final int tilesTexture;
+  private final Texture tiles;
 
   private Stage tilemap;
   private GLManager manager;
@@ -21,7 +20,7 @@ public class StageRenderer implements Renderable {
   public StageRenderer(long window) {
     this.window = window;
     this.manager = GLManager.get("game");
-    this.tilesTexture = GLManager.loadTexture("/tiles.png", true, true);
+    this.tiles = Texture.of("/tiles.png", true, true);
   }
 
   public void init(Stage stage) {
@@ -41,7 +40,7 @@ public class StageRenderer implements Renderable {
       glUniformMatrix4fv(manager.getProjectionLocation(), false, projection);
     }
 
-    manager.bindTexture(tilesTexture);
+    manager.bindTexture(tiles);
 
     var tileDisplaySize = Stage.getTileSize();
 
@@ -72,13 +71,6 @@ public class StageRenderer implements Renderable {
     matrix[13] = -(top + bottom) / (top - bottom);
     matrix[14] = -(far + near) / (far - near);
     matrix[15] = 1.0f;
-
-    //    float[] projectionMatrix = {
-    //      1.0f, 0.0f, 0.0f, 0.0f,
-    //      0.0f, 1.0f, 0.0f, 0.0f,
-    //      0.0f, 0.0f, -1.0f, 0.0f,
-    //      0.0f, 0.0f, 0.0f, 1.0f
-    //    };
 
     return matrix;
   }

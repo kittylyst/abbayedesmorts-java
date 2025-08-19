@@ -4,18 +4,12 @@ package abbaye.graphics;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.stb.STBImage.*;
-import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.memAlloc;
 
 import abbaye.Config;
 import abbaye.basic.Corners;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.system.MemoryStack;
 
 public final class GLManager {
 
@@ -203,94 +197,6 @@ public final class GLManager {
     return shader;
   }
 
-  /////////////// Texture helpers
-
-  public static int loadTexture(String path, boolean isResource, boolean shouldFlip) {
-    int texture = glGenTextures();
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    // Set texture wrapping/filtering options
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Load and generate texture
-    try (MemoryStack stack = stackPush()) {
-      IntBuffer width = stack.mallocInt(1);
-      IntBuffer height = stack.mallocInt(1);
-      IntBuffer channels = stack.mallocInt(1);
-
-      // Flip image vertically for OpenGL
-      if (shouldFlip) {
-        stbi_set_flip_vertically_on_load(true);
-      }
-
-      ByteBuffer image = null;
-      if (isResource) {
-        // Load resource as ByteBuffer or throw
-        var imageBuffer = loadResourceAsBuffer(path);
-        image = stbi_load_from_memory(imageBuffer, width, height, channels, 4);
-      } else {
-        image = stbi_load(path, width, height, channels, 4);
-      }
-
-      if (image != null) {
-        glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GL_RGBA,
-            width.get(0),
-            height.get(0),
-            0,
-            GL_RGBA,
-            GL_UNSIGNED_BYTE,
-            image);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        stbi_image_free(image);
-      } else {
-        System.err.println("Failed to load texture: " + path);
-        // Create a default white texture
-        ByteBuffer defaultTexture = BufferUtils.createByteBuffer(4);
-        defaultTexture.put((byte) 255).put((byte) 255).put((byte) 255).put((byte) 255);
-        defaultTexture.flip();
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, defaultTexture);
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
-    return texture;
-  }
-
-  /**
-   * Returns an
-   *
-   * @param resourcePath
-   * @return
-   * @throws IOException
-   */
-  public static ByteBuffer loadResourceAsBuffer(String resourcePath) throws IOException {
-    try (var inputStream = GLManager.class.getResourceAsStream(resourcePath)) {
-      if (inputStream == null) {
-        throw new IOException("Resource not found: " + resourcePath);
-      }
-
-      var data = inputStream.readAllBytes();
-
-      // Create a ByteBuffer and copy the data
-      ByteBuffer byteBuffer = memAlloc(data.length);
-      byteBuffer.put(data);
-      byteBuffer.flip();
-
-      return byteBuffer;
-
-    } catch (IOException e) {
-      throw new IOException("Failed to read resource: " + resourcePath, e);
-    }
-  }
-
   /////////////////////////////////////////
   // Render methods
 
@@ -367,8 +273,8 @@ public final class GLManager {
    *
    * @param texture
    */
-  public void bindTexture(int texture) {
-    glBindTexture(GL_TEXTURE_2D, texture);
+  public void bindTexture(Texture texture) {
+    glBindTexture(GL_TEXTURE_2D, texture.getId());
     glBindVertexArray(VAO);
     glUseProgram(shaderProgram);
   }
