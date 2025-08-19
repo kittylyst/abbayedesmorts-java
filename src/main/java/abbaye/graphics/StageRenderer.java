@@ -36,7 +36,8 @@ public class StageRenderer implements Renderable {
       glViewport(0, 0, width.get(0), height.get(0));
 
       // Set up orthographic projection
-      float[] projection = createOrthographicMatrix(0, width.get(0), height.get(0), 0, -1, 1);
+      float[] projection =
+          GLManager.createOrthographicMatrix(0, width.get(0), height.get(0), 0, -1, 1);
       glUniformMatrix4fv(manager.getProjectionLocation(), false, projection);
     }
 
@@ -61,17 +62,4 @@ public class StageRenderer implements Renderable {
 
   /////////////// Matrix helpers
 
-  public static float[] createOrthographicMatrix(
-      float left, float right, float bottom, float top, float near, float far) {
-    float[] matrix = new float[16];
-    matrix[0] = 2.0f / (right - left);
-    matrix[5] = 2.0f / (top - bottom);
-    matrix[10] = -2.0f / (far - near);
-    matrix[12] = -(right + left) / (right - left);
-    matrix[13] = -(top + bottom) / (top - bottom);
-    matrix[14] = -(far + near) / (far - near);
-    matrix[15] = 1.0f;
-
-    return matrix;
-  }
 }

@@ -3,7 +3,6 @@ package abbaye.graphics;
 
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.stb.STBImage.*;
 
 import abbaye.Config;
 import abbaye.basic.Corners;
@@ -29,8 +28,6 @@ public final class GLManager {
   public static final int[] INDICES = {
     0, 1, 3, // first triangle
     1, 2, 3 // second triangle
-
-    //    0, 1, 2, 2, 3, 0
   };
 
   private GLManager() {}
@@ -137,6 +134,17 @@ public final class GLManager {
 
   }
 
+  /**
+   * Bind texture for render - fonts use a different texture
+   *
+   * @param texture
+   */
+  public void bindTexture(Texture texture) {
+    glBindTexture(GL_TEXTURE_2D, texture.getId());
+    glBindVertexArray(VAO);
+    glUseProgram(shaderProgram);
+  }
+
   public void cleanup() {
     glDeleteVertexArrays(VAO);
     glDeleteBuffers(VBO);
@@ -162,24 +170,6 @@ public final class GLManager {
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
-  }
-
-  ///////////// Getters
-
-  public int getShaderProgram() {
-    return shaderProgram;
-  }
-
-  public int getProjectionLocation() {
-    return projectionLocation;
-  }
-
-  public int getVAO() {
-    return VAO;
-  }
-
-  public int getVBO() {
-    return VBO;
   }
 
   ///////////// Helpers
@@ -223,6 +213,26 @@ public final class GLManager {
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   }
+
+  ///////////// Getters
+
+  public int getShaderProgram() {
+    return shaderProgram;
+  }
+
+  public int getProjectionLocation() {
+    return projectionLocation;
+  }
+
+  public int getVAO() {
+    return VAO;
+  }
+
+  public int getVBO() {
+    return VBO;
+  }
+
+  ///////////// Utilities
 
   public static float[] createTransformMatrix(float x, float y, float width, float height) {
     float[] matrix = new float[16];
@@ -268,14 +278,17 @@ public final class GLManager {
     return result;
   }
 
-  /**
-   * Bind texture for render - fonts use a different texture
-   *
-   * @param texture
-   */
-  public void bindTexture(Texture texture) {
-    glBindTexture(GL_TEXTURE_2D, texture.getId());
-    glBindVertexArray(VAO);
-    glUseProgram(shaderProgram);
+  public static float[] createOrthographicMatrix(
+      float left, float right, float bottom, float top, float near, float far) {
+    float[] matrix = new float[16];
+    matrix[0] = 2.0f / (right - left);
+    matrix[5] = 2.0f / (top - bottom);
+    matrix[10] = -2.0f / (far - near);
+    matrix[12] = -(right + left) / (right - left);
+    matrix[13] = -(top + bottom) / (top - bottom);
+    matrix[14] = -(far + near) / (far - near);
+    matrix[15] = 1.0f;
+
+    return matrix;
   }
 }
