@@ -21,7 +21,9 @@ public class StatusDisplay implements Renderable {
   private GLManager manager;
   private int texture;
 
-  public record Glyph(char c, int width, int height, Corners corners) {}
+  public record Glyph(String name, int width, int height, Corners corners) {}
+
+  private float GLYPH_HEIGHT = 0.041666668f;
 
   /** Glyphs for each char (digits) for hearts and crosses */
   private final Map<Character, Glyph> digitGlyphs = new HashMap<>();
@@ -49,14 +51,20 @@ public class StatusDisplay implements Renderable {
     for (byte i = 0; i < 10; i += 1) {
       char c = (char) ('0' + i);
       float u = i * 0.07f;
-      var corners = new Corners(u, 0, u + 0.05f, 0.05f);
-      digitGlyphs.put(c, new Glyph(c, 64, 64, corners));
+      var corners = new Corners(u, 0, u + 0.05f, GLYPH_HEIGHT);
+      digitGlyphs.put(c, new Glyph("" + c, 64, 64, corners));
     }
 
-    for (int i = 1; i <= 20; i += 1) {
-      float v = (i - 1) * 0.07f;
-      var corners = new Corners(0, v, 1.0f, v + 0.05f);
-      roomTitles.put(i, new Glyph((char) ('0' + i), 64, 64, corners));
+    // Top row has a slightly weird layout
+    for (int i = 1; i <= 3; i += 1) {
+      float v = GLYPH_HEIGHT * (25 - i);
+      var corners = new Corners(0, v - GLYPH_HEIGHT, 1.0f, v);
+      roomTitles.put(i, new Glyph(Room.values()[i].name(), 64, 64, corners));
+    }
+    for (int i = 5; i <= 25; i += 1) {
+      float v = GLYPH_HEIGHT * (26 - i);
+      var corners = new Corners(0, v - GLYPH_HEIGHT, 1.0f, v);
+      roomTitles.put(i, new Glyph(Room.values()[i].name(), 64, 64, corners));
     }
   }
 
@@ -73,11 +81,11 @@ public class StatusDisplay implements Renderable {
     renderText(scoreText, 0, 0);
 
     // Render room title
-    Glyph g = roomTitles.get(stage.getRoom());
+    Glyph roomLegend = roomTitles.get(stage.getRoom());
     var tileDisplaySize = Stage.getTileSize();
     var m1 = createTranslationMatrix(0, 25 * tileDisplaySize, 0);
     float[] scale = createScaleMatrix(10 * tileDisplaySize, -tileDisplaySize, 1);
-    manager.renderTile(g.corners(), multiplyMatrices(scale, m1));
+    manager.renderTile(roomLegend.corners(), multiplyMatrices(scale, m1));
 
     return false;
   }
