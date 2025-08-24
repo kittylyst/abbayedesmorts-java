@@ -133,6 +133,14 @@ public class Stage implements Renderable {
     return 64.0f;
   }
 
+  public int getRoomX() {
+    return roomx;
+  }
+
+  public int getRoomY() {
+    return roomy;
+  }
+
   private static class SDLRect {
     public int x;
     public int y;

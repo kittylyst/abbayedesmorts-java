@@ -24,6 +24,10 @@ import org.lwjgl.glfw.GLFWKeyCallbackI;
 public final class Player implements Actor {
 
   public record Waypoint(int roomX, int roomY, float x, float y) {
+    Waypoint(int roomX, int roomY, Vector2 pos) {
+      this(roomX, roomY, pos.x(), pos.y());
+    }
+
     public Vector2 getPos() {
       return new Vector2(x, y);
     }
@@ -597,6 +601,26 @@ public final class Player implements Actor {
         }
       }
       crosses += 1;
+      //        Mix_PlayChannel(-1, fx[2], 0);
+
+      return true;
+    }
+
+    // 321 - 326
+    /* Touch waypoint crosses */
+    if (((stagedata[1 + pos.tileY()][pos.tileX()] > 320)
+            && (stagedata[1 + pos.tileY()][pos.tileX()] < 327))
+        || ((stagedata[1 + pos.tileY()][1 + pos.tileX()] > 320)
+            && (stagedata[1 + pos.tileY()][1 + pos.tileX()] < 327))) {
+      for (var v = 0; v < 22; v++) {
+        for (var h = 0; h < 32; h++) {
+          // FIXME - Don't nuke the waypoint cross, toggle instead.
+          if ((stagedata[v][h] > 320) && (stagedata[v][h] < 327)) stagedata[v][h] = 0;
+        }
+      }
+      // Update waypoint
+      last = new Waypoint(stage.getRoomX(), stage.getRoomY(), pos);
+      logger.info("Updating waypoint here: " + last);
       //        Mix_PlayChannel(-1, fx[2], 0);
 
       return true;
