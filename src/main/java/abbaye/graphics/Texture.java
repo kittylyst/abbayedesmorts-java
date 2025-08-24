@@ -2,16 +2,17 @@
 package abbaye.graphics;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.GL_CLAMP_TO_BORDER;
 import static org.lwjgl.stb.STBImage.*;
+import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryUtil.memAlloc;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import org.lwjgl.system.MemoryStack;
 
 public final class Texture {
   private final int id;
-
   private final int width;
   private final int height;
 
@@ -76,16 +77,9 @@ public final class Texture {
     return width;
   }
 
-  /**
-   * Sets the texture width.
-   *
-   * @param width The width to set
-   */
-  //    public void setWidth(int width) {
-  //        if (width > 0) {
-  //            this.width = width;
-  //        }
-  //    }
+  public int getId() {
+    return id;
+  }
 
   /**
    * Gets the texture height.
@@ -97,17 +91,6 @@ public final class Texture {
   }
 
   /**
-   * Sets the texture height.
-   *
-   * @param height The height to set
-   */
-  //    public void setHeight(int height) {
-  //        if (height > 0) {
-  //            this.height = height;
-  //        }
-  //    }
-
-  /**
    * Creates a texture with specified width, height and data.
    *
    * @param width Width of the texture
@@ -117,15 +100,12 @@ public final class Texture {
    */
   public static Texture of(int width, int height, ByteBuffer data) {
     Texture texture = new Texture(width, height);
-    //        texture.setWidth(width);
-    //        texture.setHeight(height);
-
     texture.bind();
 
-    texture.setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    texture.setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    texture.setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    texture.setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    texture.setParameter(GL_TEXTURE_WRAP_S, GL_REPEAT);
+    texture.setParameter(GL_TEXTURE_WRAP_T, GL_REPEAT);
+    texture.setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    texture.setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     texture.uploadData(GL_RGBA8, width, height, GL_RGBA, data);
 
@@ -133,33 +113,65 @@ public final class Texture {
   }
 
   /**
-   * Load texture from file.
+   * Load texture from file or resource
    *
-   * @param path File path of the texture
-   * @return Texture from specified file
+   * @param path File or resource path of the texture
+   * @param isResource
+   * @param shouldFlip
+   * @return Texture from specified file or resource
    */
-  public static Texture of(String path) {
-    ByteBuffer image;
-    int width, height;
-    try (MemoryStack stack = MemoryStack.stackPush()) {
-      /* Prepare image buffers */
-      IntBuffer w = stack.mallocInt(1);
-      IntBuffer h = stack.mallocInt(1);
-      IntBuffer comp = stack.mallocInt(1);
+  public static Texture of(String path, boolean isResource, boolean shouldFlip) {
 
-      /* Load image */
-      stbi_set_flip_vertically_on_load(true);
-      image = stbi_load(path, w, h, comp, 4);
-      if (image == null) {
-        throw new RuntimeException(
-            "Failed to load a texture file!" + System.lineSeparator() + stbi_failure_reason());
+    // Load texture as a buffer
+    try (MemoryStack stack = stackPush()) {
+      IntBuffer width = stack.mallocInt(1);
+      IntBuffer height = stack.mallocInt(1);
+      IntBuffer channels = stack.mallocInt(1);
+
+      // Flip image vertically for OpenGL
+      if (shouldFlip) {
+        stbi_set_flip_vertically_on_load(true);
       }
 
-      /* Get width and height of image */
-      width = w.get();
-      height = h.get();
-    }
+      ByteBuffer image = null;
+      if (isResource) {
+        // Load resource as ByteBuffer or throw
+        var imageBuffer = loadResourceAsBuffer(path);
+        image = stbi_load_from_memory(imageBuffer, width, height, channels, 4);
+      } else {
+        image = stbi_load(path, width, height, channels, 4);
+      }
 
-    return of(width, height, image);
+      return of(width.get(0), height.get(0), image);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Returns an
+   *
+   * @param resourcePath
+   * @return
+   * @throws IOException
+   */
+  public static ByteBuffer loadResourceAsBuffer(String resourcePath) throws IOException {
+    try (var inputStream = GLManager.class.getResourceAsStream(resourcePath)) {
+      if (inputStream == null) {
+        throw new IOException("Resource not found: " + resourcePath);
+      }
+
+      var data = inputStream.readAllBytes();
+
+      // Create a ByteBuffer and copy the data
+      ByteBuffer byteBuffer = memAlloc(data.length);
+      byteBuffer.put(data);
+      byteBuffer.flip();
+
+      return byteBuffer;
+
+    } catch (IOException e) {
+      throw new IOException("Failed to read resource: " + resourcePath, e);
+    }
   }
 }

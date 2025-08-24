@@ -3,19 +3,12 @@ package abbaye.graphics;
 
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.stb.STBImage.*;
-import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.memAlloc;
 
 import abbaye.Config;
 import abbaye.basic.Corners;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.system.MemoryStack;
 
 public final class GLManager {
 
@@ -35,11 +28,17 @@ public final class GLManager {
   public static final int[] INDICES = {
     0, 1, 3, // first triangle
     1, 2, 3 // second triangle
-
-    //    0, 1, 2, 2, 3, 0
   };
 
   private GLManager() {}
+
+  public static synchronized GLManager get(String shaderName) {
+    var mgr = managers.get(shaderName);
+    if (mgr == null) {
+      throw new IllegalArgumentException("Unknown shader: " + shaderName);
+    }
+    return mgr;
+  }
 
   static {
     if (Config.config().getGLActive()) {
@@ -55,6 +54,9 @@ public final class GLManager {
       // Texture coordinate attribute
       glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
       glEnableVertexAttribArray(1);
+
+      manager.textures.put("introSplash", Texture.of("/intro.png", true, true));
+
       managers.put("dialog", manager);
 
       // Main game shaders
@@ -71,21 +73,20 @@ public final class GLManager {
       // Texture coordinate attribute
       glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
       glEnableVertexAttribArray(1);
+
+      // Game textures
+      manager.textures.put("fonts", Texture.of("/fonts.png", true, true));
+      manager.textures.put("tiles", Texture.of("/tiles.png", true, true));
+
       managers.put("game", manager);
     }
-  }
-
-  public static synchronized GLManager get(String shaderName) {
-    var mgr = managers.get(shaderName);
-    if (mgr == null) {
-      throw new IllegalArgumentException("Unknown shader: " + shaderName);
-    }
-    return mgr;
   }
 
   private int shaderProgram;
   private int VAO, VBO, EBO;
   private int projectionLocation, modelLocation;
+
+  private Map<String, Texture> textures = new HashMap<>();
 
   public void init(String pathVertex, String pathFragment) {
     // Enable blending for transparency
@@ -143,6 +144,18 @@ public final class GLManager {
 
   }
 
+  /**
+   * Bind texture for render
+   *
+   * @param name
+   */
+  public void bindTexture(String name) {
+    Texture texture = textures.get(name);
+    glBindTexture(GL_TEXTURE_2D, texture.getId());
+    glBindVertexArray(VAO);
+    glUseProgram(shaderProgram);
+  }
+
   public void cleanup() {
     glDeleteVertexArrays(VAO);
     glDeleteBuffers(VBO);
@@ -157,7 +170,7 @@ public final class GLManager {
     var v1 = tileCoords.v1();
     var u2 = tileCoords.u2();
     var v2 = tileCoords.v2();
-    // Setup vertices with a per-tile vertical flip to match original rendering
+
     float[] vertices = {
       // positions           // texture coords
       1.0f, 0.0f, Z_ZERO, u2, v1, // bottom right
@@ -168,24 +181,6 @@ public final class GLManager {
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
-  }
-
-  ///////////// Getters
-
-  public int getShaderProgram() {
-    return shaderProgram;
-  }
-
-  public int getProjectionLocation() {
-    return projectionLocation;
-  }
-
-  public int getVAO() {
-    return VAO;
-  }
-
-  public int getVBO() {
-    return VBO;
   }
 
   ///////////// Helpers
@@ -201,94 +196,6 @@ public final class GLManager {
     }
 
     return shader;
-  }
-
-  /////////////// Texture helpers
-
-  public static int loadTexture(String path, boolean isResource, boolean shouldFlip) {
-    int texture = glGenTextures();
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    // Set texture wrapping/filtering options
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Load and generate texture
-    try (MemoryStack stack = stackPush()) {
-      IntBuffer width = stack.mallocInt(1);
-      IntBuffer height = stack.mallocInt(1);
-      IntBuffer channels = stack.mallocInt(1);
-
-      // Flip image vertically for OpenGL
-      if (shouldFlip) {
-        stbi_set_flip_vertically_on_load(true);
-      }
-
-      ByteBuffer image = null;
-      if (isResource) {
-        // Load resource as ByteBuffer or throw
-        var imageBuffer = loadResourceAsBuffer(path);
-        image = stbi_load_from_memory(imageBuffer, width, height, channels, 4);
-      } else {
-        image = stbi_load(path, width, height, channels, 4);
-      }
-
-      if (image != null) {
-        glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GL_RGBA,
-            width.get(0),
-            height.get(0),
-            0,
-            GL_RGBA,
-            GL_UNSIGNED_BYTE,
-            image);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        stbi_image_free(image);
-      } else {
-        System.err.println("Failed to load texture: " + path);
-        // Create a default white texture
-        ByteBuffer defaultTexture = BufferUtils.createByteBuffer(4);
-        defaultTexture.put((byte) 255).put((byte) 255).put((byte) 255).put((byte) 255);
-        defaultTexture.flip();
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, defaultTexture);
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
-    return texture;
-  }
-
-  /**
-   * Returns an
-   *
-   * @param resourcePath
-   * @return
-   * @throws IOException
-   */
-  public static ByteBuffer loadResourceAsBuffer(String resourcePath) throws IOException {
-    try (var inputStream = GLManager.class.getResourceAsStream(resourcePath)) {
-      if (inputStream == null) {
-        throw new IOException("Resource not found: " + resourcePath);
-      }
-
-      var data = inputStream.readAllBytes();
-
-      // Create a ByteBuffer and copy the data
-      ByteBuffer byteBuffer = memAlloc(data.length);
-      byteBuffer.put(data);
-      byteBuffer.flip();
-
-      return byteBuffer;
-
-    } catch (IOException e) {
-      throw new IOException("Failed to read resource: " + resourcePath, e);
-    }
   }
 
   /////////////////////////////////////////
@@ -317,6 +224,26 @@ public final class GLManager {
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
   }
+
+  ///////////// Getters
+
+  public int getShaderProgram() {
+    return shaderProgram;
+  }
+
+  public int getProjectionLocation() {
+    return projectionLocation;
+  }
+
+  public int getVAO() {
+    return VAO;
+  }
+
+  public int getVBO() {
+    return VBO;
+  }
+
+  ///////////// Utilities
 
   public static float[] createTransformMatrix(float x, float y, float width, float height) {
     float[] matrix = new float[16];
@@ -362,14 +289,17 @@ public final class GLManager {
     return result;
   }
 
-  /**
-   * Bind texture for render - fonts use a different texture
-   *
-   * @param texture
-   */
-  public void bindTexture(int texture) {
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glBindVertexArray(VAO);
-    glUseProgram(shaderProgram);
+  public static float[] createOrthographicMatrix(
+      float left, float right, float bottom, float top, float near, float far) {
+    float[] matrix = new float[16];
+    matrix[0] = 2.0f / (right - left);
+    matrix[5] = 2.0f / (top - bottom);
+    matrix[10] = -2.0f / (far - near);
+    matrix[12] = -(right + left) / (right - left);
+    matrix[13] = -(top + bottom) / (top - bottom);
+    matrix[14] = -(far + near) / (far - near);
+    matrix[15] = 1.0f;
+
+    return matrix;
   }
 }

@@ -161,6 +161,11 @@ public class Stage implements Renderable {
     if (cache.containsKey(tileType)) {
       return cache.get(tileType);
     }
+
+    return getCorners(tileType);
+  }
+
+  public Corners getCorners(int tileType) {
     int[] counter = new int[2];
 
     // When we want to generalize this game, we can move this logic into a separate remapper.
