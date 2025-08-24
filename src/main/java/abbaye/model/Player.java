@@ -23,10 +23,18 @@ import org.lwjgl.glfw.GLFWKeyCallbackI;
 
 public final class Player implements Actor {
 
+  public record Waypoint(int roomX, int roomY, float x, float y) {
+    public Vector2 getPos() {
+      return new Vector2(x, y);
+    }
+  }
+
+  // Constants
   public static final int RIGHT_EDGE = 243;
   public static final int LEFT_EDGE = 0;
   public static final int BOTTOM_EDGE = 146;
   public static final int TOP_EDGE = 0;
+
   // GL fields
   private GLManager manager;
 
@@ -49,10 +57,14 @@ public final class Player implements Actor {
   private int animation;
   private int[] points = new int[8]; /* Points of collision */
   private int ground; /* Y-coordinate pixel where the ground is beneath the player */
+
+  // Updated
   private int[] collision = {
     0, 0, 0, 0
   }; /* Collisions in directions UDLR - D is unused and handled by gravity effects */
-  private int[] checkpoint = new int[4];
+  private Waypoint last = new Waypoint(0, 1, 100.0f, 1088.0f);
+
+  //  private int[] checkpoint = new int[4];
   private int crosses = 0; // (previously state[1])
   private int lives = 5;
   private int[] flags = new int[7];
@@ -603,7 +615,8 @@ public final class Player implements Actor {
   private Player(Layer layer, Stage stage) {
     this.layer = layer;
     this.stage = stage;
-    this.pos = new Vector2(Config.config().getScreenWidth() / 2, 1088.0f); // FIXME
+    this.pos =
+        last.getPos(); // new Vector2(Config.config().getScreenWidth() / 2, 1088.0f); // FIXME
   }
 
   public static Player of(Layer layer, Stage stage) {
@@ -639,8 +652,8 @@ public final class Player implements Actor {
         + ground
         + ", collision="
         + Arrays.toString(collision)
-        + ", checkpoint="
-        + Arrays.toString(checkpoint)
+        + ", waypoint="
+        + last
         + ", flags="
         + Arrays.toString(flags)
         + ", walk="
