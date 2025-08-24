@@ -662,4 +662,8 @@ public final class Player implements Actor {
   public int getLives() {
     return lives;
   }
+
+  public int getCrosses() {
+    return crosses;
+  }
 }

@@ -70,9 +70,9 @@ public class StatusDisplay implements Renderable {
     var corners = stage.getCorners(tileId);
 
     var tileDisplaySize = Stage.getTileSize();
-    var m1 = createTranslationMatrix(x * tileDisplaySize, (25 + y) * tileDisplaySize, 0);
-    float[] scale = createScaleMatrix(tileDisplaySize, -tileDisplaySize, 1);
-    manager.renderTile(corners, multiplyMatrices(scale, m1));
+    var tr = createTranslationMatrix(x * tileDisplaySize, (22 + y) * tileDisplaySize, 0);
+    float[] scale = createScaleMatrix(tileDisplaySize, tileDisplaySize, 1);
+    manager.renderTile(corners, multiplyMatrices(scale, tr));
   }
 
   @Override
@@ -95,11 +95,16 @@ public class StatusDisplay implements Renderable {
     //          srctiles.w = 8;
     //          srctiles.h = 8;
     //      }
+    renderStaticTitle(409, 20, 0);
+    renderStaticTitle(410, 21, 0);
+    renderStaticTitle(411, 20, 1);
+    renderStaticTitle(412, 21, 1);
 
     // Swap to the font texture
     manager.bindTexture("fonts");
 
     renderText("" + player.getLives(), 2, 0);
+    renderText("" + player.getCrosses(), 22, 0);
 
     // Render room title
     Glyph roomLegend = roomTitles.get(stage.getRoom());

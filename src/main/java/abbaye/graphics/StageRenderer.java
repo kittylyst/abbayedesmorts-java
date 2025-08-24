@@ -44,12 +44,12 @@ public class StageRenderer implements Renderable {
     var tileDisplaySize = Stage.getTileSize();
 
     // Render each tile of this room
-    for (int y = 0; y < Stage.NUM_ROWS; y += 1) {
-      for (int x = 0; x < Stage.NUM_COLUMNS; x += 1) {
-        var tileCoords = tilemap.getCorners(x, y);
+    for (int tileY = 0; tileY < Stage.NUM_ROWS; tileY += 1) {
+      for (int tileX = 0; tileX < Stage.NUM_COLUMNS; tileX += 1) {
+        var tileCoords = tilemap.getCorners(tileX, tileY);
 
-        float displayPosX = x * tileDisplaySize;
-        float displayPosY = y * tileDisplaySize;
+        float displayPosX = tileX * tileDisplaySize;
+        float displayPosY = tileY * tileDisplaySize;
 
         manager.renderTile(tileCoords, tileDisplaySize, displayPosX, displayPosY);
       }
