@@ -156,6 +156,13 @@ public class Stage implements Renderable {
     return cache;
   }
 
+  public Corners getCorners(int tileId) {
+    if (cache.containsKey(tileId)) {
+      return cache.get(tileId);
+    }
+    throw new IllegalArgumentException("Tile ID " + tileId + " not found");
+  }
+
   public Corners getCorners(int x, int y) {
     var tileType = stagedata[roomy * SCREENS_X + roomx][y][x];
     if (cache.containsKey(tileType)) {

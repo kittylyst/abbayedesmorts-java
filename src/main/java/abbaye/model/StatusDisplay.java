@@ -8,7 +8,6 @@ import abbaye.Config;
 import abbaye.basic.Corners;
 import abbaye.basic.Renderable;
 import abbaye.graphics.GLManager;
-import abbaye.graphics.Texture;
 import abbaye.logs.GameLogger;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +19,6 @@ public class StatusDisplay implements Renderable {
 
   private GameLogger logger = Config.config().getLogger();
   private GLManager manager;
-  private Texture fonts;
 
   public record Glyph(String name, int width, int height, Corners corners) {}
 
@@ -47,7 +45,6 @@ public class StatusDisplay implements Renderable {
   public void init() {
     if (AbbayeMain.isGlEnabled()) {
       manager = GLManager.get("game");
-      fonts = Texture.of("/fonts.png", true, true);
     }
     for (byte i = 0; i < 10; i += 1) {
       char c = (char) ('0' + i);
@@ -69,16 +66,40 @@ public class StatusDisplay implements Renderable {
     }
   }
 
+  void renderStaticTitle(int tileId, int x, int y) {
+    var corners = stage.getCorners(tileId);
+
+    var tileDisplaySize = Stage.getTileSize();
+    var m1 = createTranslationMatrix(x * tileDisplaySize, (25 + y) * tileDisplaySize, 0);
+    float[] scale = createScaleMatrix(tileDisplaySize, -tileDisplaySize, 1);
+    manager.renderTile(corners, multiplyMatrices(scale, m1));
+  }
+
   @Override
   public boolean render() {
-    manager.bindTexture(fonts);
-
     if (!Config.config().getGLActive()) {
       return false;
     }
-    var scoreText = "" + player.getLives();
-    // FIXME x and y
-    renderText(scoreText, 0, 0);
+
+    // Render the heart and crosses from the primary tilemap
+    manager.bindTexture("tiles");
+    renderStaticTitle(401, 0, 0);
+    renderStaticTitle(402, 1, 0);
+    renderStaticTitle(403, 0, 1);
+    renderStaticTitle(404, 1, 1);
+
+    //      /* Crosses */
+    //      if ((tileType > 408) && (tileType < 429)) {
+    //          srctiles.x = 96 + ((tileType - 401) * 8) + (32 * (counter[1] / 23));
+    //          srctiles.y = 24;
+    //          srctiles.w = 8;
+    //          srctiles.h = 8;
+    //      }
+
+    // Swap to the font texture
+    manager.bindTexture("fonts");
+
+    renderText("" + player.getLives(), 2, 0);
 
     // Render room title
     Glyph roomLegend = roomTitles.get(stage.getRoom());
@@ -110,7 +131,7 @@ public class StatusDisplay implements Renderable {
 
     var tileDisplaySize = Stage.getTileSize();
     for (int i = 0; i < text.length(); i++) {
-      drawX = i * tileDisplaySize;
+      drawX = (x + i) * tileDisplaySize;
       char ch = text.charAt(i);
       if (ch == '\n') {
         /* Line feed, set x and y to draw at the next line */

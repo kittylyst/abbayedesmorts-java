@@ -32,6 +32,14 @@ public final class GLManager {
 
   private GLManager() {}
 
+  public static synchronized GLManager get(String shaderName) {
+    var mgr = managers.get(shaderName);
+    if (mgr == null) {
+      throw new IllegalArgumentException("Unknown shader: " + shaderName);
+    }
+    return mgr;
+  }
+
   static {
     if (Config.config().getGLActive()) {
       // Splash screen shaders
@@ -46,6 +54,9 @@ public final class GLManager {
       // Texture coordinate attribute
       glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
       glEnableVertexAttribArray(1);
+
+      manager.textures.put("introSplash", Texture.of("/intro.png", true, true));
+
       managers.put("dialog", manager);
 
       // Main game shaders
@@ -62,21 +73,20 @@ public final class GLManager {
       // Texture coordinate attribute
       glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
       glEnableVertexAttribArray(1);
+
+      // Game textures
+      manager.textures.put("fonts", Texture.of("/fonts.png", true, true));
+      manager.textures.put("tiles", Texture.of("/tiles.png", true, true));
+
       managers.put("game", manager);
     }
-  }
-
-  public static synchronized GLManager get(String shaderName) {
-    var mgr = managers.get(shaderName);
-    if (mgr == null) {
-      throw new IllegalArgumentException("Unknown shader: " + shaderName);
-    }
-    return mgr;
   }
 
   private int shaderProgram;
   private int VAO, VBO, EBO;
   private int projectionLocation, modelLocation;
+
+  private Map<String, Texture> textures = new HashMap<>();
 
   public void init(String pathVertex, String pathFragment) {
     // Enable blending for transparency
@@ -135,11 +145,12 @@ public final class GLManager {
   }
 
   /**
-   * Bind texture for render - fonts use a different texture
+   * Bind texture for render
    *
-   * @param texture
+   * @param name
    */
-  public void bindTexture(Texture texture) {
+  public void bindTexture(String name) {
+    Texture texture = textures.get(name);
     glBindTexture(GL_TEXTURE_2D, texture.getId());
     glBindVertexArray(VAO);
     glUseProgram(shaderProgram);
@@ -159,7 +170,7 @@ public final class GLManager {
     var v1 = tileCoords.v1();
     var u2 = tileCoords.u2();
     var v2 = tileCoords.v2();
-    // Setup vertices with a per-tile vertical flip to match original rendering
+
     float[] vertices = {
       // positions           // texture coords
       1.0f, 0.0f, Z_ZERO, u2, v1, // bottom right

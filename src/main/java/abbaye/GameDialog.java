@@ -12,7 +12,6 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 
 import abbaye.basic.Corners;
 import abbaye.graphics.GLManager;
-import abbaye.graphics.Texture;
 import abbaye.model.Player;
 import java.nio.IntBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -28,15 +27,12 @@ public class GameDialog {
   private final GLManager glManager;
   private final long window;
 
-  private final Texture introSplash;
-
   private State state;
   private Player player;
 
   public GameDialog(Player pl, AbbayeMain main) {
     player = pl;
     mainClass = main;
-    introSplash = Texture.of("/intro.png", true, true);
     glManager = GLManager.get("dialog");
     state = State.INACTIVE;
     window = main.getWindow();
@@ -76,7 +72,7 @@ public class GameDialog {
 
         // Bind texture
         glActiveTexture(GL_TEXTURE0);
-        glManager.bindTexture(introSplash);
+        glManager.bindTexture("introSplash");
         glBindVertexArray(glManager.getVAO());
 
         glManager.renderTile(new Corners(-1.0f, -1.0f, 2.0f, 0.5f), PROJECTION_MATRIX);
