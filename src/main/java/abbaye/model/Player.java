@@ -487,7 +487,6 @@ public final class Player implements Actor {
     }
 
     /* Check small platforms */
-    // FIXME Are these directions correct?
     if (direction == LEFT) {
       if ((blground[3] == 38)
           && ((pos.x() + 13) < (points[3] * PIXELS_PER_TILE + 5))
@@ -569,12 +568,28 @@ public final class Player implements Actor {
         }
         if (lives < 9) {
           lives += 1;
-          logger.debug("Life added....");
           //        Mix_PlayChannel(-1, fx[2], 0);
         }
         return true;
       }
     }
+
+    /* Touch crosses */
+    if (((stagedata[1 + pos.tileY()][pos.tileX()] > 408)
+            && (stagedata[1 + pos.tileY()][pos.tileX()] < 413))
+        || ((stagedata[1 + pos.tileY()][1 + pos.tileX()] > 408)
+            && (stagedata[1 + pos.tileY()][1 + pos.tileX()] < 413))) {
+      for (var v = 0; v < 22; v++) {
+        for (var h = 0; h < 32; h++) {
+          if ((stagedata[v][h] > 408) && (stagedata[v][h] < 413)) stagedata[v][h] = 0;
+        }
+      }
+      crosses += 1;
+      //        Mix_PlayChannel(-1, fx[2], 0);
+
+      return true;
+    }
+
     return false;
   }
 
