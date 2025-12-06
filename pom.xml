@@ -25,6 +25,8 @@
     <!--      <checkstyle.version>10.6.0</checkstyle.version>-->
     <!--      <checkstyle-plugin.version>3.2.1</checkstyle-plugin.version>-->
     <jacoco-plugin.version>0.8.9</jacoco-plugin.version>
+    <!-- Custom JVM arguments for surefire (will be combined with JaCoCo argLine) -->
+    <surefire.jvm.args>-XstartOnFirstThread -javaagent:${org.mockito:mockito-core:jar} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</surefire.jvm.args>
   </properties>
 
   <dependencyManagement>
@@ -193,9 +195,8 @@
         <version>${surefire-plugin.version}</version>
         <configuration>
           <!--          -Djdk.instrument.traceUsage-->
-          <argLine>-XstartOnFirstThread -javaagent:${org.mockito:mockito-core:jar} --add-opens java.base/java.lang=ALL-UNNAMED
-            --add-opens java.base/java.util=ALL-UNNAMED
-            --add-opens java.base/java.lang.reflect=ALL-UNNAMED</argLine>
+          <!-- Combine custom JVM args with JaCoCo's argLine (set by prepare-agent goal) -->
+          <argLine>${surefire.jvm.args} ${argLine}</argLine>
         </configuration>
       </plugin>
       <plugin>
