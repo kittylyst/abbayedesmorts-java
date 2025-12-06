@@ -216,3 +216,4 @@ public class TestPlayerCollisionPassing {
     assertDoesNotThrow(() -> player.checkCollision(), "Should handle top edge boundary");
   }
 }
+
