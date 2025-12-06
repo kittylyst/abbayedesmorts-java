@@ -235,3 +235,48 @@
    - Use `AbbayeMain.setGlEnabled(false)` for tests that don't need rendering
    - Test game logic without OpenGL initialization
 
+## Progress Tracking
+
+### Completed Areas
+_Update this section as test coverage is improved_
+
+- [ ] Player collision detection (`checkCollision()`)
+- [ ] Player movement and physics (`newPosition()`, `update()`)
+- [ ] Player input handling (`moveCallback()`)
+- [ ] Player static object detection (`checkStaticObject()`)
+- [ ] Stage tile rendering (`getCorners()`, room navigation)
+- [ ] StatusDisplay rendering and initialization
+- [ ] GameDialog state management
+- [ ] StageRenderer tilemap rendering
+- [ ] Config property resolution
+- [ ] Layer update and render cycles
+- [ ] BoundingBox2 collision utilities
+- [ ] Vector2 math operations
+- [ ] Clock timing functionality
+
+### In Progress
+_List areas currently being worked on_
+
+### Notes
+_Add notes about test implementation strategies, challenges, or decisions made during testing_
+
+---
+
+## Keeping This Document Updated
+
+To keep this coverage analysis current:
+
+1. **After adding tests**: Run `mvn clean test jacoco:report` and review the updated coverage
+2. **Update Progress Tracking**: Mark completed areas and add notes about implementation
+3. **Regenerate coverage stats**: Use the command below to get updated coverage percentages:
+   ```bash
+   mvn clean test jacoco:report -q && \
+   cat target/site/jacoco/jacoco.csv | \
+   awk -F',' 'NR>1 {missed=$4; covered=$5; total=missed+covered; if(total>0) {cov=(covered/total)*100; if(cov<50 && total>50) print $2"."$3": "cov"% coverage ("missed" missed, "covered" covered)"}}' | \
+   sort -t: -k2 -n
+   ```
+4. **Review method-level coverage**: Check `target/site/jacoco/index.html` for detailed method coverage
+5. **Commit updates**: Keep the document in sync with test improvements
+
+**Last Updated**: 2025-12-06 (Initial analysis)
+
