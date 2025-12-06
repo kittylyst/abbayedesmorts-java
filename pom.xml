@@ -22,6 +22,9 @@
     <compiler-plugin.version>3.8.0</compiler-plugin.version>
     <surefire-plugin.version>3.5.2</surefire-plugin.version>
     <shade-plugin.version>3.6.0</shade-plugin.version>
+    <!--      <checkstyle.version>10.6.0</checkstyle.version>-->
+    <!--      <checkstyle-plugin.version>3.2.1</checkstyle-plugin.version>-->
+    <jacoco-plugin.version>0.8.9</jacoco-plugin.version>
   </properties>
 
   <dependencyManagement>
@@ -253,6 +256,27 @@
               <goal>check</goal>
             </goals>
             <phase>compile</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>default-prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <configuration></configuration>
+          </execution>
+          <execution>
+            <id>default-report</id>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <phase>test</phase>
           </execution>
         </executions>
       </plugin>

@@ -22,7 +22,7 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 
 // Must be run with -Djava.awt.headless=true
-public class AbbayeMain {
+public final class AbbayeMain {
   private static ObjectMapper mapper;
   private static volatile boolean glEnabled = true;
 
