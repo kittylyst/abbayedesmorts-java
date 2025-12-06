@@ -241,12 +241,12 @@
 _Update this section as test coverage is improved_
 
 - [x] Player collision detection (`checkCollision()`) - Test infrastructure created, 24 test cases added covering:
-  - Basic collision scenarios (empty space, walls, ground, roof)
-  - Special tiles (128, 344, 348, platform 38)
-  - Crouch vs standing collisions
-  - Room-specific logic (ROOM_CAVE, ROOM_BEAST, ROOM_LAKE)
-  - Boundary conditions
-  - Note: Some tests need refinement based on actual collision detection behavior
+- Basic collision scenarios (empty space, walls, ground, roof)
+- Special tiles (128, 344, 348, platform 38)
+- Crouch vs standing collisions
+- Room-specific logic (ROOM_CAVE, ROOM_BEAST, ROOM_LAKE)
+- Boundary conditions
+- Note: Some tests need refinement based on actual collision detection behavior
 - [ ] Player movement and physics (`newPosition()`, `update()`)
 - [ ] Player input handling (`moveCallback()`)
 - [ ] Player static object detection (`checkStaticObject()`)
