@@ -141,6 +141,11 @@ public class Stage implements Renderable {
     return roomy;
   }
 
+  public void toWaypoint(Player.Waypoint waypoint) {
+    roomx = waypoint.roomX();
+    roomy = waypoint.roomY();
+  }
+
   private static class SDLRect {
     public int x;
     public int y;

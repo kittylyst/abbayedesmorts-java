@@ -188,6 +188,17 @@ public final class Player implements Actor {
   }
 
   public Vector2 newPosition() {
+    if (checkStaticHazard()) {
+      logger.info("Static hazard hit");
+      if (lives <= 0) {
+        lives = 5;
+        logger.info("Resetting lives, need to exit game here instead");
+      } else {
+        lives -= 1;
+      }
+      stage.toWaypoint(last);
+      return last.getPos();
+    }
     if (checkCollision()) {
       logger.info("Collision detected: " + Arrays.toString(collision));
     }
@@ -545,6 +556,25 @@ public final class Player implements Actor {
     return (collision[0] + collision[1] + collision[2] + collision[3]) > 0;
   }
 
+  /**
+   * @return true if player has touched a static hazard
+   */
+  public boolean checkStaticHazard() {
+    var stagedata = stage.getScreen(stage.getRoom());
+
+    /* Touch static hazard */
+    if (stagedata[1 + pos.tileY()][pos.tileX()] == 5
+        || stagedata[1 + pos.tileY()][1 + pos.tileX()] == 5
+        || stagedata[2 + pos.tileY()][pos.tileX()] == 5
+        || stagedata[2 + pos.tileY()][1 + pos.tileX()] == 5
+        || stagedata[3 + pos.tileY()][pos.tileX()] == 5
+        || stagedata[3 + pos.tileY()][1 + pos.tileX()] == 5) {
+      return true;
+    }
+
+    return false;
+  }
+
   public boolean checkStaticObject() {
     int room = stage.getRoom();
     var stagedata = stage.getScreen(room);
@@ -619,8 +649,8 @@ public final class Player implements Actor {
         }
       }
       // Update waypoint
-      last = new Waypoint(stage.getRoomX(), stage.getRoomY(), pos);
       logger.info("Updating waypoint here: " + last);
+      last = new Waypoint(stage.getRoomX(), stage.getRoomY(), pos);
       //        Mix_PlayChannel(-1, fx[2], 0);
 
       return true;
