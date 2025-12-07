@@ -1,8 +1,7 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.model;
 
-import static abbaye.model.Stage.NUM_COLUMNS;
-import static abbaye.model.Stage.NUM_ROWS;
+import static abbaye.model.Stage.*;
 
 import java.lang.reflect.Field;
 
@@ -18,6 +17,22 @@ public class Utils {
       return (T) field.get(obj);
     } catch (Exception e) {
       throw new RuntimeException("Failed to get field " + fieldName, e);
+    }
+  }
+
+  /** Helper to set the floor in the current room */
+  static void setFloor(Stage stage) {
+    int room = stage.getRoom();
+    var stagedata = stage.getScreen(room);
+    // y == 16 special case - topsoil
+    for (int x = 0; x < NUM_COLUMNS; x += 1) {
+      stagedata[15][x] = x % 2 == 0 ? TILE_TOPSOIL1 : TILE_TOPSOIL2;
+    }
+    // Bedrock
+    for (int y = 16; y < NUM_ROWS; y += 1) {
+      for (int x = 0; x < NUM_COLUMNS; x += 1) {
+        stagedata[y][x] = x % 2 == 0 ? TILE_BEDROCK1 : TILE_BEDROCK2;
+      }
     }
   }
 

@@ -3,6 +3,7 @@ package abbaye.model;
 
 import static abbaye.model.Facing.LEFT;
 import static abbaye.model.Facing.RIGHT;
+import static abbaye.model.Player.COLLISION_RIGHT;
 import static abbaye.model.Stage.*;
 import static abbaye.model.Utils.*;
 import static abbaye.model.Vertical.*;
@@ -30,7 +31,6 @@ public class TestPlayerCollisionPassing {
   @BeforeEach
   public void setUp() {
     stage = new Stage();
-    stage.load();
     layer = new Layer();
     player = Player.of(layer, stage);
     layer.setPlayer(player);
@@ -51,7 +51,6 @@ public class TestPlayerCollisionPassing {
   }
 
   @Test
-  @Disabled
   public void testRightWallCollisionWhenStanding() {
     // Position player very close to right wall to trigger collision
     float tileSize = Stage.getTileSize();
@@ -60,6 +59,9 @@ public class TestPlayerCollisionPassing {
     setDirection(player, RIGHT);
     setCrouch(player, false);
     setPrivateField(player, "walk", true);
+
+    // Make basic field
+    setFloor(stage);
 
     // Place solid wall to the right
     int checkX = (int) ((xPos + 13 * PIXELS_PER_TILE) / tileSize) + 1;
@@ -70,9 +72,10 @@ public class TestPlayerCollisionPassing {
     player.calculateCollision();
     var collisions = player.getCollisions();
 
+    System.out.println(player);
+
     // Note: Collision detection has distance checks that may prevent detection
-    // This test verifies the collision path is executed
-    assertTrue(collisions[3] > 0, "Collision check should complete");
+    assertEquals(1, collisions[COLLISION_RIGHT], "Should detect collision to right");
   }
 
   @Test

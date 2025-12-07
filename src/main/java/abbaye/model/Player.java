@@ -37,31 +37,11 @@ public final class Player implements Actor {
     }
   }
 
-  // Constants
-  public static final int RIGHT_EDGE = 243;
-  public static final int LEFT_EDGE = 0;
-  public static final int BOTTOM_EDGE = 146;
-  public static final int TOP_EDGE = 0;
-
   // Collision array indices (UDLR - D is unused and handled by gravity effects)
-  private static final int COLLISION_UP = 0;
-  private static final int COLLISION_DOWN = 1; // Unused but documented
-  private static final int COLLISION_LEFT = 2;
-  private static final int COLLISION_RIGHT = 3;
-
-  // Tile type IDs
-  private static final int TILE_PASSABLE = 16;
-  private static final int TILE_PASSABLE_VARIANT_1 = 37;
-  private static final int TILE_PLATFORM = 38;
-  private static final int TILE_SOLID_MAX = 100;
-  private static final int TILE_SPECIAL_COLLISION = 128;
-  private static final int TILE_SPECIAL_RIGHT = 344;
-  private static final int TILE_SPECIAL_LEFT = 348;
-  private static final int TILE_SPECIAL_RIGHT_MIN = 342;
-  private static final int TILE_SPECIAL_RIGHT_MAX =
-      347; // Exclusive upper bound for crouch range check
-  private static final int TILE_SPECIAL_LEFT_MIN = 346;
-  private static final int TILE_SPECIAL_LEFT_MAX = 351;
+  static final int COLLISION_UP = 0;
+  static final int COLLISION_DOWN = 1; // Unused but documented
+  static final int COLLISION_LEFT = 2;
+  static final int COLLISION_RIGHT = 3;
 
   // Collision detection thresholds (in pixels)
   private static final float COLLISION_DISTANCE_THRESHOLD = 1.1f;
@@ -77,14 +57,6 @@ public final class Player implements Actor {
   private static final int COLLISION_LOWER_MID_OFFSET = 15;
   private static final int COLLISION_BOTTOM_EDGE_OFFSET = 23;
   private static final int COLLISION_CROUCH_HEIGHT_OFFSET = 16;
-
-  // Room-specific collision constants
-  private static final int INVISIBLE_WALL_CROUCH_ROW = 5;
-  private static final int INVISIBLE_GROUND_ROW_THRESHOLD = 19;
-  private static final int INVISIBLE_GROUND_COLUMN = 2;
-  private static final int ROOM_BEAST_INVISIBLE_WALL_START = 27;
-  private static final int ROOM_BEAST_INVISIBLE_WALL_END = 32;
-  private static final int SCREEN_BOTTOM_ROW_THRESHOLD = 21;
 
   // Position calculation offsets
   private static final int WALL_COLLISION_LEFT_OFFSET = 7;
