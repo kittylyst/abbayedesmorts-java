@@ -21,15 +21,15 @@ public class Utils {
   }
 
   /** Helper to set the floor in the current room */
-  static void setFloor(Stage stage) {
+  static void setFloor(Stage stage, final int floorLevel) {
     int room = stage.getRoom();
     var stagedata = stage.getScreen(room);
     // y == 16 special case - topsoil
     for (int x = 0; x < NUM_COLUMNS; x += 1) {
-      stagedata[15][x] = x % 2 == 0 ? TILE_TOPSOIL1 : TILE_TOPSOIL2;
+      stagedata[floorLevel][x] = x % 2 == 0 ? TILE_TOPSOIL1 : TILE_TOPSOIL2;
     }
     // Bedrock
-    for (int y = 16; y < NUM_ROWS; y += 1) {
+    for (int y = floorLevel + 1; y < NUM_ROWS; y += 1) {
       for (int x = 0; x < NUM_COLUMNS; x += 1) {
         stagedata[y][x] = x % 2 == 0 ? TILE_BEDROCK1 : TILE_BEDROCK2;
       }

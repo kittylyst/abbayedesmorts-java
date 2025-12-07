@@ -60,7 +60,7 @@ public final class Player implements Actor {
 
   // Position calculation offsets
   private static final int WALL_COLLISION_LEFT_OFFSET = 7;
-  private static final int WALL_COLLISION_RIGHT_OFFSET = 14;
+  private static final int WALL_COLLISION_RIGHT_OFFSET = 15;
   private static final int PLAYER_HEIGHT_PIXELS = 24;
   private static final int GROUND_SNAP_OFFSET_MULTIPLIER = 3;
   private static final int PLATFORM_FALL_THRESHOLD_X = 5;
@@ -425,7 +425,7 @@ public final class Player implements Actor {
     collision[COLLISION_RIGHT] = 0;
 
     int room = stage.getRoom();
-    var stagedata = stage.getScreen(room);
+    var currentRoomData = stage.getScreen(room);
 
     /* Left & Right collisions */
     if (!crouch) {
@@ -436,8 +436,8 @@ public final class Player implements Actor {
         }
         if (((points[0] > 0) && (direction == LEFT))
             || ((points[3] + 1 < NUM_COLUMNS) && (direction == RIGHT))) {
-          blleft = stagedata[points[n]][points[0] - 1];
-          blright = stagedata[points[n]][points[3] + 1];
+          blleft = currentRoomData[points[n]][points[0] - 1];
+          blright = currentRoomData[points[n]][points[3] + 1];
           if (counter++ % DEBUG_LOG_FREQUENCY == 0) {
             logger.debug(
                 pos
@@ -455,7 +455,7 @@ public final class Player implements Actor {
                   && (blleft != TILE_PASSABLE)
                   && (blleft != TILE_PLATFORM)
                   && (blleft != TILE_PASSABLE_VARIANT_1))
-              || ((stagedata[points[4]][points[0]] == TILE_SPECIAL_COLLISION)
+              || ((currentRoomData[points[4]][points[0]] == TILE_SPECIAL_COLLISION)
                   || (blleft == TILE_SPECIAL_LEFT))) {
             if (pos.x() - ((points[0] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
                 < COLLISION_DISTANCE_THRESHOLD) {
@@ -487,10 +487,10 @@ public final class Player implements Actor {
             (int)
                 ((pos.y() + COLLISION_CROUCH_HEIGHT_OFFSET * PIXELS_PER_TILE)
                     / Stage.getTileSize());
-        blleft = stagedata[r][points[0] - 1];
-        blright = stagedata[r][points[3] + 1];
+        blleft = currentRoomData[r][points[0] - 1];
+        blright = currentRoomData[r][points[3] + 1];
         if (((blleft > 0) && (blleft < TILE_SOLID_MAX) && (blleft != TILE_PASSABLE_VARIANT_1))
-            || ((stagedata[r][points[0]] == TILE_SPECIAL_COLLISION)
+            || ((currentRoomData[r][points[0]] == TILE_SPECIAL_COLLISION)
                 || ((blleft > TILE_SPECIAL_LEFT_MIN) && (blleft < TILE_SPECIAL_LEFT_MAX)))) {
           if (pos.x() - ((points[0] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
               < COLLISION_DISTANCE_THRESHOLD) {
@@ -524,10 +524,10 @@ public final class Player implements Actor {
     }
 
     /* Touch ground collision */
-    blground[0] = stagedata[points[7] + 1][points[0]];
-    blground[1] = stagedata[points[7] + 1][points[1]];
-    blground[2] = stagedata[points[7] + 1][points[2]];
-    blground[3] = stagedata[points[7] + 1][points[3]];
+    blground[0] = currentRoomData[points[7] + 1][points[0]];
+    blground[1] = currentRoomData[points[7] + 1][points[1]];
+    blground[2] = currentRoomData[points[7] + 1][points[2]];
+    blground[3] = currentRoomData[points[7] + 1][points[3]];
 
     if (jump != JUMP) {
       /* Invisible ground */
@@ -593,8 +593,8 @@ public final class Player implements Actor {
 
     if ((jump == JUMP) && (points[4] > 0)) {
       /* Touch roof collision */
-      blroof[0] = stagedata[points[4] - 1][points[0]];
-      blroof[1] = stagedata[points[4] - 1][points[3]];
+      blroof[0] = currentRoomData[points[4] - 1][points[0]];
+      blroof[1] = currentRoomData[points[4] - 1][points[3]];
 
       if (((blroof[0] > 0)
               && (blroof[0] < TILE_SOLID_MAX)

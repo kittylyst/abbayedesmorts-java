@@ -52,30 +52,73 @@ public class TestPlayerCollisionPassing {
 
   @Test
   public void testRightWallCollisionWhenStanding() {
+    // Make basic field
+    var yCell = 12;
+    setFloor(stage, yCell + 3);
+    var xCell = 1; // starting xCell pos
+    // Place solid wall to the right
+    int checkX = xCell + 2;
+    for (int y = 4; y < yCell + 3 && y < NUM_ROWS; y++) {
+      setTile(stage, checkX, y, 1);
+    }
+
     // Position player very close to right wall to trigger collision
     float tileSize = Stage.getTileSize();
-    float xPos = 15 * tileSize - 10; // Close to wall
-    player.setPos(new Vector2(xPos, 10 * tileSize));
     setDirection(player, RIGHT);
     setCrouch(player, false);
     setPrivateField(player, "walk", true);
 
-    // Make basic field
-    setFloor(stage);
-
-    // Place solid wall to the right
-    int checkX = (int) ((xPos + 13 * PIXELS_PER_TILE) / tileSize) + 1;
-    for (int y = 4; y < 15 && y < NUM_ROWS; y++) {
-      setTile(stage, checkX, y, 1);
-    }
-
+    float xPos = xCell * tileSize - 1; // Close to wall but not touching
+    player.setPos(new Vector2(xPos, yCell * tileSize));
     player.calculateCollision();
     var collisions = player.getCollisions();
+    assertEquals(0, collisions[COLLISION_RIGHT], "Should not detect collision to right");
 
-    System.out.println(player);
+    xPos = xCell * tileSize + 1; // Touching
+    player.setPos(new Vector2(xPos, yCell * tileSize));
+    player.calculateCollision();
+    collisions = player.getCollisions();
+    assertEquals(1, collisions[COLLISION_RIGHT], "Should not detect collision to right");
+  }
 
-    // Note: Collision detection has distance checks that may prevent detection
-    assertEquals(1, collisions[COLLISION_RIGHT], "Should detect collision to right");
+  @Test
+  public void testStepsFromEscapeWhenStanding() {
+    // Make basic field
+    var yCell = 12;
+    setFloor(stage, yCell + 3);
+    var xCell = 1; // starting xCell pos
+    // Place steps to the right
+    int checkX = xCell + 2;
+    setTile(stage, checkX, yCell + 2, 3);
+    setTile(stage, checkX + 1, yCell + 2, 4);
+
+    setTile(stage, checkX + 2, yCell + 1, 3);
+    setTile(stage, checkX + 3, yCell + 1, 4);
+    setTile(stage, checkX + 2, yCell + 2, 1);
+    setTile(stage, checkX + 3, yCell + 2, 2);
+
+    setTile(stage, checkX + 4, yCell + 1, 3);
+    setTile(stage, checkX + 5, yCell + 1, 4);
+    setTile(stage, checkX + 4, yCell + 2, 1);
+    setTile(stage, checkX + 5, yCell + 2, 2);
+
+    // Position player very close to right wall to trigger collision
+    float tileSize = Stage.getTileSize();
+    setDirection(player, RIGHT);
+    setCrouch(player, false);
+    setPrivateField(player, "walk", true);
+
+    float xPos = xCell * tileSize - 1; // Close to wall but not touching
+    player.setPos(new Vector2(xPos, yCell * tileSize));
+    player.calculateCollision();
+    var collisions = player.getCollisions();
+    assertEquals(0, collisions[COLLISION_RIGHT], "Should not detect collision to right");
+
+    xPos = xCell * tileSize + 1; // Touching
+    player.setPos(new Vector2(xPos, yCell * tileSize));
+    player.calculateCollision();
+    collisions = player.getCollisions();
+    assertEquals(1, collisions[COLLISION_RIGHT], "Should not detect collision to right");
   }
 
   @Test
