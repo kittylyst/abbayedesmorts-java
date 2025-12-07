@@ -86,6 +86,19 @@ public final class Player implements Actor {
   private static final int ROOM_BEAST_INVISIBLE_WALL_END = 32;
   private static final int SCREEN_BOTTOM_ROW_THRESHOLD = 21;
 
+  // Position calculation offsets
+  private static final int WALL_COLLISION_LEFT_OFFSET = 7;
+  private static final int WALL_COLLISION_RIGHT_OFFSET = 14;
+  private static final int PLAYER_HEIGHT_PIXELS = 24;
+  private static final int GROUND_SNAP_OFFSET_MULTIPLIER = 3;
+  private static final int PLATFORM_FALL_THRESHOLD_X = 5;
+  private static final int PLATFORM_FALL_OFFSET_X = 2;
+  private static final int PLATFORM_CHECK_X_OFFSET_RIGHT = 1;
+
+  // Special values
+  private static final int SCREEN_BOTTOM_TELEPORT_TILES = 300;
+  private static final int DEBUG_LOG_FREQUENCY = 10;
+
   // GL fields
   private GLManager manager;
 
@@ -453,7 +466,7 @@ public final class Player implements Actor {
             || ((points[3] + 1 < NUM_COLUMNS) && (direction == RIGHT))) {
           blleft = stagedata[points[n]][points[0] - 1];
           blright = stagedata[points[n]][points[3] + 1];
-          if (counter++ % 10 == 0) {
+          if (counter++ % DEBUG_LOG_FREQUENCY == 0) {
             logger.debug(
                 pos
                     + " ; blleft: "
@@ -472,7 +485,8 @@ public final class Player implements Actor {
                   && (blleft != TILE_PASSABLE_VARIANT_1))
               || ((stagedata[points[4]][points[0]] == TILE_SPECIAL_COLLISION)
                   || (blleft == TILE_SPECIAL_LEFT))) {
-            if (pos.x() - ((points[0] - 1) * PIXELS_PER_TILE + 7) < COLLISION_DISTANCE_THRESHOLD) {
+            if (pos.x() - ((points[0] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
+                < COLLISION_DISTANCE_THRESHOLD) {
               collision[COLLISION_LEFT] = 1;
             }
           }
@@ -482,7 +496,8 @@ public final class Player implements Actor {
                   && (blright != TILE_PLATFORM)
                   && (blright != TILE_PASSABLE_VARIANT_1))
               || (blright == TILE_SPECIAL_RIGHT)) {
-            if (((points[3] + 1) * PIXELS_PER_TILE) - (pos.x() / PIXELS_PER_TILE + 14)
+            if (((points[3] + 1) * PIXELS_PER_TILE)
+                    - (pos.x() / PIXELS_PER_TILE + WALL_COLLISION_RIGHT_OFFSET)
                 < COLLISION_DISTANCE_THRESHOLD) {
               collision[COLLISION_RIGHT] = 1;
             }
@@ -505,13 +520,15 @@ public final class Player implements Actor {
         if (((blleft > 0) && (blleft < TILE_SOLID_MAX) && (blleft != TILE_PASSABLE_VARIANT_1))
             || ((stagedata[r][points[0]] == TILE_SPECIAL_COLLISION)
                 || ((blleft > TILE_SPECIAL_LEFT_MIN) && (blleft < TILE_SPECIAL_LEFT_MAX)))) {
-          if (pos.x() - ((points[0] - 1) * PIXELS_PER_TILE + 7) < COLLISION_DISTANCE_THRESHOLD) {
+          if (pos.x() - ((points[0] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
+              < COLLISION_DISTANCE_THRESHOLD) {
             collision[COLLISION_LEFT] = 1;
           }
         }
         if (((blright > 0) && (blright < TILE_SOLID_MAX) && (blright != TILE_PASSABLE_VARIANT_1))
             || ((blright > TILE_SPECIAL_RIGHT_MIN) && (blright < TILE_SPECIAL_RIGHT_MAX))) {
-          if (((points[3] + 1) * PIXELS_PER_TILE) - (pos.x() / PIXELS_PER_TILE + 14)
+          if (((points[3] + 1) * PIXELS_PER_TILE)
+                  - (pos.x() / PIXELS_PER_TILE + WALL_COLLISION_RIGHT_OFFSET)
               < COLLISION_DISTANCE_THRESHOLD) {
             collision[COLLISION_RIGHT] = 1;
           }
@@ -558,13 +575,16 @@ public final class Player implements Actor {
           ground = (points[7] + 1) * (int) Stage.getTileSize();
           if (points[7] + 1 > SCREEN_BOTTOM_ROW_THRESHOLD) {
             /* Dirty trick to make Jean go bottom of the screen */
-            ground = 300 * PIXELS_PER_TILE;
+            ground = SCREEN_BOTTOM_TELEPORT_TILES * PIXELS_PER_TILE;
           }
-          if (ground - pos.y() - 24 > gravity * (int) Stage.getTileSize()) {
+          if (ground - pos.y() - PLAYER_HEIGHT_PIXELS > gravity * (int) Stage.getTileSize()) {
             pos = new Vector2(pos.x(), pos.y() + gravity);
           } else {
             /* Near ground */
-            pos = new Vector2(pos.x(), ground - 3 * PIXELS_PER_TILE * 8);
+            pos =
+                new Vector2(
+                    pos.x(),
+                    ground - GROUND_SNAP_OFFSET_MULTIPLIER * PIXELS_PER_TILE * PIXELS_PER_TILE);
             height = 0;
             jump = NEUTRAL;
             flags[5] = 0;
@@ -581,7 +601,7 @@ public final class Player implements Actor {
     if (direction == LEFT) {
       if ((blground[3] == TILE_PLATFORM)
           && ((pos.x() + COLLISION_RIGHT_EDGE_OFFSET * PIXELS_PER_TILE)
-              < (points[3] * PIXELS_PER_TILE + 5))
+              < (points[3] * PIXELS_PER_TILE + PLATFORM_FALL_THRESHOLD_X))
           //          && (push[2] == 1)
           && (jump == NEUTRAL)) {
         pos = new Vector2(pos.x(), pos.y() + gravity);
@@ -590,7 +610,8 @@ public final class Player implements Actor {
     }
     if (direction == RIGHT) {
       if ((blground[0] == TILE_PLATFORM)
-          && ((pos.x() + 1) > (points[0] + 2))
+          && ((pos.x() + PLATFORM_CHECK_X_OFFSET_RIGHT * PIXELS_PER_TILE)
+              > (points[0] * PIXELS_PER_TILE + PLATFORM_FALL_OFFSET_X * PIXELS_PER_TILE))
           //          && (push[3] == 1)
           && (jump == NEUTRAL)) {
         pos = new Vector2(pos.x(), pos.y() + gravity);
@@ -613,7 +634,7 @@ public final class Player implements Actor {
               && (blroof[1] != TILE_PASSABLE)
               && (blroof[1] != TILE_PLATFORM)
               && (blroof[1] != TILE_PASSABLE_VARIANT_1))) {
-        if ((pos.y() - 1) - ((points[4] - 1) * PIXELS_PER_TILE + 7)
+        if ((pos.y() - 1) - ((points[4] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
             < COLLISION_ROOF_DISTANCE_THRESHOLD) {
           collision[COLLISION_UP] = 1;
         }
