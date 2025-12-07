@@ -142,4 +142,3 @@ The following areas in `Player` class still need coverage:
 The new collision detection tests have significantly improved coverage of the `Player.checkCollision()` method, covering ground detection, gravity mechanics, boundary conditions, and various edge cases. While 8 tests remain disabled due to precision requirements, the 11 passing tests provide solid coverage of the core collision detection logic.
 
 **Key Achievement**: Reduced missed branches in collision detection from 282 to 222, covering 60 additional branches and improving instruction coverage by nearly 12 percentage points.
-

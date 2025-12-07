@@ -23,6 +23,10 @@ import org.lwjgl.glfw.GLFWKeyCallbackI;
 
 public final class Player implements Actor {
 
+  public int[] getCollisions() {
+    return collision;
+  }
+
   public record Waypoint(int roomX, int roomY, float x, float y) {
     Waypoint(int roomX, int roomY, Vector2 pos) {
       this(roomX, roomY, pos.x(), pos.y());
@@ -366,12 +370,7 @@ public final class Player implements Actor {
     return false;
   }
 
-  /**
-   * This is (only) for collisions with walls
-   *
-   * @return
-   */
-  public boolean checkCollision() {
+  public void calculateCollision() {
     int blleft = 0;
     int blright = 0;
     int[] blground = {0, 0, 0, 0};
@@ -391,6 +390,7 @@ public final class Player implements Actor {
     points[6] = (int) ((pos.y() + 15 * PIXELS_PER_TILE) / resize);
     points[7] = (int) ((pos.y() + 23 * PIXELS_PER_TILE) / resize);
 
+    // Reset collision state
     collision[0] = 0;
     collision[1] = 0;
     collision[2] = 0;
@@ -553,6 +553,15 @@ public final class Player implements Actor {
         }
       }
     }
+  }
+
+  /**
+   * This is (only) for collisions with walls
+   *
+   * @return
+   */
+  public boolean checkCollision() {
+    calculateCollision();
     return (collision[0] + collision[1] + collision[2] + collision[3]) > 0;
   }
 

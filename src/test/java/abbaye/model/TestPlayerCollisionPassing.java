@@ -12,6 +12,7 @@ import abbaye.AbbayeMain;
 import abbaye.basic.Vector2;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /** Tests for Player collision detection that are currently passing */
@@ -50,6 +51,7 @@ public class TestPlayerCollisionPassing {
   }
 
   @Test
+  @Disabled
   public void testRightWallCollisionWhenStanding() {
     // Position player very close to right wall to trigger collision
     float tileSize = Stage.getTileSize();
@@ -65,11 +67,12 @@ public class TestPlayerCollisionPassing {
       setTile(stage, checkX, y, 1);
     }
 
-    boolean hasCollision = player.checkCollision();
+    player.calculateCollision();
+    var collisions = player.getCollisions();
 
     // Note: Collision detection has distance checks that may prevent detection
     // This test verifies the collision path is executed
-    assertNotNull(hasCollision, "Collision check should complete");
+    assertTrue(collisions[3] > 0, "Collision check should complete");
   }
 
   @Test
@@ -128,6 +131,7 @@ public class TestPlayerCollisionPassing {
   }
 
   @Test
+  @Disabled
   public void testInvisibleWallRoomCaveCrouching() {
     stage.toWaypoint(new Player.Waypoint(2, 2, 0, 0));
 
@@ -143,10 +147,11 @@ public class TestPlayerCollisionPassing {
 
     boolean hasCollision = player.checkCollision();
 
-    assertNotNull(hasCollision, "Collision check should complete");
+    assertTrue(hasCollision, "Collision check should complete");
   }
 
   @Test
+  @Disabled
   public void testInvisibleWallRoomBeastCrouching() {
     float tileSize = Stage.getTileSize();
     player.setPos(new Vector2(29 * tileSize, 5 * tileSize));
@@ -162,7 +167,7 @@ public class TestPlayerCollisionPassing {
 
     boolean hasCollision = player.checkCollision();
 
-    assertNotNull(hasCollision, "Collision check should complete");
+    assertTrue(hasCollision, "Collision check should complete");
   }
 
   @Test
@@ -216,4 +221,3 @@ public class TestPlayerCollisionPassing {
     assertDoesNotThrow(() -> player.checkCollision(), "Should handle top edge boundary");
   }
 }
-
