@@ -366,6 +366,11 @@ public final class Player implements Actor {
               glfwSetWindowShouldClose(window, true);
               break;
             }
+          case GLFW_KEY_TAB:
+            {
+              logger.info(this.toString());
+              break;
+            }
           case GLFW_KEY_RIGHT:
             {
               direction = RIGHT;

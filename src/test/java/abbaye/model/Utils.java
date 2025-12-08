@@ -21,6 +21,24 @@ public class Utils {
   }
 
   /** Helper to set the floor in the current room */
+  static void setStep(Stage stage, final int floorLevel) {
+    int room = stage.getRoom();
+    var stagedata = stage.getScreen(room);
+    int[] row1 = {
+      101, 102, 103, 101, 0, 0, 0, 102, 103, 0, 101, 0, 102, 103, 0, 102, 103, 0, 101, 0, 0, 0, 3,
+      4, 3, 4, 0, 104, 105, 0, 0, 0
+    };
+    int[] row2 = {
+      101, 102, 103, 101, 0, 0, 0, 102, 103, 0, 101, 0, 102, 103, 0, 102, 103, 0, 101, 0, 3, 4, 1,
+      2, 1, 2, 0, 102, 103, 0, 101, 101
+    };
+    for (int x = 0; x < NUM_COLUMNS; x += 1) {
+      stagedata[floorLevel + 1][x] = row1[x];
+      stagedata[floorLevel + 2][x] = row2[x];
+    }
+  }
+
+  /** Helper to set the floor in the current room */
   static void setFloor(Stage stage, final int floorLevel) {
     int room = stage.getRoom();
     var stagedata = stage.getScreen(room);

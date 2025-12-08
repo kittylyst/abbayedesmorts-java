@@ -86,39 +86,50 @@ public class TestPlayerCollisionPassing {
     // Make basic field
     var yCell = 12;
     setFloor(stage, yCell + 3);
-    var xCell = 1; // starting xCell pos
+    var xCell = 17; // starting xCell pos
     // Place steps to the right
     int checkX = xCell + 2;
-    setTile(stage, checkX, yCell + 2, 3);
-    setTile(stage, checkX + 1, yCell + 2, 4);
+    setStep(stage, yCell);
+    //    setTile(stage, checkX, yCell + 2, 3);
+    //    setTile(stage, checkX + 1, yCell + 2, 4);
+    //
+    //    setTile(stage, checkX + 2, yCell + 1, 3);
+    //    setTile(stage, checkX + 3, yCell + 1, 4);
+    //    setTile(stage, checkX + 2, yCell + 2, 1);
+    //    setTile(stage, checkX + 3, yCell + 2, 2);
+    //
+    //    setTile(stage, checkX + 4, yCell + 1, 3);
+    //    setTile(stage, checkX + 5, yCell + 1, 4);
+    //    setTile(stage, checkX + 4, yCell + 2, 1);
+    //    setTile(stage, checkX + 5, yCell + 2, 2);
 
-    setTile(stage, checkX + 2, yCell + 1, 3);
-    setTile(stage, checkX + 3, yCell + 1, 4);
-    setTile(stage, checkX + 2, yCell + 2, 1);
-    setTile(stage, checkX + 3, yCell + 2, 2);
-
-    setTile(stage, checkX + 4, yCell + 1, 3);
-    setTile(stage, checkX + 5, yCell + 1, 4);
-    setTile(stage, checkX + 4, yCell + 2, 1);
-    setTile(stage, checkX + 5, yCell + 2, 2);
-
-    // Position player very close to right wall to trigger collision
+    // Position player very close to step to trigger collision
     float tileSize = Stage.getTileSize();
     setDirection(player, RIGHT);
     setCrouch(player, false);
     setPrivateField(player, "walk", true);
 
-    float xPos = xCell * tileSize - 1; // Close to wall but not touching
+    System.out.println("Step: " + tileSize * (checkX + 2));
+
+    // [x=1156.25, y=1088.0
+
+    //    float xPos = xCell * tileSize - 1; // Close to wall but not touching
+    float xPos = 1156;
     player.setPos(new Vector2(xPos, yCell * tileSize));
     player.calculateCollision();
     var collisions = player.getCollisions();
     assertEquals(0, collisions[COLLISION_RIGHT], "Should not detect collision to right");
 
-    xPos = xCell * tileSize + 1; // Touching
+    System.out.println("xPos: " + xPos);
+
+    //    xPos = xCell * tileSize + 1; // Touching
+    xPos = 1156.25f;
     player.setPos(new Vector2(xPos, yCell * tileSize));
     player.calculateCollision();
     collisions = player.getCollisions();
-    assertEquals(1, collisions[COLLISION_RIGHT], "Should not detect collision to right");
+    assertEquals(1, collisions[COLLISION_RIGHT], "Should detect collision to right");
+
+    System.out.println("xPos: " + xPos);
   }
 
   @Test
