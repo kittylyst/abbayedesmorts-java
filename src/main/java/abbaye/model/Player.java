@@ -403,8 +403,8 @@ public final class Player implements Actor {
   }
 
   public void calculateCollision() {
-    int blleft = 0;
-    int blright = 0;
+    int tileLeft = 0;
+    int tileRight = 0;
     int[] blground = {0, 0, 0, 0};
     int[] blroof = {0, 0};
     int[] xpoints = {0, 0, 0, 0};
@@ -436,20 +436,27 @@ public final class Player implements Actor {
     if (!crouch) {
       CHECKS:
       for (var n = 0; n < 4; n += 1) {
+        // Boundary check: ensure we're within valid tile coordinates
         if ((xpoints[0] <= 0) || (xpoints[3] + 1 >= NUM_COLUMNS) || (ypoints[n] + 1 >= NUM_ROWS)) {
           break CHECKS;
         }
+        // Only check collisions in the direction the player is moving
         if (((xpoints[0] > 0) && (direction == LEFT))
             || ((xpoints[3] + 1 < NUM_COLUMNS) && (direction == RIGHT))) {
-          blleft = currentRoomData[ypoints[n]][xpoints[0] - 1];
-          blright = currentRoomData[ypoints[n]][xpoints[3] + 1];
+          // Get tile types at collision points
+
+          // Left: check tile to the left of player's left edge
+          tileLeft = currentRoomData[ypoints[n]][xpoints[0] - 1];
+
+          // Right: check tile to the right of player's right edge
+          tileRight = currentRoomData[ypoints[n]][xpoints[3] + 1];
           if (counter++ % DEBUG_LOG_FREQUENCY == 0) {
             logger.debug(
                 pos
-                    + " ; blleft: "
-                    + blleft
-                    + " ; blright: "
-                    + blright
+                    + " ; tileLeft: "
+                    + tileLeft
+                    + " ; tileRight: "
+                    + tileRight
                     + " ; ground: "
                     + ground
                     + " ; xp: "
@@ -457,24 +464,40 @@ public final class Player implements Actor {
                     + " ; yp: "
                     + Arrays.toString(ypoints));
           }
-          if (((blleft > 0)
-                  && (blleft < TILE_SOLID_MAX)
-                  && (blleft != TILE_PASSABLE)
-                  && (blleft != TILE_PLATFORM)
-                  && (blleft != TILE_PASSABLE_VARIANT_1))
+
+          // Check left collision
+          // A tile is solid if it's a regular solid tile OR a special collision tile
+          if (((tileLeft > 0)
+                  && (tileLeft < TILE_SOLID_MAX)
+                  && (tileLeft != TILE_PASSABLE)
+                  && (tileLeft != TILE_PLATFORM)
+                  && (tileLeft != TILE_PASSABLE_VARIANT_1))
               || ((currentRoomData[ypoints[0]][xpoints[0]] == TILE_SPECIAL_COLLISION)
-                  || (blleft == TILE_SPECIAL_LEFT))) {
+                  || (tileLeft == TILE_SPECIAL_LEFT))) {
+
+            // Calculate distance from player's left edge to the wall
+            // Wall position: (xpoints[0] - 1) * PIXELS_PER_TILE (left edge of tile to the left)
+            // Player left edge: pos.x() + WALL_COLLISION_LEFT_OFFSET
+            // Distance = player position - wall position
             if (pos.x() - ((xpoints[0] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
                 < COLLISION_DISTANCE_THRESHOLD) {
               collision[COLLISION_LEFT] = 1;
             }
           }
-          if (((blright > 0)
-                  && (blright < TILE_SOLID_MAX)
-                  && (blright != TILE_PASSABLE)
-                  && (blright != TILE_PLATFORM)
-                  && (blright != TILE_PASSABLE_VARIANT_1))
-              || (blright == TILE_SPECIAL_RIGHT)) {
+
+          // Check right collision
+          // A tile is solid if it's a regular solid tile OR a special right collision tile
+          if (((tileRight > 0)
+                  && (tileRight < TILE_SOLID_MAX)
+                  && (tileRight != TILE_PASSABLE)
+                  && (tileRight != TILE_PLATFORM)
+                  && (tileRight != TILE_PASSABLE_VARIANT_1))
+              || (tileRight == TILE_SPECIAL_RIGHT)) {
+
+            // Calculate distance from player position to the wall
+            // Wall position: (xpoints[3] + 1) * PIXELS_PER_TILE + WALL_COLLISION_RIGHT_OFFSET
+            // Player position: pos.x()
+            // Distance = wall position - player position
             if (((xpoints[3] + 1) * PIXELS_PER_TILE)
                     - (pos.x() / PIXELS_PER_TILE + WALL_COLLISION_RIGHT_OFFSET)
                 < COLLISION_DISTANCE_THRESHOLD) {
@@ -494,18 +517,20 @@ public final class Player implements Actor {
             (int)
                 ((pos.y() + COLLISION_CROUCH_HEIGHT_OFFSET * PIXELS_PER_TILE)
                     / Stage.getTileSize());
-        blleft = currentRoomData[r][xpoints[0] - 1];
-        blright = currentRoomData[r][xpoints[3] + 1];
-        if (((blleft > 0) && (blleft < TILE_SOLID_MAX) && (blleft != TILE_PASSABLE_VARIANT_1))
+        tileLeft = currentRoomData[r][xpoints[0] - 1];
+        tileRight = currentRoomData[r][xpoints[3] + 1];
+        if (((tileLeft > 0) && (tileLeft < TILE_SOLID_MAX) && (tileLeft != TILE_PASSABLE_VARIANT_1))
             || ((currentRoomData[r][xpoints[0]] == TILE_SPECIAL_COLLISION)
-                || ((blleft > TILE_SPECIAL_LEFT_MIN) && (blleft < TILE_SPECIAL_LEFT_MAX)))) {
+                || ((tileLeft > TILE_SPECIAL_LEFT_MIN) && (tileLeft < TILE_SPECIAL_LEFT_MAX)))) {
           if (pos.x() - ((xpoints[0] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
               < COLLISION_DISTANCE_THRESHOLD) {
             collision[COLLISION_LEFT] = 1;
           }
         }
-        if (((blright > 0) && (blright < TILE_SOLID_MAX) && (blright != TILE_PASSABLE_VARIANT_1))
-            || ((blright > TILE_SPECIAL_RIGHT_MIN) && (blright < TILE_SPECIAL_RIGHT_MAX))) {
+        if (((tileRight > 0)
+                && (tileRight < TILE_SOLID_MAX)
+                && (tileRight != TILE_PASSABLE_VARIANT_1))
+            || ((tileRight > TILE_SPECIAL_RIGHT_MIN) && (tileRight < TILE_SPECIAL_RIGHT_MAX))) {
           if (((xpoints[3] + 1) * PIXELS_PER_TILE)
                   - (pos.x() / PIXELS_PER_TILE + WALL_COLLISION_RIGHT_OFFSET)
               < COLLISION_DISTANCE_THRESHOLD) {
