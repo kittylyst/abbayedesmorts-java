@@ -91,7 +91,6 @@ public final class Player implements Actor {
   private Vertical jump = NEUTRAL;
   private float height; /* Limit of jump */
   private int animation;
-  private int[] points = new int[8]; /* Points of collision */
   private int ground; /* Y-coordinate pixel where the ground is beneath the player */
 
   // Updated
@@ -408,20 +407,21 @@ public final class Player implements Actor {
     int blright = 0;
     int[] blground = {0, 0, 0, 0};
     int[] blroof = {0, 0};
-    int[] points = {0, 0, 0, 0, 0, 0, 0, 0};
+    int[] xpoints = {0, 0, 0, 0};
+    int[] ypoints = {0, 0, 0, 0};
     int r = 0;
 
     float gravity = Config.config().getGravity();
 
     float resize = Stage.getTileSize();
-    points[0] = (int) ((pos.x() + COLLISION_LEFT_EDGE_OFFSET * PIXELS_PER_TILE) / resize);
-    points[1] = (int) ((pos.x() + COLLISION_LEFT_MID_OFFSET * PIXELS_PER_TILE) / resize);
-    points[2] = (int) ((pos.x() + COLLISION_CENTER_X_OFFSET * PIXELS_PER_TILE) / resize);
-    points[3] = (int) ((pos.x() + COLLISION_RIGHT_EDGE_OFFSET * PIXELS_PER_TILE) / resize);
-    points[4] = (int) ((pos.y() + COLLISION_TOP_EDGE_OFFSET * PIXELS_PER_TILE) / resize);
-    points[5] = (int) ((pos.y() + COLLISION_MID_HEIGHT_OFFSET * PIXELS_PER_TILE) / resize);
-    points[6] = (int) ((pos.y() + COLLISION_LOWER_MID_OFFSET * PIXELS_PER_TILE) / resize);
-    points[7] = (int) ((pos.y() + COLLISION_BOTTOM_EDGE_OFFSET * PIXELS_PER_TILE) / resize);
+    xpoints[0] = (int) ((pos.x() + COLLISION_LEFT_EDGE_OFFSET * PIXELS_PER_TILE) / resize);
+    xpoints[1] = (int) ((pos.x() + COLLISION_LEFT_MID_OFFSET * PIXELS_PER_TILE) / resize);
+    xpoints[2] = (int) ((pos.x() + COLLISION_CENTER_X_OFFSET * PIXELS_PER_TILE) / resize);
+    xpoints[3] = (int) ((pos.x() + COLLISION_RIGHT_EDGE_OFFSET * PIXELS_PER_TILE) / resize);
+    ypoints[0] = (int) ((pos.y() + COLLISION_TOP_EDGE_OFFSET * PIXELS_PER_TILE) / resize);
+    ypoints[1] = (int) ((pos.y() + COLLISION_MID_HEIGHT_OFFSET * PIXELS_PER_TILE) / resize);
+    ypoints[2] = (int) ((pos.y() + COLLISION_LOWER_MID_OFFSET * PIXELS_PER_TILE) / resize);
+    ypoints[3] = (int) ((pos.y() + COLLISION_BOTTOM_EDGE_OFFSET * PIXELS_PER_TILE) / resize);
 
     // Reset collision state
     collision[COLLISION_UP] = 0;
@@ -435,14 +435,14 @@ public final class Player implements Actor {
     /* Left & Right collisions */
     if (!crouch) {
       CHECKS:
-      for (var n = 4; n < 8; n += 1) {
-        if ((points[0] <= 0) || (points[3] + 1 >= NUM_COLUMNS) || (points[n] + 1 >= NUM_ROWS)) {
+      for (var n = 0; n < 4; n += 1) {
+        if ((xpoints[0] <= 0) || (xpoints[3] + 1 >= NUM_COLUMNS) || (ypoints[n] + 1 >= NUM_ROWS)) {
           break CHECKS;
         }
-        if (((points[0] > 0) && (direction == LEFT))
-            || ((points[3] + 1 < NUM_COLUMNS) && (direction == RIGHT))) {
-          blleft = currentRoomData[points[n]][points[0] - 1];
-          blright = currentRoomData[points[n]][points[3] + 1];
+        if (((xpoints[0] > 0) && (direction == LEFT))
+            || ((xpoints[3] + 1 < NUM_COLUMNS) && (direction == RIGHT))) {
+          blleft = currentRoomData[ypoints[n]][xpoints[0] - 1];
+          blright = currentRoomData[ypoints[n]][xpoints[3] + 1];
           if (counter++ % DEBUG_LOG_FREQUENCY == 0) {
             logger.debug(
                 pos
@@ -452,17 +452,19 @@ public final class Player implements Actor {
                     + blright
                     + " ; ground: "
                     + ground
-                    + " ; "
-                    + Arrays.toString(points));
+                    + " ; xp: "
+                    + Arrays.toString(xpoints)
+                    + " ; yp: "
+                    + Arrays.toString(ypoints));
           }
           if (((blleft > 0)
                   && (blleft < TILE_SOLID_MAX)
                   && (blleft != TILE_PASSABLE)
                   && (blleft != TILE_PLATFORM)
                   && (blleft != TILE_PASSABLE_VARIANT_1))
-              || ((currentRoomData[points[4]][points[0]] == TILE_SPECIAL_COLLISION)
+              || ((currentRoomData[ypoints[0]][xpoints[0]] == TILE_SPECIAL_COLLISION)
                   || (blleft == TILE_SPECIAL_LEFT))) {
-            if (pos.x() - ((points[0] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
+            if (pos.x() - ((xpoints[0] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
                 < COLLISION_DISTANCE_THRESHOLD) {
               collision[COLLISION_LEFT] = 1;
             }
@@ -473,7 +475,7 @@ public final class Player implements Actor {
                   && (blright != TILE_PLATFORM)
                   && (blright != TILE_PASSABLE_VARIANT_1))
               || (blright == TILE_SPECIAL_RIGHT)) {
-            if (((points[3] + 1) * PIXELS_PER_TILE)
+            if (((xpoints[3] + 1) * PIXELS_PER_TILE)
                     - (pos.x() / PIXELS_PER_TILE + WALL_COLLISION_RIGHT_OFFSET)
                 < COLLISION_DISTANCE_THRESHOLD) {
               collision[COLLISION_RIGHT] = 1;
@@ -486,25 +488,25 @@ public final class Player implements Actor {
     /* Collision with Jean ducking */
     if (crouch) {
       // FIXME Are these directions correct?
-      if (((points[0] != 0) && (direction == LEFT))
-          || ((points[3] != NUM_COLUMNS - 1) && (direction == RIGHT))) {
+      if (((xpoints[0] != 0) && (direction == LEFT))
+          || ((xpoints[3] != NUM_COLUMNS - 1) && (direction == RIGHT))) {
         r =
             (int)
                 ((pos.y() + COLLISION_CROUCH_HEIGHT_OFFSET * PIXELS_PER_TILE)
                     / Stage.getTileSize());
-        blleft = currentRoomData[r][points[0] - 1];
-        blright = currentRoomData[r][points[3] + 1];
+        blleft = currentRoomData[r][xpoints[0] - 1];
+        blright = currentRoomData[r][xpoints[3] + 1];
         if (((blleft > 0) && (blleft < TILE_SOLID_MAX) && (blleft != TILE_PASSABLE_VARIANT_1))
-            || ((currentRoomData[r][points[0]] == TILE_SPECIAL_COLLISION)
+            || ((currentRoomData[r][xpoints[0]] == TILE_SPECIAL_COLLISION)
                 || ((blleft > TILE_SPECIAL_LEFT_MIN) && (blleft < TILE_SPECIAL_LEFT_MAX)))) {
-          if (pos.x() - ((points[0] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
+          if (pos.x() - ((xpoints[0] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
               < COLLISION_DISTANCE_THRESHOLD) {
             collision[COLLISION_LEFT] = 1;
           }
         }
         if (((blright > 0) && (blright < TILE_SOLID_MAX) && (blright != TILE_PASSABLE_VARIANT_1))
             || ((blright > TILE_SPECIAL_RIGHT_MIN) && (blright < TILE_SPECIAL_RIGHT_MAX))) {
-          if (((points[3] + 1) * PIXELS_PER_TILE)
+          if (((xpoints[3] + 1) * PIXELS_PER_TILE)
                   - (pos.x() / PIXELS_PER_TILE + WALL_COLLISION_RIGHT_OFFSET)
               < COLLISION_DISTANCE_THRESHOLD) {
             collision[COLLISION_RIGHT] = 1;
@@ -513,35 +515,35 @@ public final class Player implements Actor {
       }
       /* Invisible wall */
       if ((room == ROOM_CAVE.index()) && (r == INVISIBLE_WALL_CROUCH_ROW)) {
-        if ((points[0] - 1 == 0) || (points[0] - 1 == 1)) collision[COLLISION_LEFT] = 0;
-        if ((points[3] + 1 == 0) || (points[3] + 1 == 1)) collision[COLLISION_RIGHT] = 0;
+        if ((xpoints[0] - 1 == 0) || (xpoints[0] - 1 == 1)) collision[COLLISION_LEFT] = 0;
+        if ((xpoints[3] + 1 == 0) || (xpoints[3] + 1 == 1)) collision[COLLISION_RIGHT] = 0;
       }
       if ((room == ROOM_BEAST.index()) && (r == INVISIBLE_WALL_CROUCH_ROW)) {
-        if ((points[0] - 1 > ROOM_BEAST_INVISIBLE_WALL_START)
-            && (points[0] - 1 < ROOM_BEAST_INVISIBLE_WALL_END)) {
+        if ((xpoints[0] - 1 > ROOM_BEAST_INVISIBLE_WALL_START)
+            && (xpoints[0] - 1 < ROOM_BEAST_INVISIBLE_WALL_END)) {
           collision[COLLISION_LEFT] = 0;
         }
-        if ((points[3] + 1 > ROOM_BEAST_INVISIBLE_WALL_START)
-            && (points[3] + 1 < ROOM_BEAST_INVISIBLE_WALL_END)) {
+        if ((xpoints[3] + 1 > ROOM_BEAST_INVISIBLE_WALL_START)
+            && (xpoints[3] + 1 < ROOM_BEAST_INVISIBLE_WALL_END)) {
           collision[COLLISION_RIGHT] = 0;
         }
       }
     }
 
     /* Touch ground collision */
-    blground[0] = currentRoomData[points[7] + 1][points[0]];
-    blground[1] = currentRoomData[points[7] + 1][points[1]];
-    blground[2] = currentRoomData[points[7] + 1][points[2]];
-    blground[3] = currentRoomData[points[7] + 1][points[3]];
+    blground[0] = currentRoomData[ypoints[3] + 1][xpoints[0]];
+    blground[1] = currentRoomData[ypoints[3] + 1][xpoints[1]];
+    blground[2] = currentRoomData[ypoints[3] + 1][xpoints[2]];
+    blground[3] = currentRoomData[ypoints[3] + 1][xpoints[3]];
 
     if (jump != JUMP) {
       /* Invisible ground */
       if (((room == ROOM_CAVE.index())
-              && (points[7] + 1 > INVISIBLE_GROUND_ROW_THRESHOLD)
-              && (points[0] == INVISIBLE_GROUND_COLUMN))
+              && (ypoints[3] + 1 > INVISIBLE_GROUND_ROW_THRESHOLD)
+              && (xpoints[0] == INVISIBLE_GROUND_COLUMN))
           || ((room == ROOM_LAKE.index())
               && ((pos.y() / PIXELS_PER_TILE) < 4)
-              && (points[0] == INVISIBLE_GROUND_COLUMN))) {
+              && (xpoints[0] == INVISIBLE_GROUND_COLUMN))) {
         pos = new Vector2(pos.x(), pos.y() + gravity);
         jump = FALL;
       } else {
@@ -549,8 +551,8 @@ public final class Player implements Actor {
             || ((blground[1] > 0) && (blground[1] < TILE_SOLID_MAX))
             || ((blground[2] > 0) && (blground[2] < TILE_SOLID_MAX))
             || ((blground[3] > 0) && (blground[3] < TILE_SOLID_MAX))) {
-          ground = (points[7] + 1) * (int) Stage.getTileSize();
-          if (points[7] + 1 > SCREEN_BOTTOM_ROW_THRESHOLD) {
+          ground = (ypoints[3] + 1) * (int) Stage.getTileSize();
+          if (ypoints[3] + 1 > SCREEN_BOTTOM_ROW_THRESHOLD) {
             /* Dirty trick to make Jean go bottom of the screen */
             ground = SCREEN_BOTTOM_TELEPORT_TILES * PIXELS_PER_TILE;
           }
@@ -578,7 +580,7 @@ public final class Player implements Actor {
     if (direction == LEFT) {
       if ((blground[3] == TILE_PLATFORM)
           && ((pos.x() + COLLISION_RIGHT_EDGE_OFFSET * PIXELS_PER_TILE)
-              < (points[3] * PIXELS_PER_TILE + PLATFORM_FALL_THRESHOLD_X))
+              < (xpoints[3] * PIXELS_PER_TILE + PLATFORM_FALL_THRESHOLD_X))
           //          && (push[2] == 1)
           && (jump == NEUTRAL)) {
         pos = new Vector2(pos.x(), pos.y() + gravity);
@@ -588,7 +590,7 @@ public final class Player implements Actor {
     if (direction == RIGHT) {
       if ((blground[0] == TILE_PLATFORM)
           && ((pos.x() + PLATFORM_CHECK_X_OFFSET_RIGHT * PIXELS_PER_TILE)
-              > (points[0] * PIXELS_PER_TILE + PLATFORM_FALL_OFFSET_X * PIXELS_PER_TILE))
+              > (xpoints[0] * PIXELS_PER_TILE + PLATFORM_FALL_OFFSET_X * PIXELS_PER_TILE))
           //          && (push[3] == 1)
           && (jump == NEUTRAL)) {
         pos = new Vector2(pos.x(), pos.y() + gravity);
@@ -596,10 +598,10 @@ public final class Player implements Actor {
       }
     }
 
-    if ((jump == JUMP) && (points[4] > 0)) {
+    if ((jump == JUMP) && (ypoints[0] > 0)) {
       /* Touch roof collision */
-      blroof[0] = currentRoomData[points[4] - 1][points[0]];
-      blroof[1] = currentRoomData[points[4] - 1][points[3]];
+      blroof[0] = currentRoomData[ypoints[0] - 1][xpoints[0]];
+      blroof[1] = currentRoomData[ypoints[0] - 1][xpoints[3]];
 
       if (((blroof[0] > 0)
               && (blroof[0] < TILE_SOLID_MAX)
@@ -611,7 +613,7 @@ public final class Player implements Actor {
               && (blroof[1] != TILE_PASSABLE)
               && (blroof[1] != TILE_PLATFORM)
               && (blroof[1] != TILE_PASSABLE_VARIANT_1))) {
-        if ((pos.y() - 1) - ((points[4] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
+        if ((pos.y() - 1) - ((ypoints[0] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
             < COLLISION_ROOF_DISTANCE_THRESHOLD) {
           collision[COLLISION_UP] = 1;
         }
@@ -777,8 +779,6 @@ public final class Player implements Actor {
         + height
         + ", animation="
         + animation
-        + ", points="
-        + Arrays.toString(points)
         + ", ground="
         + ground
         + ", collision="
