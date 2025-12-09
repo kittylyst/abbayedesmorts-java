@@ -90,18 +90,6 @@ public class TestPlayerCollisionPassing {
     // Place steps to the right
     int checkX = xCell + 2;
     setStep(stage, yCell);
-    //    setTile(stage, checkX, yCell + 2, 3);
-    //    setTile(stage, checkX + 1, yCell + 2, 4);
-    //
-    //    setTile(stage, checkX + 2, yCell + 1, 3);
-    //    setTile(stage, checkX + 3, yCell + 1, 4);
-    //    setTile(stage, checkX + 2, yCell + 2, 1);
-    //    setTile(stage, checkX + 3, yCell + 2, 2);
-    //
-    //    setTile(stage, checkX + 4, yCell + 1, 3);
-    //    setTile(stage, checkX + 5, yCell + 1, 4);
-    //    setTile(stage, checkX + 4, yCell + 2, 1);
-    //    setTile(stage, checkX + 5, yCell + 2, 2);
 
     // Position player very close to step to trigger collision
     float tileSize = Stage.getTileSize();
@@ -122,7 +110,6 @@ public class TestPlayerCollisionPassing {
 
     System.out.println("xPos: " + xPos);
 
-    //    xPos = xCell * tileSize + 1; // Touching
     xPos = 1156.25f;
     player.setPos(new Vector2(xPos, yCell * tileSize));
     player.calculateCollision();

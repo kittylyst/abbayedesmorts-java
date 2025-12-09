@@ -60,5 +60,7 @@
 
 The codebase follows Java best practices with sealed interfaces, records, and a modular structure.
 
+### Collision detection
+
 
 
