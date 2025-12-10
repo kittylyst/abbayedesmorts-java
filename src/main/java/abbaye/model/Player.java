@@ -93,19 +93,14 @@ public final class Player implements Actor {
   private int animation;
   private int ground; /* Y-coordinate pixel where the ground is beneath the player */
 
-  // Updated
-  private int[] collision = {
-    0, 0, 0, 0
-  }; /* Collisions in directions UDLR - D is unused and handled by gravity effects */
+  /* Collisions in directions UDLR - D is unused and handled by gravity effects */
+  private int[] collision = {0, 0, 0, 0};
   private Waypoint last = new Waypoint(0, 1, 100.0f, 1088.0f);
 
-  //  private int[] checkpoint = new int[4];
   private int crosses = 0; // (previously state[1])
   private int lives = 5;
   private int[] flags = new int[7];
   private boolean walk = false;
-
-  //  int push[4]; /* Pulsaciones de teclas */
 
   @Override
   public void init() {
@@ -128,10 +123,6 @@ public final class Player implements Actor {
   public boolean render() {
     if (!Config.config().getGLActive()) {
       return false;
-    }
-
-    if (counter % 500 == 0) {
-      System.out.println(stage.getCache());
     }
 
     var tileDisplaySize = Stage.getTileSize();
@@ -667,12 +658,12 @@ public final class Player implements Actor {
     var stagedata = stage.getScreen(stage.getRoom());
 
     /* Touch static hazard */
-    if (stagedata[1 + pos.tileY()][pos.tileX()] == 5
-        || stagedata[1 + pos.tileY()][1 + pos.tileX()] == 5
-        || stagedata[2 + pos.tileY()][pos.tileX()] == 5
-        || stagedata[2 + pos.tileY()][1 + pos.tileX()] == 5
-        || stagedata[3 + pos.tileY()][pos.tileX()] == 5
-        || stagedata[3 + pos.tileY()][1 + pos.tileX()] == 5) {
+    if (stagedata[1 + pos.tileY()][pos.tileX()] == TILE_STATIC_HAZARD
+        || stagedata[1 + pos.tileY()][1 + pos.tileX()] == TILE_STATIC_HAZARD
+        || stagedata[2 + pos.tileY()][pos.tileX()] == TILE_STATIC_HAZARD
+        || stagedata[2 + pos.tileY()][1 + pos.tileX()] == TILE_STATIC_HAZARD
+        || stagedata[3 + pos.tileY()][pos.tileX()] == TILE_STATIC_HAZARD
+        || stagedata[3 + pos.tileY()][1 + pos.tileX()] == TILE_STATIC_HAZARD) {
       return true;
     }
 

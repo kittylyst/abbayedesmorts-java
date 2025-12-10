@@ -37,6 +37,7 @@ public class Stage implements Renderable {
   static final int TILE_TOPSOIL1 = 103;
   static final int TILE_TOPSOIL2 = 104;
 
+  static final int TILE_STATIC_HAZARD = 5;
   static final int TILE_SOLID_MAX = 100;
   static final int TILE_SPECIAL_COLLISION = 128;
   static final int TILE_SPECIAL_RIGHT = 344;
@@ -55,8 +56,8 @@ public class Stage implements Renderable {
 
   private int[][][] stagedata = new int[NUM_SCREENS][NUM_ROWS][NUM_COLUMNS];
   // Initial room coordinates
-  private int roomx = 1;
-  private int roomy = 2;
+  private int roomx = 0;
+  private int roomy = 1;
 
   private Map<Integer, Corners> cache = new HashMap<>();
 
