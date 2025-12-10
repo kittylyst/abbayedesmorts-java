@@ -19,8 +19,6 @@ public sealed interface Actor extends Renderable permits Player, Enemy {
 
   default void destroy() {}
 
-  BoundingBox2 getBB();
-
   /**
    * Update the position of the physical object.
    *

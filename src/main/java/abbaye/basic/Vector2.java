@@ -1,8 +1,6 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.basic;
 
-import static abbaye.model.Stage.PIXELS_PER_TILE;
-
 import abbaye.model.Stage;
 
 public record Vector2(float x, float y) {
@@ -24,11 +22,11 @@ public record Vector2(float x, float y) {
 
   public int tileX() {
     float resize = Stage.getTileSize();
-    return (int) ((x() + 1 * PIXELS_PER_TILE) / resize);
+    return (int) (x() / resize);
   }
 
   public int tileY() {
     float resize = Stage.getTileSize();
-    return (int) ((y() + 1 * PIXELS_PER_TILE) / resize);
+    return (int) (y() / resize);
   }
 }
