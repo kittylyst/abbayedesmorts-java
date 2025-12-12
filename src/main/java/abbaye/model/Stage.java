@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /** The stage shows the layout of the furniture of the current screen */
-public class Stage implements Renderable {
+public final class Stage implements Renderable {
   public static final int SCREENS_X = 5;
   public static final int SCREENS_Y = 5;
   public static final int NUM_SCREENS = SCREENS_X * SCREENS_Y;
@@ -309,14 +309,5 @@ public class Stage implements Renderable {
     var out = new Corners(u1, 1 - v1, u2, 1 - v2);
     cache.putIfAbsent(tileType, out);
     return out;
-  }
-
-  public static Corners makeCorners(int tileX, int tileY) {
-    float u1 = (float) tileX / TILES_PER_ROW;
-    float v1 = (float) tileY / TILES_PER_COL;
-    float u2 = (float) (tileX + 1) / TILES_PER_ROW;
-    float v2 = (float) (tileY + 1) / TILES_PER_COL;
-
-    return new Corners(u1, 1 - v1, u2, 1 - v2);
   }
 }

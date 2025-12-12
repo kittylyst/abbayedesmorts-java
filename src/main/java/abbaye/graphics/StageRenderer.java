@@ -51,7 +51,7 @@ public class StageRenderer implements Renderable {
         float displayPosX = tileX * tileDisplaySize;
         float displayPosY = tileY * tileDisplaySize;
 
-        manager.renderTile(tileCoords, tileDisplaySize, displayPosX, displayPosY, false);
+        manager.renderTile(tileCoords, tileDisplaySize, displayPosX, displayPosY);
       }
     }
 

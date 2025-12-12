@@ -7,7 +7,6 @@ import static org.lwjgl.opengl.GL30.*;
 import abbaye.Config;
 import abbaye.basic.Corners;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -208,18 +207,20 @@ public final class GLManager {
    * @param x - the x coordinate in display pixels
    * @param y - the y coordinate in display pixels
    */
-  public void renderTile(Corners tileCoords, float tileSize, float x, float y, boolean isPlayer) {
+  public void renderTile(Corners tileCoords, float tileSize, float x, float y) {
     float[] translate = createTranslationMatrix(x, y, 0);
     float[] scale = createScaleMatrix(tileSize, tileSize, 1);
 
     float[] finalModel = multiplyMatrices(scale, translate);
-    if (isPlayer) {
-      System.out.println("x and y: " + Arrays.toString(finalModel));
-    }
 
     renderTile(tileCoords, finalModel);
   }
 
+    /**
+     *
+     * @param tileCoords - the texture coords in float (0 < u, v < 1) coords
+     * @param finalModel - a prebuilt transformation matrix
+     */
   public void renderTile(Corners tileCoords, final float[] finalModel) {
     updateTileVertices(tileCoords);
 

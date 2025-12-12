@@ -96,7 +96,7 @@ public final class Player implements Actor {
 
   /* Collisions in directions UDLR - D is unused and handled by gravity effects */
   private int[] collision = {0, 0, 0, 0};
-  private Waypoint last = new Waypoint(0, 1, 1088.0f, 1088.0f); // x = 100.0f
+  private Waypoint last = new Waypoint(0, 1, 192.0f, 1088.0f); // x = 100.0f
 
   private int crosses = 0; // (previously state[1])
   private int lives = 5;
@@ -113,6 +113,19 @@ public final class Player implements Actor {
   @Override
   public void destroy() {
     logger.info("Collision detected, should destroy");
+  }
+
+  public Corners makeCorners(int tileX, int tileY) {
+    float u1 = (float) tileX / TILES_PER_ROW;
+    float v1 = (float) tileY / TILES_PER_COL;
+    float u2 = (float) (tileX + 1) / TILES_PER_ROW;
+    float v2 = (float) (tileY + 1) / TILES_PER_COL;
+
+    if (getDirection() == RIGHT) {
+      return new Corners(u2, 1 - v1, u1, 1 - v2);
+    }
+
+    return new Corners(u1, 1 - v1, u2, 1 - v2);
   }
 
   @Override
@@ -132,42 +145,38 @@ public final class Player implements Actor {
       posX = pos.x();
       posY = pos.y();
       tileCoords = makeCorners(44, 11);
-      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y();
       tileCoords = makeCorners(45, 11);
-      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x();
       posY = pos.y() + tileDisplaySize;
       tileCoords = makeCorners(44, 12);
-      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y() + tileDisplaySize;
       tileCoords = makeCorners(45, 12);
-      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x();
       posY = pos.y() + tileDisplaySize + tileDisplaySize;
       tileCoords = makeCorners(44, 13);
-      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y() + tileDisplaySize + tileDisplaySize;
       tileCoords = makeCorners(45, 13);
-      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
     } else {
       // RIGHT
       posX = pos.x();
       posY = pos.y();
-      tileCoords = makeCorners(44, 11);
-      var m = playerMatrix(posX, posY, tileDisplaySize);
-      System.out.println("Player Matrix: " + Arrays.toString(m));
-      System.out.println("X: " + posX + " Y: " + posY);
-      //      manager.renderTile(tileCoords, m);
-      manager.renderTile(tileCoords, tileDisplaySize, posX, posY, true);
+      tileCoords = makeCorners(45, 11);
+      manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       //        X: 1153.0 Y: 1088.0
       //                [64.0, 0.0, 0.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1153.0,
@@ -176,42 +185,30 @@ public final class Player implements Actor {
       posX = pos.x() + tileDisplaySize;
       posY = pos.y();
       tileCoords = makeCorners(44, 11);
-      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x();
       posY = pos.y() + tileDisplaySize;
       tileCoords = makeCorners(45, 12);
-      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y() + tileDisplaySize;
       tileCoords = makeCorners(44, 12);
-      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x();
       posY = pos.y() + tileDisplaySize + tileDisplaySize;
       tileCoords = makeCorners(45, 13);
-      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y() + tileDisplaySize + tileDisplaySize;
       tileCoords = makeCorners(44, 13);
-      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
+      manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
     }
 
     return false;
-  }
-
-  // Needs to take into account which way a player is facing.
-  // May need to move this to Actor if we need to do the same trick for enemies
-  float[] playerMatrix(float posX, float posY, float tileDisplaySize) {
-    float[] translate = createTranslationMatrix(posX, posY, 0);
-    int horizontalFlip = 1;
-    //    if (getDirection() == RIGHT) {
-    //      horizontalFlip = -1;
-    //    }
-    float[] scale = createScaleMatrix(horizontalFlip * tileDisplaySize, tileDisplaySize, 1);
-    return multiplyMatrices(scale, translate);
   }
 
   public Vector2 newPosition() {
