@@ -159,10 +159,19 @@ public final class Player implements Actor {
       tileCoords = makeCorners(45, 13);
       manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
     } else {
+      // RIGHT
       posX = pos.x();
       posY = pos.y();
-      tileCoords = makeCorners(45, 11);
-      manager.renderTile(tileCoords, playerMatrix(posX, posY, tileDisplaySize));
+      tileCoords = makeCorners(44, 11);
+      var m = playerMatrix(posX, posY, tileDisplaySize);
+      System.out.println("Player Matrix: " + Arrays.toString(m));
+      System.out.println("X: " + posX + " Y: " + posY);
+      //      manager.renderTile(tileCoords, m);
+      manager.renderTile(tileCoords, tileDisplaySize, posX, posY, true);
+
+      //        X: 1153.0 Y: 1088.0
+      //                [64.0, 0.0, 0.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1153.0,
+      // 1088.0, 0.0, 1.0]
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y();
@@ -198,9 +207,9 @@ public final class Player implements Actor {
   float[] playerMatrix(float posX, float posY, float tileDisplaySize) {
     float[] translate = createTranslationMatrix(posX, posY, 0);
     int horizontalFlip = 1;
-    if (getDirection() == RIGHT) {
-      horizontalFlip = -1;
-    }
+    //    if (getDirection() == RIGHT) {
+    //      horizontalFlip = -1;
+    //    }
     float[] scale = createScaleMatrix(horizontalFlip * tileDisplaySize, tileDisplaySize, 1);
     return multiplyMatrices(scale, translate);
   }
@@ -390,7 +399,7 @@ public final class Player implements Actor {
   }
 
   int[][] getTileGrid() {
-    int[][] out = new int[3][4];
+    int[][] out = new int[4][3];
     float resize = Stage.getTileSize();
 
     var leftX = (int) (pos.x() / resize);
@@ -400,43 +409,167 @@ public final class Player implements Actor {
     var topY = (int) (pos.y() / resize);
     var upperMidY = 1 + (int) (pos.y() / resize);
     var lowerMidY = 2 + (int) (pos.y() / resize);
-    var bottomY = 2 + (int) ((pos.x() + resize - 0.1) / resize);
+    var bottomY = 2 + (int) ((pos.y() + resize - 0.1) / resize);
 
     var currentRoomData = stage.getScreen(stage.getRoom());
 
     out[0] =
         new int[] {
-          currentRoomData[leftX][topY], currentRoomData[midX][topY], currentRoomData[rightX][topY]
+          currentRoomData[topY][leftX], currentRoomData[topY][midX], currentRoomData[topY][rightX]
         };
     out[1] =
         new int[] {
-          currentRoomData[leftX][upperMidY],
-          currentRoomData[midX][upperMidY],
-          currentRoomData[rightX][upperMidY]
+          currentRoomData[upperMidY][leftX],
+          currentRoomData[upperMidY][midX],
+          currentRoomData[upperMidY][rightX]
         };
     out[2] =
         new int[] {
-          currentRoomData[leftX][lowerMidY],
-          currentRoomData[midX][lowerMidY],
-          currentRoomData[rightX][lowerMidY]
+          currentRoomData[lowerMidY][leftX],
+          currentRoomData[lowerMidY][midX],
+          currentRoomData[lowerMidY][rightX]
         };
     out[3] =
         new int[] {
-          currentRoomData[leftX][bottomY],
-          currentRoomData[midX][bottomY],
-          currentRoomData[rightX][bottomY]
+          currentRoomData[bottomY][leftX],
+          currentRoomData[bottomY][midX],
+          currentRoomData[bottomY][rightX]
         };
     return out;
   }
 
+  //  void oldCode() {
+  //      CHECKS:
+  //      for (var n = 0; n < 4; n += 1) {
+  //          // Boundary check: ensure we're within valid tile coordinates
+  //          if ((xpoints[0] <= 0) || (xpoints[3] + 1 >= NUM_COLUMNS) || (ypoints[n] + 1 >=
+  // NUM_ROWS)) {
+  //              break CHECKS;
+  //          }
+  //
+  //          // Only check collisions in the direction the player is moving
+  //          if (((xpoints[0] > 0) && (direction == LEFT))
+  //                  || ((xpoints[3] + 1 < NUM_COLUMNS) && (direction == RIGHT))) {
+  //              // Get tile types at collision points
+  //
+  //              // Left: check tile to the left of player's left edge
+  //              tileLeft = currentRoomData[ypoints[n]][xpoints[0] - 1];
+  //
+  //              // Right: check tile to the right of player's right edge
+  //              tileRight = currentRoomData[ypoints[n]][xpoints[3] + 1];
+  //
+  //              if (counter++ % DEBUG_LOG_FREQUENCY == 0) {
+  //                  logger.debug(
+  //                          pos
+  //                                  + " ; tileLeft: "
+  //                                  + tileLeft
+  //                                  + " ; tileRight: "
+  //                                  + tileRight
+  //                                  + " ; ground: "
+  //                                  + ground
+  //                                  + " ; xp: "
+  //                                  + Arrays.toString(xpoints)
+  //                                  + " ; yp: "
+  //                                  + Arrays.toString(ypoints));
+  //              }
+  //
+  //              // Check left collision
+  //              // A tile is solid if it's a regular solid tile OR a special collision tile
+  //              if (((tileLeft > 0)
+  //                      && (tileLeft < TILE_SOLID_MAX)
+  //                      && (tileLeft != TILE_PASSABLE)
+  //                      && (tileLeft != TILE_PLATFORM)
+  //                      && (tileLeft != TILE_PASSABLE_VARIANT_1))
+  //                      || ((currentRoomData[ypoints[0]][xpoints[0]] == TILE_SPECIAL_COLLISION)
+  //                      || (tileLeft == TILE_SPECIAL_LEFT))) {
+  //
+  //                  // Calculate distance from player's left edge to the wall
+  //                  // Wall position: (xpoints[0] - 1) * PIXELS_PER_TILE (left edge of tile to the
+  // left)
+  //                  // Player left edge: pos.x() + WALL_COLLISION_LEFT_OFFSET
+  //                  // Distance = player position - wall position
+  //                  if (pos.x() - ((xpoints[0] - 1) * PIXELS_PER_TILE +
+  // WALL_COLLISION_LEFT_OFFSET)
+  //                          < COLLISION_DISTANCE_THRESHOLD) {
+  //                      collision[COLLISION_LEFT] = 1;
+  //                  }
+  //              }
+  //
+  //              // Check right collision
+  //              // A tile is solid if it's a regular solid tile OR a special right collision tile
+  //              if (((tileRight > 0)
+  //                      && (tileRight < TILE_SOLID_MAX)
+  //                      && (tileRight != TILE_PASSABLE)
+  //                      && (tileRight != TILE_PLATFORM)
+  //                      && (tileRight != TILE_PASSABLE_VARIANT_1))
+  //                      || (tileRight == TILE_SPECIAL_RIGHT)) {
+  //
+  //                  // Calculate distance from player position to the wall
+  //                  // Wall position: (xpoints[3] + 1) * PIXELS_PER_TILE +
+  // WALL_COLLISION_RIGHT_OFFSET
+  //                  // Player position: pos.x()
+  //                  // Distance = wall position - player position
+  //                  if (((xpoints[3] + 1) * PIXELS_PER_TILE)
+  //                          - (pos.x() / PIXELS_PER_TILE + WALL_COLLISION_RIGHT_OFFSET)
+  //                          < COLLISION_DISTANCE_THRESHOLD) {
+  //                      collision[COLLISION_RIGHT] = 1;
+  //                  }
+  //              }
+  //          }
+  //      }
+  //  }
+
+  // Crouched code goes here
+  //      // FIXME Are these directions correct?
+  //      if (((xpoints[0] != 0) && (direction == LEFT))
+  //          || ((xpoints[3] != NUM_COLUMNS - 1) && (direction == RIGHT))) {
+  //        r =
+  //            (int)
+  //                ((pos.y() + COLLISION_CROUCH_HEIGHT_OFFSET * PIXELS_PER_TILE)
+  //                    / Stage.getTileSize());
+  //        tileLeft = currentRoomData[r][xpoints[0] - 1];
+  //        tileRight = currentRoomData[r][xpoints[3] + 1];
+  //        if (((tileLeft > 0) && (tileLeft < TILE_SOLID_MAX) && (tileLeft !=
+  // TILE_PASSABLE_VARIANT_1))
+  //            || ((currentRoomData[r][xpoints[0]] == TILE_SPECIAL_COLLISION)
+  //                || ((tileLeft > TILE_SPECIAL_LEFT_MIN) && (tileLeft <
+  // TILE_SPECIAL_LEFT_MAX)))) {
+  //          if (pos.x() - ((xpoints[0] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
+  //              < COLLISION_DISTANCE_THRESHOLD) {
+  //            collision[COLLISION_LEFT] = 1;
+  //          }
+  //        }
+  //        if (((tileRight > 0)
+  //                && (tileRight < TILE_SOLID_MAX)
+  //                && (tileRight != TILE_PASSABLE_VARIANT_1))
+  //            || ((tileRight > TILE_SPECIAL_RIGHT_MIN) && (tileRight <
+  // TILE_SPECIAL_RIGHT_MAX))) {
+  //          if (((xpoints[3] + 1) * PIXELS_PER_TILE)
+  //                  - (pos.x() / PIXELS_PER_TILE + WALL_COLLISION_RIGHT_OFFSET)
+  //              < COLLISION_DISTANCE_THRESHOLD) {
+  //            collision[COLLISION_RIGHT] = 1;
+  //          }
+  //        }
+  //      }
+  //      /* Invisible wall */
+  //      if ((room == ROOM_CAVE.index()) && (r == INVISIBLE_WALL_CROUCH_ROW)) {
+  //        if ((xpoints[0] - 1 == 0) || (xpoints[0] - 1 == 1)) collision[COLLISION_LEFT] = 0;
+  //        if ((xpoints[3] + 1 == 0) || (xpoints[3] + 1 == 1)) collision[COLLISION_RIGHT] = 0;
+  //      }
+  //      if ((room == ROOM_BEAST.index()) && (r == INVISIBLE_WALL_CROUCH_ROW)) {
+  //        if ((xpoints[0] - 1 > ROOM_BEAST_INVISIBLE_WALL_START)
+  //            && (xpoints[0] - 1 < ROOM_BEAST_INVISIBLE_WALL_END)) {
+  //          collision[COLLISION_LEFT] = 0;
+  //        }
+  //        if ((xpoints[3] + 1 > ROOM_BEAST_INVISIBLE_WALL_START)
+  //            && (xpoints[3] + 1 < ROOM_BEAST_INVISIBLE_WALL_END)) {
+  //          collision[COLLISION_RIGHT] = 0;
+  //        }
+  //      }
+
   public void calculateCollision() {
-    int tileLeft = 0;
-    int tileRight = 0;
-    int[] blground = {0, 0, 0, 0};
-    int[] blroof = {0, 0};
     int[] xpoints = {0, 0, 0, 0};
     int[] ypoints = {0, 0, 0, 0};
-    int r = 0;
 
     float gravity = Config.config().getGravity();
 
@@ -456,138 +589,39 @@ public final class Player implements Actor {
     collision[COLLISION_LEFT] = 0;
     collision[COLLISION_RIGHT] = 0;
 
-    int room = stage.getRoom();
+    var room = stage.getRoom();
     var currentRoomData = stage.getScreen(room);
 
+    var points = getTileGrid();
+
     /* Left & Right collisions */
-    if (!crouch) {
-      CHECKS:
-      for (var n = 0; n < 4; n += 1) {
-        // Boundary check: ensure we're within valid tile coordinates
-        if ((xpoints[0] <= 0) || (xpoints[3] + 1 >= NUM_COLUMNS) || (ypoints[n] + 1 >= NUM_ROWS)) {
-          break CHECKS;
+    if (crouch) {
+      /* Collision with Jean ducking */
+
+    } else {
+      for (var y = 0; y < 4; y++) {
+        var tile = points[y][0];
+        if (tile > 0 && (tile < TILE_SOLID_MAX) && (tile != TILE_PASSABLE_VARIANT_1)
+            || ((tile == TILE_SPECIAL_COLLISION)
+                || ((tile > TILE_SPECIAL_LEFT_MIN) && (tile < TILE_SPECIAL_LEFT_MAX)))) {
+          collision[COLLISION_LEFT] = 1;
         }
 
-        // Only check collisions in the direction the player is moving
-        if (((xpoints[0] > 0) && (direction == LEFT))
-            || ((xpoints[3] + 1 < NUM_COLUMNS) && (direction == RIGHT))) {
-          // Get tile types at collision points
-
-          // Left: check tile to the left of player's left edge
-          tileLeft = currentRoomData[ypoints[n]][xpoints[0] - 1];
-
-          // Right: check tile to the right of player's right edge
-          tileRight = currentRoomData[ypoints[n]][xpoints[3] + 1];
-
-          if (counter++ % DEBUG_LOG_FREQUENCY == 0) {
-            logger.debug(
-                pos
-                    + " ; tileLeft: "
-                    + tileLeft
-                    + " ; tileRight: "
-                    + tileRight
-                    + " ; ground: "
-                    + ground
-                    + " ; xp: "
-                    + Arrays.toString(xpoints)
-                    + " ; yp: "
-                    + Arrays.toString(ypoints));
-          }
-
-          // Check left collision
-          // A tile is solid if it's a regular solid tile OR a special collision tile
-          if (((tileLeft > 0)
-                  && (tileLeft < TILE_SOLID_MAX)
-                  && (tileLeft != TILE_PASSABLE)
-                  && (tileLeft != TILE_PLATFORM)
-                  && (tileLeft != TILE_PASSABLE_VARIANT_1))
-              || ((currentRoomData[ypoints[0]][xpoints[0]] == TILE_SPECIAL_COLLISION)
-                  || (tileLeft == TILE_SPECIAL_LEFT))) {
-
-            // Calculate distance from player's left edge to the wall
-            // Wall position: (xpoints[0] - 1) * PIXELS_PER_TILE (left edge of tile to the left)
-            // Player left edge: pos.x() + WALL_COLLISION_LEFT_OFFSET
-            // Distance = player position - wall position
-            if (pos.x() - ((xpoints[0] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
-                < COLLISION_DISTANCE_THRESHOLD) {
-              collision[COLLISION_LEFT] = 1;
-            }
-          }
-
-          // Check right collision
-          // A tile is solid if it's a regular solid tile OR a special right collision tile
-          if (((tileRight > 0)
-                  && (tileRight < TILE_SOLID_MAX)
-                  && (tileRight != TILE_PASSABLE)
-                  && (tileRight != TILE_PLATFORM)
-                  && (tileRight != TILE_PASSABLE_VARIANT_1))
-              || (tileRight == TILE_SPECIAL_RIGHT)) {
-
-            // Calculate distance from player position to the wall
-            // Wall position: (xpoints[3] + 1) * PIXELS_PER_TILE + WALL_COLLISION_RIGHT_OFFSET
-            // Player position: pos.x()
-            // Distance = wall position - player position
-            if (((xpoints[3] + 1) * PIXELS_PER_TILE)
-                    - (pos.x() / PIXELS_PER_TILE + WALL_COLLISION_RIGHT_OFFSET)
-                < COLLISION_DISTANCE_THRESHOLD) {
-              collision[COLLISION_RIGHT] = 1;
-            }
-          }
+        tile = points[y][2];
+        if (((tile > 0) && (tile < TILE_SOLID_MAX) && (tile != TILE_PASSABLE_VARIANT_1))
+            || ((tile > TILE_SPECIAL_RIGHT_MIN) && (tile < TILE_SPECIAL_RIGHT_MAX))) {
+          collision[COLLISION_RIGHT] = 1;
         }
       }
     }
 
-    /* Collision with Jean ducking */
-    if (crouch) {
-      //      // FIXME Are these directions correct?
-      //      if (((xpoints[0] != 0) && (direction == LEFT))
-      //          || ((xpoints[3] != NUM_COLUMNS - 1) && (direction == RIGHT))) {
-      //        r =
-      //            (int)
-      //                ((pos.y() + COLLISION_CROUCH_HEIGHT_OFFSET * PIXELS_PER_TILE)
-      //                    / Stage.getTileSize());
-      //        tileLeft = currentRoomData[r][xpoints[0] - 1];
-      //        tileRight = currentRoomData[r][xpoints[3] + 1];
-      //        if (((tileLeft > 0) && (tileLeft < TILE_SOLID_MAX) && (tileLeft !=
-      // TILE_PASSABLE_VARIANT_1))
-      //            || ((currentRoomData[r][xpoints[0]] == TILE_SPECIAL_COLLISION)
-      //                || ((tileLeft > TILE_SPECIAL_LEFT_MIN) && (tileLeft <
-      // TILE_SPECIAL_LEFT_MAX)))) {
-      //          if (pos.x() - ((xpoints[0] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
-      //              < COLLISION_DISTANCE_THRESHOLD) {
-      //            collision[COLLISION_LEFT] = 1;
-      //          }
-      //        }
-      //        if (((tileRight > 0)
-      //                && (tileRight < TILE_SOLID_MAX)
-      //                && (tileRight != TILE_PASSABLE_VARIANT_1))
-      //            || ((tileRight > TILE_SPECIAL_RIGHT_MIN) && (tileRight <
-      // TILE_SPECIAL_RIGHT_MAX))) {
-      //          if (((xpoints[3] + 1) * PIXELS_PER_TILE)
-      //                  - (pos.x() / PIXELS_PER_TILE + WALL_COLLISION_RIGHT_OFFSET)
-      //              < COLLISION_DISTANCE_THRESHOLD) {
-      //            collision[COLLISION_RIGHT] = 1;
-      //          }
-      //        }
-      //      }
-      //      /* Invisible wall */
-      //      if ((room == ROOM_CAVE.index()) && (r == INVISIBLE_WALL_CROUCH_ROW)) {
-      //        if ((xpoints[0] - 1 == 0) || (xpoints[0] - 1 == 1)) collision[COLLISION_LEFT] = 0;
-      //        if ((xpoints[3] + 1 == 0) || (xpoints[3] + 1 == 1)) collision[COLLISION_RIGHT] = 0;
-      //      }
-      //      if ((room == ROOM_BEAST.index()) && (r == INVISIBLE_WALL_CROUCH_ROW)) {
-      //        if ((xpoints[0] - 1 > ROOM_BEAST_INVISIBLE_WALL_START)
-      //            && (xpoints[0] - 1 < ROOM_BEAST_INVISIBLE_WALL_END)) {
-      //          collision[COLLISION_LEFT] = 0;
-      //        }
-      //        if ((xpoints[3] + 1 > ROOM_BEAST_INVISIBLE_WALL_START)
-      //            && (xpoints[3] + 1 < ROOM_BEAST_INVISIBLE_WALL_END)) {
-      //          collision[COLLISION_RIGHT] = 0;
-      //        }
-      //      }
-    }
+    //    int tileLeft = 0;
+    //    int tileRight = 0;
+    int[] blground = {0, 0, 0, 0};
+    int[] blroof = {0, 0};
 
     /* Touch ground collision */
+    //    blground[0] = points[0][0];
     blground[0] = currentRoomData[ypoints[3] + 1][xpoints[0]];
     blground[1] = currentRoomData[ypoints[3] + 1][xpoints[1]];
     blground[2] = currentRoomData[ypoints[3] + 1][xpoints[2]];

@@ -99,24 +99,22 @@ public class TestPlayerCollisionPassing {
 
     System.out.println("Step: " + tileSize * (checkX + 2));
 
-    // [x=1156.25, y=1088.0
+    int[] collisions;
+    float xPos = 1088;
+    for (int i = 0; i < 64; i += 1) {
+      player.setPos(new Vector2(xPos, yCell * tileSize));
+      player.calculateCollision();
+      collisions = player.getCollisions();
+      assertEquals(0, collisions[COLLISION_RIGHT], "Should not detect collision to right");
 
-    //    float xPos = xCell * tileSize - 1; // Close to wall but not touching
-    float xPos = 1156;
-    player.setPos(new Vector2(xPos, yCell * tileSize));
-    player.calculateCollision();
-    var collisions = player.getCollisions();
-    assertEquals(0, collisions[COLLISION_RIGHT], "Should not detect collision to right");
+      xPos += 1;
+    }
 
-    System.out.println("xPos: " + xPos);
-
-    xPos = 1156.25f;
+    xPos = 1153f;
     player.setPos(new Vector2(xPos, yCell * tileSize));
     player.calculateCollision();
     collisions = player.getCollisions();
     assertEquals(1, collisions[COLLISION_RIGHT], "Should detect collision to right");
-
-    System.out.println("xPos: " + xPos);
   }
 
   @Test
