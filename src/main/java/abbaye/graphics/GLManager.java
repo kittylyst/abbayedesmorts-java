@@ -216,11 +216,10 @@ public final class GLManager {
     renderTile(tileCoords, finalModel);
   }
 
-    /**
-     *
-     * @param tileCoords - the texture coords in float (0 < u, v < 1) coords
-     * @param finalModel - a prebuilt transformation matrix
-     */
+  /**
+   * @param tileCoords - the texture coords in float (0 < u, v < 1) coords
+   * @param finalModel - a prebuilt transformation matrix
+   */
   public void renderTile(Corners tileCoords, final float[] finalModel) {
     updateTileVertices(tileCoords);
 

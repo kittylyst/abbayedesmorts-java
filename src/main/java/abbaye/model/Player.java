@@ -1,7 +1,6 @@
 /* Copyright (C) The Authors 2025 */
 package abbaye.model;
 
-import static abbaye.graphics.GLManager.*;
 import static abbaye.model.Facing.LEFT;
 import static abbaye.model.Facing.RIGHT;
 import static abbaye.model.Room.*;
@@ -22,6 +21,12 @@ import java.util.Arrays;
 import org.lwjgl.glfw.GLFWKeyCallbackI;
 
 public final class Player implements Actor {
+
+  private static final float PLAYER_CROUCH_WALK_SPEED = 0.30f;
+  private static final float PLAYER_NORMAL_WALK_SPEED = 1.0f;
+
+  // FIXME Retire this
+  static final int PIXELS_PER_TILE = 8;
 
   public int[] getCollisions() {
     return collision;
@@ -115,7 +120,14 @@ public final class Player implements Actor {
     logger.info("Collision detected, should destroy");
   }
 
-  public Corners makeCorners(int tileX, int tileY) {
+  /**
+   * Locates tile to be rendered. Takes care of horizontal flipping as required
+   *
+   * @param tileX - x-coord (in tiles) of player tile to be rendered
+   * @param tileY - y-coord (in tiles) of player tile to be rendered
+   * @return
+   */
+  Corners playerCorners(int tileX, int tileY) {
     float u1 = (float) tileX / TILES_PER_ROW;
     float v1 = (float) tileY / TILES_PER_COL;
     float u2 = (float) (tileX + 1) / TILES_PER_ROW;
@@ -139,72 +151,65 @@ public final class Player implements Actor {
     Corners tileCoords;
 
     if (direction == LEFT) {
-      // posX and posY represent where we're going to render
-      // tileCoords represents where in the tile texture to pick out the player tile that we'll
-      // render
       posX = pos.x();
       posY = pos.y();
-      tileCoords = makeCorners(44, 11);
+      tileCoords = playerCorners(44, 11);
       manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y();
-      tileCoords = makeCorners(45, 11);
+      tileCoords = playerCorners(45, 11);
       manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x();
       posY = pos.y() + tileDisplaySize;
-      tileCoords = makeCorners(44, 12);
+      tileCoords = playerCorners(44, 12);
       manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y() + tileDisplaySize;
-      tileCoords = makeCorners(45, 12);
+      tileCoords = playerCorners(45, 12);
       manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x();
       posY = pos.y() + tileDisplaySize + tileDisplaySize;
-      tileCoords = makeCorners(44, 13);
+      tileCoords = playerCorners(44, 13);
       manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y() + tileDisplaySize + tileDisplaySize;
-      tileCoords = makeCorners(45, 13);
+      tileCoords = playerCorners(45, 13);
       manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
     } else {
       // RIGHT
       posX = pos.x();
       posY = pos.y();
-      tileCoords = makeCorners(45, 11);
+      tileCoords = playerCorners(45, 11);
       manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
-
-      //        X: 1153.0 Y: 1088.0
-      //                [64.0, 0.0, 0.0, 0.0, 0.0, 64.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1153.0,
-      // 1088.0, 0.0, 1.0]
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y();
-      tileCoords = makeCorners(44, 11);
+      tileCoords = playerCorners(44, 11);
       manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x();
       posY = pos.y() + tileDisplaySize;
-      tileCoords = makeCorners(45, 12);
+      tileCoords = playerCorners(45, 12);
       manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y() + tileDisplaySize;
-      tileCoords = makeCorners(44, 12);
+      tileCoords = playerCorners(44, 12);
       manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x();
       posY = pos.y() + tileDisplaySize + tileDisplaySize;
-      tileCoords = makeCorners(45, 13);
+      tileCoords = playerCorners(45, 13);
       manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
 
       posX = pos.x() + tileDisplaySize;
       posY = pos.y() + tileDisplaySize + tileDisplaySize;
-      tileCoords = makeCorners(44, 13);
+      tileCoords = playerCorners(44, 13);
       manager.renderTile(tileCoords, tileDisplaySize, posX, posY);
     }
 
@@ -224,7 +229,7 @@ public final class Player implements Actor {
       return last.getPos();
     }
     if (checkCollision()) {
-      logger.info("Collision detected: " + Arrays.toString(collision));
+      logger.debug("Collision detected: " + Arrays.toString(collision));
     }
     if (checkStaticObject()) {
       logger.debug("Static object detected");
@@ -260,9 +265,9 @@ public final class Player implements Actor {
           }
         }
         if (crouch) {
-          dx += 0.30;
+          dx += PLAYER_CROUCH_WALK_SPEED;
         } else {
-          dx += 0.65;
+          dx += PLAYER_NORMAL_WALK_SPEED;
         }
       }
     }
@@ -290,36 +295,37 @@ public final class Player implements Actor {
 
   @Override
   public boolean update() {
+    pos = newPosition();
+
     if (pos.x() < LEFT_EDGE) {
       if (stage.moveLeft()) {
-        pos = new Vector2(PIXELS_PER_TILE * (RIGHT_EDGE - 1), pos.y());
+        pos = new Vector2(Stage.getTileSize() * (NUM_COLUMNS - 2), pos.y());
       } else {
-        pos = new Vector2(0, pos.y());
+        pos = new Vector2(LEFT_EDGE, pos.y());
       }
     }
-    if (pos.x() >= PIXELS_PER_TILE * RIGHT_EDGE) {
+    if (pos.x() >= Stage.getTileSize() * (NUM_COLUMNS - 2)) {
       if (stage.moveRight()) {
         pos = new Vector2(0, pos.y());
       } else {
-        pos = new Vector2(PIXELS_PER_TILE * RIGHT_EDGE, pos.y());
+        pos = new Vector2(Stage.getTileSize() * (NUM_COLUMNS - 2), pos.y());
       }
     }
     if (pos.y() < TOP_EDGE) {
       if (stage.moveUp()) {
-        pos = new Vector2(pos.x(), PIXELS_PER_TILE * (BOTTOM_EDGE - 3));
+        pos = new Vector2(pos.x(), Stage.getTileSize() * (NUM_ROWS - 3));
       } else {
         pos = new Vector2(pos.x(), TOP_EDGE);
       }
     }
-    if (pos.y() > PIXELS_PER_TILE * (BOTTOM_EDGE - 3)) {
+    if (pos.y() > Stage.getTileSize() * (NUM_ROWS - 3)) {
       if (stage.moveDown()) {
         pos = new Vector2(pos.x(), TOP_EDGE);
       } else {
-        pos = new Vector2(pos.x(), PIXELS_PER_TILE * (BOTTOM_EDGE - 3));
+        pos = new Vector2(pos.x(), Stage.getTileSize() * (NUM_ROWS - 3));
       }
     }
 
-    pos = newPosition();
     return true;
   }
 

@@ -3,6 +3,7 @@ package abbaye.model;
 
 import static abbaye.model.Facing.LEFT;
 import static abbaye.model.Facing.RIGHT;
+import static abbaye.model.Player.PIXELS_PER_TILE;
 import static abbaye.model.Stage.*;
 import static abbaye.model.Utils.*;
 import static abbaye.model.Vertical.*;

@@ -21,11 +21,8 @@ public final class Stage implements Renderable {
 
   public static final int TILES_PER_ROW = 125;
   public static final int TILES_PER_COL = 30;
-  public static final int PIXELS_PER_TILE = 8;
 
-  public static final int RIGHT_EDGE = 243;
   public static final int LEFT_EDGE = 0;
-  public static final int BOTTOM_EDGE = 146;
   public static final int TOP_EDGE = 0;
   // Tile type IDs
   static final int TILE_PASSABLE = 16;
