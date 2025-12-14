@@ -66,6 +66,7 @@ public final class Player implements Actor {
   // Position calculation offsets
   private static final int WALL_COLLISION_LEFT_OFFSET = 7;
   private static final int WALL_COLLISION_RIGHT_OFFSET = 15;
+
   private static final int PLAYER_HEIGHT_PIXELS = 24;
   private static final int GROUND_SNAP_OFFSET_MULTIPLIER = 3;
   private static final int PLATFORM_FALL_THRESHOLD_X = 5;

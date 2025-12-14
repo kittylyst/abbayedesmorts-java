@@ -31,6 +31,7 @@ public class TestPlayerCollision {
   public void setUp() {
     // Create a test stage with empty tiles (0 = empty)
     stage = new Stage();
+    stage.load();
     layer = new Layer();
     player = Player.of(layer, stage);
     layer.setPlayer(player);
@@ -296,6 +297,7 @@ public class TestPlayerCollision {
 
     // Position player very close to left
     float xPos = 4 * tileSize;
+
     setDirection(player, LEFT);
     setCrouch(player, false);
     setPrivateField(player, "walk", true);
