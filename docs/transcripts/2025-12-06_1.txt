@@ -1,0 +1,90 @@
+GitHub Copilot Chat Assistant — inline comments:
+
+src/main/java/abbaye/AbbayeMain.java
+- Line: changed "public class AbbayeMain" -> "public final class AbbayeMain"
+  - Comment: Making the entry class final is safe but verify no tests or frameworks subclass it for injection/mocking. If you need to prevent instantiation, consider adding a private constructor or documenting intent.
+
+src/main/java/abbaye/model/Player.java
+- Addition: public record Waypoint(int roomX, int roomY, float x, float y) { ... }
+  - Comment: Make the nested record explicit static (public static record Waypoint...) to clarify it's independent of instance state and for serialization clarity. Confirm Jackson configuration supports records; add unit test for (de)serializing Player with Waypoint.
+
+- Waypoint constructor taking Vector2 and getPos()
+  - Comment: getPos() returns new Vector2(x, y) — ok. Consider making Vector2 immutable or documenting allocation cost if called frequently.
+
+- Constants: RIGHT_EDGE, LEFT_EDGE, BOTTOM_EDGE, TOP_EDGE unchanged but whitespace changed
+  - Comment: Consider defining constants for the repeated vertical offsets (1,2,3) and tile IDs (5, 320..327, 16, 38, etc.) used below to avoid magic numbers and make tests/readability easier.
+
+- Field change: replaced checkpoint array with "private Waypoint last = new Waypoint(0, 1, 100.0f, 1088.0f);"
+  - Comment: Default coordinates (100.0f, 1088.0f) look arbitrary. Add a comment explaining why those values were chosen or derive from Config to avoid surprises. Ensure this default is valid for all starting rooms.
+
+- newPosition(): added static hazard handling branch that logs, decrements lives, and calls stage.toWaypoint(last); returns last.getPos()
+  - Comment: stage.toWaypoint(last) only updates roomx/roomy (see Stage change). You also need to ensure stage's current screen cache and player's internal room index are updated before any subsequent tile lookups. Consider exposing a Stage.teleportTo(waypoint) that performs full state refresh (room index, screen load, notify layer/player). Also, decrementing lives then immediately resetting to 5 when <=0 and logging "need to exit game here instead" is a TODO — either implement game-over flow or add a clear TODO and unit tests for both branches.
+
+- checkStaticHazard(): new method that indexes stagedata with offsets: stagedata[1 + pos.tileY()][pos.tileX()] etc.
+  - Comment: This indexing can cause ArrayIndexOutOfBounds when pos.tileY() is near bottom/top or pos.tileX() near edges. Add explicit bounds checks before indexing, e.g. compute y = pos.tileY(); for each offset o in {1,2,3} check (y+o) >=0 && (y+o) < NUM_ROWS and similarly for x coordinates. Add unit tests for player at map edges to assert no exceptions.
+
+- checkStaticObject(): added waypoint-cross logic that mutates stagedata in-place to zero out waypoint tiles
+  - Comment: Mutating stagedata (map data) in-place may be surprising and could break persistence or replay. If intended, add a comment and/or emit an event so other systems can react. The comment "FIXME - Don't nuke the waypoint cross, toggle instead." indicates planned change — either implement toggle or add tests verifying behavior. Also add bounds checks before accessing stagedata[1 + pos.tileY()][pos.tileX()] similar to checkStaticHazard.
+
+- Inner loop: for (var v = 0; v < 22; v++) for (var h = 0; h < 32; h++) if ((stagedata[v][h] > 320) && (stagedata[v][h] < 327)) stagedata[v][h] = 0;
+  - Comment: Use Stage.NUM_ROWS/NUM_COLUMNS constants instead of hardcoded 22 and 32. This prevents divergence if layout constants change. Also consider breaking once you find the waypoint cross if only one exists to minimize work.
+
+- Constructor: this.pos = last.getPos();
+  - Comment: Relying on field initializer last before constructor is fine but slightly subtle. Consider assigning last earlier or assert last != null. Add a test that Player.of(...) constructs at last.getPos().
+
+- toString(): replaced "checkpoint" with "waypoint" + last
+  - Comment: Ensure toString() remains stable for logs; Waypoint.record.toString() is fine, but consider formatting to avoid leaking large floats.
+
+- General (Player): many new references to pos.tileX()/tileY() for indexing.
+  - Comment: pos is a float position; ensure tileX()/tileY() rounding/truncation semantics are exactly what collision code expects. Add unit tests covering boundary pixel positions (the current tests note pixel-precision fragility).
+
+src/main/java/abbaye/model/Stage.java
+- Added getters getRoomX(), getRoomY()
+  - Comment: These are needed; consider also adding getRoom() or getCurrentScreen() if used elsewhere. Add javadoc to clarify whether roomx/roomy are room coordinates (x/y) or indices.
+
+- Added toWaypoint(Player.Waypoint waypoint) { roomx = waypoint.roomX(); roomy = waypoint.roomY(); }
+  - Comment: This only sets room indices. Teleporting should also refresh any cached screen arrays, update internal room index (if different field exists), and notify relevant systems. Either expand to call load() or a refresh method, or document that callers must refresh stage after calling toWaypoint(). Tests currently call stage.toWaypoint(...) before placing tiles — ensure tests set up stagedata appropriately.
+
+pom.xml
+- Added jacoco plugin and merged argLine: moved argLine to use ${surefire.jvm.args} ${argLine}
+  - Comment: Good to combine with JaCoCo's argLine. Verify effective argLine in CI. Run mvn -DskipTests=false -X test to confirm the final argLine and that JaCoCo agent is actually attached.
+
+- Added property surefire.jvm.args: "-XstartOnFirstThread -javaagent:${org.mockito:mockito-core:jar} --add-opens ... --add-opens ..."
+  - Comment: "-javaagent:${org.mockito:mockito-core:jar}" is almost certainly incorrect: mockito-core is not a javaagent JAR. If you intended JaCoCo, use the jacoco plugin's prepare-agent or a proper agent JAR. Remove or correct the javaagent reference — otherwise test JVM startup will fail. Also avoid embedding dependency coordinates in arg strings; use the jacoco prepare-agent provided argLine instead and only add needed --add-opens flags here.
+
+- Combined argLine: <argLine>${surefire.jvm.args} ${argLine}</argLine>
+  - Comment: Be careful to ensure ${argLine} from JaCoCo is appended (not overwritten). Validate ordering: JaCoCo agent must appear in the final argLine. Add a CI check that prints the surefire command to confirm.
+
+New tests: src/test/java/abbaye/model/TestPlayerCollisionPassing.java
+- Tests use AbbayeMain.setGlEnabled(false) in @BeforeAll
+  - Comment: Confirm AbbayeMain.setGlEnabled(boolean) exists and is public (or package-private as appropriate). If not, tests will fail at runtime. Consider adding a dedicated test-only helper to disable GL initialization instead of mutating global state.
+
+- Tests use reflection to set private fields: setPrivateField(player, "direction", direction);
+  - Comment: Reflection makes tests fragile. Since tests are in package abbaye.model, consider changing fields to package-private or adding package-private setters annotated @VisibleForTesting to avoid reflection. If reflection stays, consider centralizing helper and clearly documenting why.
+
+- Many tests set player.setPos(new Vector2(...)) and compute tile indices using Stage.getTileSize() and PIXELS_PER_TILE
+  - Comment: Tests are fragile to exact pixel math; where possible compute tile indices from player's tileX()/tileY() and use integer tile coordinates to set tiles, or add tolerances/assertions that reflect game engine rounding behavior.
+
+- testRightWallCollisionWhenStanding(): uses setPrivateField(player, "walk", true)
+  - Comment: Same reflection fragility. Also test only asserts assertNotNull(hasCollision) — that doesn't validate behavior. Replace with an assertion on specific collision array or collision flags to make the test meaningful.
+
+- setTileSafe / setTiles helpers use NUM_ROWS/NUM_COLUMNS
+  - Comment: Good. Ensure NUM_ROWS/NUM_COLUMNS are public/static in Stage. If they change, tests remain correct.
+
+- Tests that check falling through platform 38 and invisible ground behaviors
+  - Comment: These are valuable but rely on precise positions and player state transitions. Consider adding helper to advance physics one tick and assert expected change to pos.y with a tolerance instead of strict greater-than.
+
+New files: coverage-analysis.md, COVERAGE_IMPROVEMENTS.md, desc.txt
+- Comment: These are useful documentation, but coverage-analysis.md contains specific numeric coverage percentages that will become stale. Consider adding them to CI-generated artifacts instead of committing large static reports, or mark them as "snapshot as of <date>" and add a script to regenerate. Avoid committing huge auto-generated coverage outputs.
+
+General safety / correctness items across changes
+- Bounds-check all stagedata accesses before indexing (checkStaticHazard, checkStaticObject, checkCollision uses elsewhere). Add unit tests for tile access at edges.
+- Avoid mutating stage map in checkStaticObject without clear intent. If the map represents mutable runtime state, persist changes explicitly; otherwise use a separate runtime state for collected items.
+- Replace magic numbers with named constants (tile ids, offsets, default coords, row/column counts).
+- Validate POM javaagent string (fix mockito reference) and confirm JaCoCo is attached in CI.
+- Replace reflection in tests with package-visible helpers or add @VisibleForTesting methods to reduce fragility.
+
+If you want, I can:
+- Provide concrete code snippets for bounds-check wrappers around stagedata access.
+- Draft small test helpers (package-private) to replace the reflection usage.
+Which would you like next?

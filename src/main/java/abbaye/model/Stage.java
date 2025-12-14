@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /** The stage shows the layout of the furniture of the current screen */
-public class Stage implements Renderable {
+public final class Stage implements Renderable {
   public static final int SCREENS_X = 5;
   public static final int SCREENS_Y = 5;
   public static final int NUM_SCREENS = SCREENS_X * SCREENS_Y;
@@ -21,12 +21,40 @@ public class Stage implements Renderable {
 
   public static final int TILES_PER_ROW = 125;
   public static final int TILES_PER_COL = 30;
-  public static final int PIXELS_PER_TILE = 8;
+
+  public static final int LEFT_EDGE = 0;
+  public static final int TOP_EDGE = 0;
+  // Tile type IDs
+  static final int TILE_PASSABLE = 16;
+  static final int TILE_PASSABLE_VARIANT_1 = 37;
+  static final int TILE_PLATFORM = 38;
+
+  static final int TILE_BEDROCK1 = 101;
+  static final int TILE_BEDROCK2 = 102;
+  static final int TILE_TOPSOIL1 = 103;
+  static final int TILE_TOPSOIL2 = 104;
+
+  static final int TILE_STATIC_HAZARD = 5;
+  static final int TILE_SOLID_MAX = 100;
+  static final int TILE_SPECIAL_COLLISION = 128;
+  static final int TILE_SPECIAL_RIGHT = 344;
+  static final int TILE_SPECIAL_LEFT = 348;
+  static final int TILE_SPECIAL_RIGHT_MIN = 342;
+  static final int TILE_SPECIAL_RIGHT_MAX = 347; // Exclusive upper bound for crouch range check
+  static final int TILE_SPECIAL_LEFT_MIN = 346;
+  static final int TILE_SPECIAL_LEFT_MAX = 351;
+  // Room-specific collision constants
+  static final int INVISIBLE_WALL_CROUCH_ROW = 5;
+  static final int INVISIBLE_GROUND_ROW_THRESHOLD = 19;
+  static final int INVISIBLE_GROUND_COLUMN = 2;
+  static final int ROOM_BEAST_INVISIBLE_WALL_START = 27;
+  static final int ROOM_BEAST_INVISIBLE_WALL_END = 32;
+  static final int SCREEN_BOTTOM_ROW_THRESHOLD = 21;
 
   private int[][][] stagedata = new int[NUM_SCREENS][NUM_ROWS][NUM_COLUMNS];
   // Initial room coordinates
-  private int roomx = 1;
-  private int roomy = 2;
+  private int roomx = 0;
+  private int roomy = 1;
 
   private Map<Integer, Corners> cache = new HashMap<>();
 
@@ -60,10 +88,10 @@ public class Stage implements Renderable {
       // Skip two header lines
       br.readLine();
 
-      for (int i = 0; i < NUM_SCREENS; i++) {
-        for (int j = 0; j < NUM_ROWS; j++) {
+      for (int i = 0; i < NUM_SCREENS; i += 1) {
+        for (int j = 0; j < NUM_ROWS; j += 1) {
           line = br.readLine();
-          for (int k = 0; k < NUM_COLUMNS; k++) {
+          for (int k = 0; k < NUM_COLUMNS; k += 1) {
             // Extract 3 characters, parse as int
             String temp = line.substring(k * 4, k * 4 + 3);
             stagedata[i][j][k] = Integer.parseInt(temp.trim());
@@ -278,14 +306,5 @@ public class Stage implements Renderable {
     var out = new Corners(u1, 1 - v1, u2, 1 - v2);
     cache.putIfAbsent(tileType, out);
     return out;
-  }
-
-  public static Corners makeCorners(int tileX, int tileY) {
-    float u1 = (float) tileX / TILES_PER_ROW;
-    float v1 = (float) tileY / TILES_PER_COL;
-    float u2 = (float) (tileX + 1) / TILES_PER_ROW;
-    float v2 = (float) (tileY + 1) / TILES_PER_COL;
-
-    return new Corners(u1, 1 - v1, u2, 1 - v2);
   }
 }

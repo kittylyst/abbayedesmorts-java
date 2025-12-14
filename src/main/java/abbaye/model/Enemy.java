@@ -4,7 +4,6 @@ package abbaye.model;
 import static abbaye.model.Facing.RIGHT;
 
 import abbaye.basic.Actor;
-import abbaye.basic.BoundingBox2;
 import abbaye.basic.Vector2;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -23,11 +22,6 @@ public final class Enemy implements Actor {
     public void serialize(
         Enemy enemy, JsonGenerator generator, SerializerProvider serializerProvider)
         throws IOException {}
-  }
-
-  @Override
-  public BoundingBox2 getBB() {
-    return null;
   }
 
   @Override

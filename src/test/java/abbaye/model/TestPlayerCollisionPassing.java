@@ -3,6 +3,8 @@ package abbaye.model;
 
 import static abbaye.model.Facing.LEFT;
 import static abbaye.model.Facing.RIGHT;
+import static abbaye.model.Player.COLLISION_RIGHT;
+import static abbaye.model.Player.PIXELS_PER_TILE;
 import static abbaye.model.Stage.*;
 import static abbaye.model.Utils.*;
 import static abbaye.model.Vertical.*;
@@ -30,7 +32,6 @@ public class TestPlayerCollisionPassing {
   @BeforeEach
   public void setUp() {
     stage = new Stage();
-    stage.load();
     layer = new Layer();
     player = Player.of(layer, stage);
     layer.setPlayer(player);
@@ -51,28 +52,66 @@ public class TestPlayerCollisionPassing {
   }
 
   @Test
-  @Disabled
   public void testRightWallCollisionWhenStanding() {
+    // Make basic field
+    var yCell = 12;
+    setFloor(stage, yCell + 3);
+    var xCell = 1; // starting xCell pos
+    // Place solid wall to the right
+    int checkX = xCell + 2;
+    for (int y = 4; y < yCell + 3 && y < NUM_ROWS; y++) {
+      setTile(stage, checkX, y, 1);
+    }
+
     // Position player very close to right wall to trigger collision
     float tileSize = Stage.getTileSize();
-    float xPos = 15 * tileSize - 10; // Close to wall
-    player.setPos(new Vector2(xPos, 10 * tileSize));
     setDirection(player, RIGHT);
     setCrouch(player, false);
     setPrivateField(player, "walk", true);
 
-    // Place solid wall to the right
-    int checkX = (int) ((xPos + 13 * PIXELS_PER_TILE) / tileSize) + 1;
-    for (int y = 4; y < 15 && y < NUM_ROWS; y++) {
-      setTile(stage, checkX, y, 1);
-    }
-
+    float xPos = xCell * tileSize - 1; // Close to wall but not touching
+    player.setPos(new Vector2(xPos, yCell * tileSize));
     player.calculateCollision();
     var collisions = player.getCollisions();
+    assertEquals(0, collisions[COLLISION_RIGHT], "Should not detect collision to right");
 
-    // Note: Collision detection has distance checks that may prevent detection
-    // This test verifies the collision path is executed
-    assertTrue(collisions[3] > 0, "Collision check should complete");
+    xPos = xCell * tileSize + 1; // Touching
+    player.setPos(new Vector2(xPos, yCell * tileSize));
+    player.calculateCollision();
+    collisions = player.getCollisions();
+    assertEquals(1, collisions[COLLISION_RIGHT], "Should not detect collision to right");
+  }
+
+  @Test
+  public void testStepsFromEscapeWhenStanding() {
+    // Make basic field
+    var yCell = 12;
+    setFloor(stage, yCell + 3);
+    // Place steps as positioned in 1-1
+    setStep(stage, yCell);
+
+    // Position player very close to step to trigger collision
+    float tileSize = Stage.getTileSize();
+    setDirection(player, RIGHT);
+    setCrouch(player, false);
+    setPrivateField(player, "walk", true);
+
+    int[] collisions;
+    float xPos = 1088;
+    for (int i = 0; i < 64; i += 1) {
+      player.setPos(new Vector2(xPos, yCell * tileSize));
+      player.calculateCollision();
+      collisions = player.getCollisions();
+      assertEquals(0, collisions[COLLISION_RIGHT], "Should not detect collision to right");
+
+      xPos += 1;
+    }
+
+    xPos = 1153f;
+    player.setPos(new Vector2(xPos, yCell * tileSize));
+    player.calculateCollision();
+    collisions = player.getCollisions();
+    assertEquals(1, collisions[COLLISION_RIGHT], "Should detect collision to right");
   }
 
   @Test
@@ -131,7 +170,7 @@ public class TestPlayerCollisionPassing {
   }
 
   @Test
-  @Disabled
+  @Disabled("Crouching unimplemented so far")
   public void testInvisibleWallRoomCaveCrouching() {
     stage.toWaypoint(new Player.Waypoint(2, 2, 0, 0));
 
@@ -151,7 +190,7 @@ public class TestPlayerCollisionPassing {
   }
 
   @Test
-  @Disabled
+  @Disabled("Crouching unimplemented so far")
   public void testInvisibleWallRoomBeastCrouching() {
     float tileSize = Stage.getTileSize();
     player.setPos(new Vector2(29 * tileSize, 5 * tileSize));
