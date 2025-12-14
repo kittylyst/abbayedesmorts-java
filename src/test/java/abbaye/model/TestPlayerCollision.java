@@ -3,7 +3,7 @@ package abbaye.model;
 
 import static abbaye.model.Facing.LEFT;
 import static abbaye.model.Facing.RIGHT;
-import static abbaye.model.Player.PIXELS_PER_TILE;
+import static abbaye.model.Player.*;
 import static abbaye.model.Stage.*;
 import static abbaye.model.Utils.*;
 import static abbaye.model.Vertical.*;
@@ -39,34 +39,45 @@ public class TestPlayerCollision {
   }
 
   @Test
-  @Disabled("Failing due to precise collision distance requirements")
   public void testLeftWallCollisionWhenStanding() {
+    // Make basic field
+    var yCell = 12;
+    setFloor(stage, yCell + 3);
+
     float tileSize = Stage.getTileSize();
+
+    var xCell = 1; // starting xCell pos
+    // Place solid wall to the left
+    for (int y = 4; y < yCell + 3 && y < NUM_ROWS; y++) {
+      setTile(stage, xCell, y, 1);
+    }
+
     // Position player very close to left wall to satisfy distance check
     // Distance check: pos.x() - ((points[0] - 1) * PIXELS_PER_TILE + 7) < 1.1
     // points[0] = (pos.x() + 8) / tileSize
     // Need pos.x() close to (points[0] - 1) * 8 + 7
     // Ensure points[0] > 0 to enter the collision check
-    float xPos = 9 * tileSize + 0.5f; // Very close to wall, within 1.1 pixel threshold
-    player.setPos(new Vector2(xPos, 10 * tileSize));
     setDirection(player, LEFT);
     setCrouch(player, false);
     setPrivateField(player, "walk", true);
 
-    // Place solid wall to the left - collision checks stagedata[points[n]][points[0] - 1] for n in
-    // [4,7]
-    // Need to ensure points[0] - 1 >= 0
-    int points0 = (int) ((xPos + 1 * PIXELS_PER_TILE) / tileSize);
-    int checkX = points0 - 1;
-    if (checkX >= 0) {
-      for (int y = 4; y < 15 && y < NUM_ROWS; y++) {
-        setTile(stage, checkX, y, 1);
-      }
+    int[] collisions;
+    float xPos = 2 * tileSize;
+    for (int i = 63; i >= 0; i -= 1) {
+      player.setPos(new Vector2(xPos, yCell * tileSize));
+      player.calculateCollision();
+      collisions = player.getCollisions();
+      assertEquals(0, collisions[COLLISION_LEFT], "Should not detect collision to left");
+
+      xPos += 1;
     }
 
-    boolean hasCollision = player.checkCollision();
+    xPos = tileSize;
+    player.setPos(new Vector2(xPos, yCell * tileSize));
+    player.calculateCollision();
+    collisions = player.getCollisions();
 
-    assertTrue(hasCollision, "Should detect collision with left wall");
+    assertEquals(1, collisions[COLLISION_LEFT], "Should detect collision with left wall");
   }
 
   @Test
@@ -126,7 +137,7 @@ public class TestPlayerCollision {
   }
 
   @Test
-  @Disabled("Failing due to precise collision distance requirements")
+  @Disabled("Roof collision unimplemented so far")
   public void testRoofCollisionDuringJump() {
     float tileSize = Stage.getTileSize();
     // Position player very close to roof to satisfy distance check
@@ -153,7 +164,7 @@ public class TestPlayerCollision {
   }
 
   @Test
-  @Disabled("Failing due to precise collision distance requirements")
+  @Disabled("Crouching unimplemented so far")
   public void testCrouchLeftWallCollision() {
     float tileSize = Stage.getTileSize();
     // Position player very close to left wall to satisfy distance check
@@ -179,7 +190,7 @@ public class TestPlayerCollision {
   }
 
   @Test
-  @Disabled("Failing due to precise collision distance requirements")
+  @Disabled("Crouching unimplemented so far")
   public void testCrouchRightWallCollision() {
     float tileSize = Stage.getTileSize();
     // Position player very close to right wall to satisfy distance check
@@ -207,7 +218,6 @@ public class TestPlayerCollision {
   }
 
   @Test
-  @Disabled("Failing due to precise collision distance requirements")
   public void testSpecialTile128Collision() {
     float tileSize = Stage.getTileSize();
     // Position player very close to left to trigger collision
@@ -236,61 +246,90 @@ public class TestPlayerCollision {
   }
 
   @Test
-  @Disabled("Failing due to precise collision distance requirements")
   public void testSpecialTile344RightCollision() {
+    // Make basic field
+    var yCell = 12;
+    setFloor(stage, yCell + 3);
+
+    // Place tile 344 to the right like the door in 1-3
+    setTile(stage, 31, yCell - 1, TILE_SPECIAL_RIGHT);
+    setTile(stage, 31, yCell, TILE_SPECIAL_RIGHT);
+    setTile(stage, 31, yCell + 1, TILE_SPECIAL_RIGHT);
+    setTile(stage, 31, yCell + 2, TILE_SPECIAL_RIGHT);
+
     float tileSize = Stage.getTileSize();
-    // Position player very close to right wall to satisfy distance check
-    // Distance check: ((points[3] + 1) * PIXELS_PER_TILE) - (pos.x() / PIXELS_PER_TILE + 14) < 1.1
-    float xPos = 15 * tileSize - 0.5f;
-    player.setPos(new Vector2(xPos, 10 * tileSize));
     setDirection(player, RIGHT);
     setCrouch(player, false);
     setPrivateField(player, "walk", true);
 
-    // Place tile 344 to the right - checks stagedata[points[n]][points[3] + 1] for n in [4,7]
-    int points3 = (int) ((xPos + 13 * PIXELS_PER_TILE) / tileSize);
-    int checkX = points3 + 1;
-    if (checkX < NUM_COLUMNS && points3 + 1 < NUM_COLUMNS) {
-      for (int y = 4; y < 15 && y < NUM_ROWS; y++) {
-        setTile(stage, checkX, y, 344);
-      }
+    int[] collisions;
+    float xPos = 1792.0f;
+    for (int i = 0; i < 64; i += 1) {
+      player.setPos(new Vector2(xPos, yCell * tileSize));
+      player.calculateCollision();
+      collisions = player.getCollisions();
+      assertEquals(0, collisions[COLLISION_RIGHT], "Should not detect collision to right");
+
+      xPos += 1;
     }
 
-    boolean hasCollision = player.checkCollision();
-
-    assertTrue(hasCollision, "Should detect collision with special tile 344");
+    xPos = 1857.0f;
+    player.setPos(new Vector2(xPos, yCell * tileSize));
+    player.calculateCollision();
+    collisions = player.getCollisions();
+    assertEquals(
+        1, collisions[COLLISION_RIGHT], "Should detect collision to right with special tile 344");
   }
 
   @Test
-  @Disabled("Failing due to precise collision distance requirements")
   public void testSpecialTile348LeftCollision() {
+    // Make basic field
+    var yCell = 12;
+    setFloor(stage, yCell + 3);
     float tileSize = Stage.getTileSize();
-    // Position player very close to left wall to satisfy distance check
-    // Distance check: pos.x() - ((points[0] - 1) * PIXELS_PER_TILE + 7) < 1.1
-    float xPos = 9 * tileSize + 0.5f;
-    player.setPos(new Vector2(xPos, 10 * tileSize));
+
+    // Place tile 348 to the left -
+    setTile(stage, 2, yCell - 1, TILE_SPECIAL_LEFT);
+    setTile(stage, 2, yCell, TILE_SPECIAL_LEFT);
+    setTile(stage, 2, yCell + 1, TILE_SPECIAL_LEFT);
+    setTile(stage, 2, yCell + 2, TILE_SPECIAL_LEFT);
+
+    // Position player very close to left
+    float xPos = 4 * tileSize;
     setDirection(player, LEFT);
     setCrouch(player, false);
     setPrivateField(player, "walk", true);
 
-    // Place tile 348 to the left - checks stagedata[points[n]][points[0] - 1] for n in [4,7]
-    int points0 = (int) ((xPos + 1 * PIXELS_PER_TILE) / tileSize);
-    int checkX = points0 - 1;
-    if (checkX >= 0 && points0 > 0) {
-      for (int y = 4; y < 15 && y < NUM_ROWS; y++) {
-        setTile(stage, checkX, y, 348);
-      }
+    int[] collisions;
+    // Move left loop
+    for (int dx = 63; dx >= 0; dx -= 1) {
+
+      player.setPos(new Vector2(xPos, yCell * tileSize));
+      player.calculateCollision();
+      collisions = player.getCollisions();
+      assertEquals(0, collisions[COLLISION_LEFT], "Should not detect collision to right");
+
+      xPos -= 1;
     }
 
-    boolean hasCollision = player.checkCollision();
+    xPos = 3 * tileSize - 1.0f;
+    player.setPos(new Vector2(xPos, yCell * tileSize));
+    player.calculateCollision();
+    collisions = player.getCollisions();
 
-    assertTrue(hasCollision, "Should detect collision with special tile 348");
+    assertEquals(1, collisions[COLLISION_LEFT], "Should detect collision with special tile 348");
   }
 
   @Test
-  @Disabled("Failing due to precise collision distance requirements")
+  @Disabled
   public void testSmallPlatformTile38FallLeft() {
+    // Make basic field
+    var yCell = 12;
+    setFloor(stage, yCell + 3);
     float tileSize = Stage.getTileSize();
+
+    var xCell = 10;
+
     // Position player on platform, moving left
     // Platform check: blground[3] == 38 && (pos.x() + 13) < (points[3] * PIXELS_PER_TILE + 5)
     // blground[3] = stagedata[points[7] + 1][points[3]]

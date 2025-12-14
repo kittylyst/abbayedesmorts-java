@@ -87,9 +87,7 @@ public class TestPlayerCollisionPassing {
     // Make basic field
     var yCell = 12;
     setFloor(stage, yCell + 3);
-    var xCell = 17; // starting xCell pos
-    // Place steps to the right
-    int checkX = xCell + 2;
+    // Place steps as positioned in 1-1
     setStep(stage, yCell);
 
     // Position player very close to step to trigger collision
@@ -97,8 +95,6 @@ public class TestPlayerCollisionPassing {
     setDirection(player, RIGHT);
     setCrouch(player, false);
     setPrivateField(player, "walk", true);
-
-    System.out.println("Step: " + tileSize * (checkX + 2));
 
     int[] collisions;
     float xPos = 1088;
@@ -174,7 +170,7 @@ public class TestPlayerCollisionPassing {
   }
 
   @Test
-  @Disabled
+  @Disabled("Crouching unimplemented so far")
   public void testInvisibleWallRoomCaveCrouching() {
     stage.toWaypoint(new Player.Waypoint(2, 2, 0, 0));
 
@@ -194,7 +190,7 @@ public class TestPlayerCollisionPassing {
   }
 
   @Test
-  @Disabled
+  @Disabled("Crouching unimplemented so far")
   public void testInvisibleWallRoomBeastCrouching() {
     float tileSize = Stage.getTileSize();
     player.setPos(new Vector2(29 * tileSize, 5 * tileSize));

@@ -609,7 +609,6 @@ public final class Player implements Actor {
                 || ((tile > TILE_SPECIAL_LEFT_MIN) && (tile < TILE_SPECIAL_LEFT_MAX)))) {
           collision[COLLISION_LEFT] = 1;
         }
-
         tile = points[y][2];
         if (((tile > 0) && (tile < TILE_SOLID_MAX) && (tile != TILE_PASSABLE_VARIANT_1))
             || ((tile > TILE_SPECIAL_RIGHT_MIN) && (tile < TILE_SPECIAL_RIGHT_MAX))) {
@@ -618,13 +617,10 @@ public final class Player implements Actor {
       }
     }
 
-    //    int tileLeft = 0;
-    //    int tileRight = 0;
     int[] blground = {0, 0, 0, 0};
     int[] blroof = {0, 0};
 
     /* Touch ground collision */
-    //    blground[0] = points[0][0];
     blground[0] = currentRoomData[ypoints[3] + 1][xpoints[0]];
     blground[1] = currentRoomData[ypoints[3] + 1][xpoints[1]];
     blground[2] = currentRoomData[ypoints[3] + 1][xpoints[2]];

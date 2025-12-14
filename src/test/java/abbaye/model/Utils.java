@@ -22,8 +22,7 @@ public class Utils {
 
   /** Helper to set the floor in the current room */
   static void setStep(Stage stage, final int floorLevel) {
-    int room = stage.getRoom();
-    var stagedata = stage.getScreen(room);
+    var stagedata = stage.getScreen(stage.getRoom());
     int[] row1 = {
       101, 102, 103, 101, 0, 0, 0, 102,
       103, 0, 101, 0, 102, 103, 0, 102,
@@ -58,10 +57,16 @@ public class Utils {
     }
   }
 
-  /** Helper to set a tile in the current room */
+  /**
+   * Helper to set a tile in the current room
+   *
+   * @param stage
+   * @param x - x position in tiles
+   * @param y - y position in tiles
+   * @param tileType - type of tile
+   */
   static void setTile(Stage stage, int x, int y, int tileType) {
-    int room = stage.getRoom();
-    var stagedata = stage.getScreen(room);
+    var stagedata = stage.getScreen(stage.getRoom());
     if (y >= 0 && y < NUM_ROWS && x >= 0 && x < NUM_COLUMNS) {
       stagedata[y][x] = tileType;
     }
