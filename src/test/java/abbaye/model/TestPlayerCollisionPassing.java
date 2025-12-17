@@ -155,18 +155,20 @@ public class TestPlayerCollisionPassing {
 
   @Test
   public void testSmallPlatformTile38FallRight() {
+    // Make basic field
+    var yCell = 10;
+    setFloor(stage, yCell + 3);
+    var xCell = 10;
+    // Place platform tile 38 below player on the left side
+    setTile(stage, xCell, xCell + 1, TILE_PLATFORM);
+
     float tileSize = Stage.getTileSize();
-    player.setPos(new Vector2(10 * tileSize, 10 * tileSize));
+    player.setPos(new Vector2(xCell * tileSize, yCell * tileSize));
     setDirection(player, RIGHT);
     setJump(player, NEUTRAL);
 
-    // Place platform tile 38 below player on the left side
-    int playerTileX = (int) ((player.getPos().x() + 1 * PIXELS_PER_TILE) / tileSize);
-    int playerTileY = (int) ((player.getPos().y() + 23 * PIXELS_PER_TILE) / tileSize);
-    setTile(stage, playerTileX, playerTileY + 1, 38);
-
     Vector2 posBefore = player.getPos();
-    player.checkCollision();
+    player.update();
     Vector2 posAfter = player.getPos();
 
     // Player should fall through platform when moving right
@@ -217,12 +219,15 @@ public class TestPlayerCollisionPassing {
   @Test
   public void testInvisibleGroundRoomLake() {
     float tileSize = Stage.getTileSize();
+    var xCell = 2;
+    var yCell = 2;
+
     // Position player high up (y/8 < 4) at column 2
-    player.setPos(new Vector2(2 * tileSize, 2 * tileSize));
+    player.setPos(new Vector2(xCell * tileSize, xCell * tileSize));
     setJump(player, NEUTRAL);
 
     Vector2 posBefore = player.getPos();
-    player.checkCollision();
+    player.update();
     Vector2 posAfter = player.getPos();
 
     // Player should fall (invisible ground in ROOM_LAKE)
@@ -239,7 +244,7 @@ public class TestPlayerCollisionPassing {
     setCrouch(player, false);
 
     // Should not crash when checking left collision at edge
-    assertDoesNotThrow(() -> player.checkCollision(), "Should handle left edge boundary");
+    assertDoesNotThrow(() -> player.update(), "Should handle left edge boundary");
   }
 
   @Test
@@ -251,7 +256,7 @@ public class TestPlayerCollisionPassing {
     setCrouch(player, false);
 
     // Should not crash when checking right collision at edge
-    assertDoesNotThrow(() -> player.checkCollision(), "Should handle right edge boundary");
+    assertDoesNotThrow(() -> player.update(), "Should handle right edge boundary");
   }
 
   @Test
@@ -262,6 +267,6 @@ public class TestPlayerCollisionPassing {
     setJump(player, JUMP);
 
     // Should not crash when checking roof collision at top
-    assertDoesNotThrow(() -> player.checkCollision(), "Should handle top edge boundary");
+    assertDoesNotThrow(() -> player.update(), "Should handle top edge boundary");
   }
 }
