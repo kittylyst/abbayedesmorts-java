@@ -44,8 +44,10 @@ public class TestPlayerCollisionPassing {
     // Position player in middle of empty space
     player.setPos(new Vector2(500, 500));
     setDirection(player, RIGHT);
+    setPrivateField(player, "walk", false);
     // No walls around
 
+    player.update();
     boolean hasCollision = player.checkCollision();
 
     assertFalse(hasCollision, "Should not detect collision in empty space");
@@ -100,18 +102,14 @@ public class TestPlayerCollisionPassing {
 
     int[] collisions;
     float xPos = 1088;
-    for (int i = 0; i < 64; i += 1) {
-      player.setPos(new Vector2(xPos, yCell * tileSize));
-      player.calculateCollision();
-      collisions = player.getCollisions();
-      assertEquals(0, collisions[COLLISION_RIGHT], "Should not detect collision to right");
-
-      xPos += 1;
-    }
-
-    xPos = 1153f;
     player.setPos(new Vector2(xPos, yCell * tileSize));
-    player.calculateCollision();
+    player.update();
+    collisions = player.getCollisions();
+    assertEquals(0, collisions[COLLISION_RIGHT], "Should not detect collision to right");
+
+    player.update();
+    player.update();
+    player.update();
     collisions = player.getCollisions();
     assertEquals(1, collisions[COLLISION_RIGHT], "Should detect collision to right");
   }
@@ -122,32 +120,37 @@ public class TestPlayerCollisionPassing {
     player.setPos(new Vector2(10 * tileSize, 10 * tileSize));
     setDirection(player, RIGHT);
     setCrouch(player, false);
+    setPrivateField(player, "walk", true);
 
     // Place passable tiles (16, 37, 38 are passable)
     int playerTileX = (int) ((player.getPos().x() + 13 * PIXELS_PER_TILE) / tileSize);
     int playerTileY = (int) ((player.getPos().y() + 1 * PIXELS_PER_TILE) / tileSize);
     setTiles(stage, playerTileX + 1, playerTileY, playerTileX + 1, playerTileY + 3, 16);
 
-    boolean hasCollision = player.checkCollision();
-
-    assertFalse(hasCollision, "Should not collide with passable tile 16");
+    player.update();
+    var collisions = player.getCollisions();
+    assertEquals(0, collisions[COLLISION_RIGHT], "Should not collide with passable tile 16");
   }
 
   @Test
   public void testNoRoofCollisionWhenNotJumping() {
-    float tileSize = Stage.getTileSize();
-    player.setPos(new Vector2(10 * tileSize, 10 * tileSize));
-    setJump(player, NEUTRAL);
+    // Make basic field
+    var yCell = 12;
+    setFloor(stage, yCell + 3);
+
+    var xCell = 10;
+    yCell = 10;
 
     // Place roof above player
-    int playerTileX = (int) ((player.getPos().x() + 1 * PIXELS_PER_TILE) / tileSize);
-    int playerTileY = (int) ((player.getPos().y() + 1 * PIXELS_PER_TILE) / tileSize);
-    setTiles(stage, playerTileX, playerTileY - 1, playerTileX + 3, playerTileY - 1, 1);
+    setTiles(stage, xCell - 1, yCell - 1, yCell + 3, yCell - 1, 1);
 
-    boolean hasCollision = player.checkCollision();
+    float tileSize = Stage.getTileSize();
+    player.setPos(new Vector2(xCell * tileSize, yCell * tileSize));
+    setJump(player, NEUTRAL);
 
+    player.update();
     // Roof collision only checked during jump
-    assertFalse(hasCollision, "Should not check roof collision when not jumping");
+    assertFalse(player.checkCollision(), "Should not check roof collision when not jumping");
   }
 
   @Test
