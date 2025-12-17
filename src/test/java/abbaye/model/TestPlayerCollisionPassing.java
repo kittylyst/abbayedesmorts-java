@@ -63,23 +63,25 @@ public class TestPlayerCollisionPassing {
       setTile(stage, checkX, y, 1);
     }
 
-    // Position player very close to right wall to trigger collision
-    float tileSize = Stage.getTileSize();
+    // Position player standing very close to right wall but not close enough trigger collision
     setDirection(player, RIGHT);
     setCrouch(player, false);
-    setPrivateField(player, "walk", true);
+    setPrivateField(player, "walk", false);
 
+    var tileSize = Stage.getTileSize();
     float xPos = xCell * tileSize - 1; // Close to wall but not touching
     player.setPos(new Vector2(xPos, yCell * tileSize));
-    player.calculateCollision();
+    player.update();
     var collisions = player.getCollisions();
     assertEquals(0, collisions[COLLISION_RIGHT], "Should not detect collision to right");
 
-    xPos = xCell * tileSize + 1; // Touching
-    player.setPos(new Vector2(xPos, yCell * tileSize));
-    player.calculateCollision();
+    // Make player walk
+    setPrivateField(player, "walk", true);
+    player.update();
+    player.update();
     collisions = player.getCollisions();
-    assertEquals(1, collisions[COLLISION_RIGHT], "Should not detect collision to right");
+    System.out.println(player);
+    assertEquals(1, collisions[COLLISION_RIGHT], "Should detect collision to right");
   }
 
   @Test

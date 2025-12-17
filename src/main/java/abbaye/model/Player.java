@@ -296,21 +296,23 @@ public final class Player implements Actor {
 
   @Override
   public boolean update() {
-    pos = newPosition();
 
+    // First check if we need to change room
     if (pos.x() < LEFT_EDGE) {
       if (stage.moveLeft()) {
         pos = new Vector2(Stage.getTileSize() * (NUM_COLUMNS - 2), pos.y());
       } else {
         pos = new Vector2(LEFT_EDGE, pos.y());
       }
+      return true;
     }
-    if (pos.x() >= Stage.getTileSize() * (NUM_COLUMNS - 2)) {
+    if (pos.x() > Stage.getTileSize() * (NUM_COLUMNS - 2)) {
       if (stage.moveRight()) {
         pos = new Vector2(0, pos.y());
       } else {
         pos = new Vector2(Stage.getTileSize() * (NUM_COLUMNS - 2), pos.y());
       }
+      return true;
     }
     if (pos.y() < TOP_EDGE) {
       if (stage.moveUp()) {
@@ -318,6 +320,7 @@ public final class Player implements Actor {
       } else {
         pos = new Vector2(pos.x(), TOP_EDGE);
       }
+      return true;
     }
     if (pos.y() > Stage.getTileSize() * (NUM_ROWS - 3)) {
       if (stage.moveDown()) {
@@ -325,8 +328,11 @@ public final class Player implements Actor {
       } else {
         pos = new Vector2(pos.x(), Stage.getTileSize() * (NUM_ROWS - 3));
       }
+      return true;
     }
 
+    // Now update position
+    pos = newPosition();
     return true;
   }
 
@@ -713,7 +719,7 @@ public final class Player implements Actor {
   }
 
   /**
-   * This is (only) for collisions with walls
+   * This is (only) for collisions with walls and other non-fatal objects
    *
    * @return
    */

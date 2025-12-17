@@ -10,7 +10,7 @@ public interface Renderable {
    *
    * @return false if the object is to be deleted
    */
-  // FIXME: Check the "return false to delete" contract is honoured
+  // FIXME: Migrate this to return void
   boolean render();
 
   /**
