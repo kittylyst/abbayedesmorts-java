@@ -3,8 +3,7 @@ package abbaye.model;
 
 import static abbaye.model.Facing.LEFT;
 import static abbaye.model.Facing.RIGHT;
-import static abbaye.model.Player.COLLISION_RIGHT;
-import static abbaye.model.Player.PIXELS_PER_TILE;
+import static abbaye.model.Player.*;
 import static abbaye.model.Stage.*;
 import static abbaye.model.Utils.*;
 import static abbaye.model.Vertical.*;
@@ -48,9 +47,15 @@ public class TestPlayerCollisionPassing {
     // No walls around
 
     player.update();
-    boolean hasCollision = player.checkCollision();
+    var collisions = player.getCollisions();
 
-    assertFalse(hasCollision, "Should not detect collision in empty space");
+    assertEquals(
+        0,
+        (collisions[COLLISION_UP]
+            + collisions[COLLISION_DOWN]
+            + collisions[COLLISION_LEFT]
+            + collisions[COLLISION_RIGHT]),
+        "Should not detect collision in empty space");
   }
 
   @Test
@@ -149,8 +154,8 @@ public class TestPlayerCollisionPassing {
     setJump(player, NEUTRAL);
 
     player.update();
-    // Roof collision only checked during jump
-    assertFalse(player.checkCollision(), "Should not check roof collision when not jumping");
+    var collisions = player.getCollisions();
+    assertEquals(0, collisions[COLLISION_UP], "Should not check roof collision when not jumping");
   }
 
   @Test
@@ -191,9 +196,10 @@ public class TestPlayerCollisionPassing {
     setTile(stage, 0, crouchTileY, 1);
     setTile(stage, 1, crouchTileY, 1);
 
-    boolean hasCollision = player.checkCollision();
-
-    assertTrue(hasCollision, "Collision check should complete");
+    player.update();
+    var collisions = player.getCollisions();
+    assertEquals(
+        1, collisions[COLLISION_LEFT], "Should collide with invisible wall when crouching");
   }
 
   @Test
@@ -211,9 +217,9 @@ public class TestPlayerCollisionPassing {
     setTile(stage, 30, crouchTileY, 1);
     setTile(stage, 31, crouchTileY, 1);
 
-    boolean hasCollision = player.checkCollision();
-
-    assertTrue(hasCollision, "Collision check should complete");
+    player.update();
+    var collisions = player.getCollisions();
+    assertEquals(1, collisions[COLLISION_RIGHT], "Should collide with invisible wall");
   }
 
   @Test

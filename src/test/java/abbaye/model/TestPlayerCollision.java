@@ -104,7 +104,7 @@ public class TestPlayerCollision {
     }
 
     Vector2 posBefore = player.getPos();
-    player.checkCollision();
+    player.update();
     Vector2 posAfter = player.getPos();
 
     // Player should snap to ground (position should change and be closer to ground)
@@ -152,9 +152,10 @@ public class TestPlayerCollision {
       setTile(stage, checkX2, roofY, 1);
     }
 
-    boolean hasCollision = player.checkCollision();
+    player.update();
+    var collisions = player.getCollisions();
 
-    assertTrue(hasCollision, "Should detect collision with roof during jump");
+    assertEquals(1, collisions[COLLISION_UP], "Should detect collision with roof during jump");
   }
 
   @Test
@@ -178,9 +179,10 @@ public class TestPlayerCollision {
       setTile(stage, checkX, crouchTileY, 1);
     }
 
-    boolean hasCollision = player.checkCollision();
+    player.update();
+    var collisions = player.getCollisions();
 
-    assertTrue(hasCollision, "Should detect left wall collision when crouching");
+    assertEquals(1, collisions[COLLISION_LEFT], "Should detect left wall collision when crouching");
   }
 
   @Test
@@ -206,9 +208,11 @@ public class TestPlayerCollision {
       setTile(stage, checkX, crouchTileY, 1);
     }
 
-    boolean hasCollision = player.checkCollision();
+    player.update();
+    var collisions = player.getCollisions();
 
-    assertTrue(hasCollision, "Should detect right wall collision when crouching");
+    assertEquals(
+        1, collisions[COLLISION_RIGHT], "Should detect right wall collision when crouching");
   }
 
   @Test
@@ -344,7 +348,7 @@ public class TestPlayerCollision {
     }
 
     Vector2 posBefore = player.getPos();
-    player.checkCollision();
+    player.update();
     Vector2 posAfter = player.getPos();
 
     // Player should fall through platform when moving left

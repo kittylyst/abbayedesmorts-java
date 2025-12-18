@@ -229,9 +229,7 @@ public final class Player implements Actor {
       stage.toWaypoint(last);
       return last.getPos();
     }
-    if (checkCollision()) {
-      logger.debug("Collision detected: " + Arrays.toString(collision));
-    }
+    calculateCollision();
     if (checkStaticObject()) {
       logger.debug("Static object detected");
     }
@@ -716,20 +714,6 @@ public final class Player implements Actor {
         }
       }
     }
-  }
-
-  /**
-   * This is (only) for collisions with walls and other non-fatal objects
-   *
-   * @return
-   */
-  public boolean checkCollision() {
-    calculateCollision();
-    return (collision[COLLISION_UP]
-            + collision[COLLISION_DOWN]
-            + collision[COLLISION_LEFT]
-            + collision[COLLISION_RIGHT])
-        > 0;
   }
 
   /**
