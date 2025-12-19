@@ -106,6 +106,7 @@ public final class Player implements Actor {
 
   private int crosses = 0; // (previously state[1])
   private int lives = 5;
+  // What does this do?
   private int[] flags = new int[7];
   private boolean walk = false;
 
@@ -229,7 +230,7 @@ public final class Player implements Actor {
       stage.toWaypoint(last);
       return last.getPos();
     }
-    calculateCollision();
+    checkCollisions();
     if (checkStaticObject()) {
       logger.debug("Static object detected");
     }
@@ -282,9 +283,9 @@ public final class Player implements Actor {
           }
         }
         if (crouch) {
-          dx -= 0.30;
+          dx -= PLAYER_CROUCH_WALK_SPEED;
         } else {
-          dx -= 0.65;
+          dx -= PLAYER_NORMAL_WALK_SPEED;
         }
       }
     }
@@ -294,37 +295,38 @@ public final class Player implements Actor {
 
   @Override
   public boolean update() {
+    final var tileSize = Stage.getTileSize();
 
     // First check if we need to change room
     if (pos.x() < LEFT_EDGE) {
       if (stage.moveLeft()) {
-        pos = new Vector2(Stage.getTileSize() * (NUM_COLUMNS - 2), pos.y());
+        pos = new Vector2(tileSize * (NUM_COLUMNS - 2), pos.y());
       } else {
         pos = new Vector2(LEFT_EDGE, pos.y());
       }
       return true;
     }
-    if (pos.x() > Stage.getTileSize() * (NUM_COLUMNS - 2)) {
+    if (pos.x() > tileSize * (NUM_COLUMNS - 2)) {
       if (stage.moveRight()) {
         pos = new Vector2(0, pos.y());
       } else {
-        pos = new Vector2(Stage.getTileSize() * (NUM_COLUMNS - 2), pos.y());
+        pos = new Vector2(tileSize * (NUM_COLUMNS - 2), pos.y());
       }
       return true;
     }
     if (pos.y() < TOP_EDGE) {
       if (stage.moveUp()) {
-        pos = new Vector2(pos.x(), Stage.getTileSize() * (NUM_ROWS - 3));
+        pos = new Vector2(pos.x(), tileSize * (NUM_ROWS - 3));
       } else {
         pos = new Vector2(pos.x(), TOP_EDGE);
       }
       return true;
     }
-    if (pos.y() > Stage.getTileSize() * (NUM_ROWS - 3)) {
+    if (pos.y() > tileSize * (NUM_ROWS - 3)) {
       if (stage.moveDown()) {
         pos = new Vector2(pos.x(), TOP_EDGE);
       } else {
-        pos = new Vector2(pos.x(), Stage.getTileSize() * (NUM_ROWS - 3));
+        pos = new Vector2(pos.x(), tileSize * (NUM_ROWS - 3));
       }
       return true;
     }
@@ -446,87 +448,6 @@ public final class Player implements Actor {
     return out;
   }
 
-  //  void oldCode() {
-  //      CHECKS:
-  //      for (var n = 0; n < 4; n += 1) {
-  //          // Boundary check: ensure we're within valid tile coordinates
-  //          if ((xpoints[0] <= 0) || (xpoints[3] + 1 >= NUM_COLUMNS) || (ypoints[n] + 1 >=
-  // NUM_ROWS)) {
-  //              break CHECKS;
-  //          }
-  //
-  //          // Only check collisions in the direction the player is moving
-  //          if (((xpoints[0] > 0) && (direction == LEFT))
-  //                  || ((xpoints[3] + 1 < NUM_COLUMNS) && (direction == RIGHT))) {
-  //              // Get tile types at collision points
-  //
-  //              // Left: check tile to the left of player's left edge
-  //              tileLeft = currentRoomData[ypoints[n]][xpoints[0] - 1];
-  //
-  //              // Right: check tile to the right of player's right edge
-  //              tileRight = currentRoomData[ypoints[n]][xpoints[3] + 1];
-  //
-  //              if (counter++ % DEBUG_LOG_FREQUENCY == 0) {
-  //                  logger.debug(
-  //                          pos
-  //                                  + " ; tileLeft: "
-  //                                  + tileLeft
-  //                                  + " ; tileRight: "
-  //                                  + tileRight
-  //                                  + " ; ground: "
-  //                                  + ground
-  //                                  + " ; xp: "
-  //                                  + Arrays.toString(xpoints)
-  //                                  + " ; yp: "
-  //                                  + Arrays.toString(ypoints));
-  //              }
-  //
-  //              // Check left collision
-  //              // A tile is solid if it's a regular solid tile OR a special collision tile
-  //              if (((tileLeft > 0)
-  //                      && (tileLeft < TILE_SOLID_MAX)
-  //                      && (tileLeft != TILE_PASSABLE)
-  //                      && (tileLeft != TILE_PLATFORM)
-  //                      && (tileLeft != TILE_PASSABLE_VARIANT_1))
-  //                      || ((currentRoomData[ypoints[0]][xpoints[0]] == TILE_SPECIAL_COLLISION)
-  //                      || (tileLeft == TILE_SPECIAL_LEFT))) {
-  //
-  //                  // Calculate distance from player's left edge to the wall
-  //                  // Wall position: (xpoints[0] - 1) * PIXELS_PER_TILE (left edge of tile to the
-  // left)
-  //                  // Player left edge: pos.x() + WALL_COLLISION_LEFT_OFFSET
-  //                  // Distance = player position - wall position
-  //                  if (pos.x() - ((xpoints[0] - 1) * PIXELS_PER_TILE +
-  // WALL_COLLISION_LEFT_OFFSET)
-  //                          < COLLISION_DISTANCE_THRESHOLD) {
-  //                      collision[COLLISION_LEFT] = 1;
-  //                  }
-  //              }
-  //
-  //              // Check right collision
-  //              // A tile is solid if it's a regular solid tile OR a special right collision tile
-  //              if (((tileRight > 0)
-  //                      && (tileRight < TILE_SOLID_MAX)
-  //                      && (tileRight != TILE_PASSABLE)
-  //                      && (tileRight != TILE_PLATFORM)
-  //                      && (tileRight != TILE_PASSABLE_VARIANT_1))
-  //                      || (tileRight == TILE_SPECIAL_RIGHT)) {
-  //
-  //                  // Calculate distance from player position to the wall
-  //                  // Wall position: (xpoints[3] + 1) * PIXELS_PER_TILE +
-  // WALL_COLLISION_RIGHT_OFFSET
-  //                  // Player position: pos.x()
-  //                  // Distance = wall position - player position
-  //                  if (((xpoints[3] + 1) * PIXELS_PER_TILE)
-  //                          - (pos.x() / PIXELS_PER_TILE + WALL_COLLISION_RIGHT_OFFSET)
-  //                          < COLLISION_DISTANCE_THRESHOLD) {
-  //                      collision[COLLISION_RIGHT] = 1;
-  //                  }
-  //              }
-  //          }
-  //      }
-  //  }
-
   // Crouched code goes here
   //      // FIXME Are these directions correct?
   //      if (((xpoints[0] != 0) && (direction == LEFT))
@@ -575,21 +496,24 @@ public final class Player implements Actor {
   //        }
   //      }
 
-  public void calculateCollision() {
+  /** This method confirms collisions with static immovable objects (e.g. walls and roofs) */
+  public void checkCollisions() {
     int[] xpoints = {0, 0, 0, 0};
     int[] ypoints = {0, 0, 0, 0};
 
     float gravity = Config.config().getGravity();
 
-    float resize = Stage.getTileSize();
-    xpoints[0] = (int) ((pos.x() + COLLISION_LEFT_EDGE_OFFSET * PIXELS_PER_TILE) / resize);
-    xpoints[1] = (int) ((pos.x() + COLLISION_LEFT_MID_OFFSET * PIXELS_PER_TILE) / resize);
-    xpoints[2] = (int) ((pos.x() + COLLISION_CENTER_X_OFFSET * PIXELS_PER_TILE) / resize);
-    xpoints[3] = (int) ((pos.x() + COLLISION_RIGHT_EDGE_OFFSET * PIXELS_PER_TILE) / resize);
-    ypoints[0] = (int) ((pos.y() + COLLISION_TOP_EDGE_OFFSET * PIXELS_PER_TILE) / resize);
-    ypoints[1] = (int) ((pos.y() + COLLISION_MID_HEIGHT_OFFSET * PIXELS_PER_TILE) / resize);
-    ypoints[2] = (int) ((pos.y() + COLLISION_LOWER_MID_OFFSET * PIXELS_PER_TILE) / resize);
-    ypoints[3] = (int) ((pos.y() + COLLISION_BOTTOM_EDGE_OFFSET * PIXELS_PER_TILE) / resize);
+    float tileSize = Stage.getTileSize();
+
+    // FIXME This is temporary and will be replaced by points[] as we refactor
+    xpoints[0] = (int) ((pos.x() + COLLISION_LEFT_EDGE_OFFSET * PIXELS_PER_TILE) / tileSize);
+    xpoints[1] = (int) ((pos.x() + COLLISION_LEFT_MID_OFFSET * PIXELS_PER_TILE) / tileSize);
+    xpoints[2] = (int) ((pos.x() + COLLISION_CENTER_X_OFFSET * PIXELS_PER_TILE) / tileSize);
+    xpoints[3] = (int) ((pos.x() + COLLISION_RIGHT_EDGE_OFFSET * PIXELS_PER_TILE) / tileSize);
+    ypoints[0] = (int) ((pos.y() + COLLISION_TOP_EDGE_OFFSET * PIXELS_PER_TILE) / tileSize);
+    ypoints[1] = (int) ((pos.y() + COLLISION_MID_HEIGHT_OFFSET * PIXELS_PER_TILE) / tileSize);
+    ypoints[2] = (int) ((pos.y() + COLLISION_LOWER_MID_OFFSET * PIXELS_PER_TILE) / tileSize);
+    ypoints[3] = (int) ((pos.y() + COLLISION_BOTTOM_EDGE_OFFSET * PIXELS_PER_TILE) / tileSize);
 
     // Reset collision state
     collision[COLLISION_UP] = 0;
@@ -632,7 +556,7 @@ public final class Player implements Actor {
     blground[3] = currentRoomData[ypoints[3] + 1][xpoints[3]];
 
     if (jump != JUMP) {
-      /* Invisible ground */
+      /* Invisible ground - in CAVE or LAKE only */
       if (((room == ROOM_CAVE.index())
               && (ypoints[3] + 1 > INVISIBLE_GROUND_ROW_THRESHOLD)
               && (xpoints[0] == INVISIBLE_GROUND_COLUMN))
@@ -642,23 +566,22 @@ public final class Player implements Actor {
         pos = new Vector2(pos.x(), pos.y() + gravity);
         jump = FALL;
       } else {
+        // Main branch
+        // points[3]
         if (((blground[0] > 0) && (blground[0] < TILE_SOLID_MAX))
             || ((blground[1] > 0) && (blground[1] < TILE_SOLID_MAX))
             || ((blground[2] > 0) && (blground[2] < TILE_SOLID_MAX))
             || ((blground[3] > 0) && (blground[3] < TILE_SOLID_MAX))) {
-          ground = (ypoints[3] + 1) * (int) Stage.getTileSize();
+          ground = (int) ((ypoints[3] + 1) * tileSize);
           if (ypoints[3] + 1 > SCREEN_BOTTOM_ROW_THRESHOLD) {
             /* Dirty trick to make Jean go bottom of the screen */
             ground = SCREEN_BOTTOM_TELEPORT_TILES * PIXELS_PER_TILE;
           }
-          if (ground - pos.y() - PLAYER_HEIGHT_PIXELS > gravity * (int) Stage.getTileSize()) {
+          if (ground - pos.y() - PLAYER_HEIGHT_PIXELS > gravity * tileSize) {
             pos = new Vector2(pos.x(), pos.y() + gravity);
           } else {
             /* Near ground */
-            pos =
-                new Vector2(
-                    pos.x(),
-                    ground - GROUND_SNAP_OFFSET_MULTIPLIER * PIXELS_PER_TILE * PIXELS_PER_TILE);
+            pos = new Vector2(pos.x(), ground - GROUND_SNAP_OFFSET_MULTIPLIER * tileSize);
             height = 0;
             jump = NEUTRAL;
             flags[5] = 0;
@@ -676,7 +599,6 @@ public final class Player implements Actor {
       if ((blground[3] == TILE_PLATFORM)
           && ((pos.x() + COLLISION_RIGHT_EDGE_OFFSET * PIXELS_PER_TILE)
               < (xpoints[3] * PIXELS_PER_TILE + PLATFORM_FALL_THRESHOLD_X))
-          //          && (push[2] == 1)
           && (jump == NEUTRAL)) {
         pos = new Vector2(pos.x(), pos.y() + gravity);
         jump = FALL;
@@ -686,7 +608,6 @@ public final class Player implements Actor {
       if ((blground[0] == TILE_PLATFORM)
           && ((pos.x() + PLATFORM_CHECK_X_OFFSET_RIGHT * PIXELS_PER_TILE)
               > (xpoints[0] * PIXELS_PER_TILE + PLATFORM_FALL_OFFSET_X * PIXELS_PER_TILE))
-          //          && (push[3] == 1)
           && (jump == NEUTRAL)) {
         pos = new Vector2(pos.x(), pos.y() + gravity);
         jump = FALL;

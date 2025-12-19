@@ -265,7 +265,7 @@ public class TestPlayerCollision {
     float xPos = 1792.0f;
     for (int i = 0; i < 64; i += 1) {
       player.setPos(new Vector2(xPos, yCell * tileSize));
-      player.calculateCollision();
+      player.checkCollisions();
       collisions = player.getCollisions();
       assertEquals(0, collisions[COLLISION_RIGHT], "Should not detect collision to right");
 
@@ -274,7 +274,7 @@ public class TestPlayerCollision {
 
     xPos = 1857.0f;
     player.setPos(new Vector2(xPos, yCell * tileSize));
-    player.calculateCollision();
+    player.checkCollisions();
     collisions = player.getCollisions();
     assertEquals(
         1, collisions[COLLISION_RIGHT], "Should detect collision to right with special tile 344");
@@ -305,7 +305,7 @@ public class TestPlayerCollision {
     for (int dx = 63; dx >= 0; dx -= 1) {
 
       player.setPos(new Vector2(xPos, yCell * tileSize));
-      player.calculateCollision();
+      player.checkCollisions();
       collisions = player.getCollisions();
       assertEquals(0, collisions[COLLISION_LEFT], "Should not detect collision to right");
 
@@ -314,7 +314,7 @@ public class TestPlayerCollision {
 
     xPos = 3 * tileSize - 1.0f;
     player.setPos(new Vector2(xPos, yCell * tileSize));
-    player.calculateCollision();
+    player.checkCollisions();
     collisions = player.getCollisions();
 
     assertEquals(1, collisions[COLLISION_LEFT], "Should detect collision with special tile 348");
