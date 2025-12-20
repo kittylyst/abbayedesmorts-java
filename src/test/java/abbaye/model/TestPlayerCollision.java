@@ -31,7 +31,6 @@ public class TestPlayerCollision {
   public void setUp() {
     // Create a test stage with empty tiles (0 = empty)
     stage = new Stage();
-    stage.load();
     layer = new Layer();
     player = Player.of(layer, stage);
     layer.setPlayer(player);
@@ -131,30 +130,70 @@ public class TestPlayerCollision {
   }
 
   @Test
-  @Disabled("Roof collision unimplemented so far")
-  public void testRoofCollisionDuringJump() {
-    float tileSize = Stage.getTileSize();
-    // Position player very close to roof to satisfy distance check
-    // Distance check: (pos.y() - 1) - ((points[4] - 1) * PIXELS_PER_TILE + 7) < 1
-    // points[4] = (pos.y() + 8) / tileSize
-    float yPos = 10 * tileSize;
-    player.setPos(new Vector2(10 * tileSize, yPos));
-    setJump(player, JUMP);
-    setHeight(player, 20); // Mid-jump
+  @Disabled("Crouching unimplemented so far")
+  public void testInvisibleWallRoomCaveCrouching() {
+    stage.toWaypoint(new Player.Waypoint(2, 2, 0, 0));
 
-    // Place roof above player - collision checks stagedata[points[4] - 1][points[0]] and
-    // [points[3]]
-    int roofY = (int) ((yPos + 1 * PIXELS_PER_TILE) / tileSize) - 1;
-    if (roofY >= 0) {
-      int checkX1 = (int) ((10 * tileSize + 1 * PIXELS_PER_TILE) / tileSize);
-      int checkX2 = (int) ((10 * tileSize + 13 * PIXELS_PER_TILE) / tileSize);
-      setTile(stage, checkX1, roofY, 1);
-      setTile(stage, checkX2, roofY, 1);
-    }
+    float tileSize = Stage.getTileSize();
+    player.setPos(new Vector2(2 * tileSize, 5 * tileSize));
+    setDirection(player, LEFT);
+    setCrouch(player, true);
+
+    // In ROOM_CAVE, at row 5, columns 0-1 should not collide
+    int crouchTileY = (int) ((player.getPos().y() + 16) / tileSize);
+    setTile(stage, 0, crouchTileY, 1);
+    setTile(stage, 1, crouchTileY, 1);
 
     player.update();
     var collisions = player.getCollisions();
+    assertEquals(
+        1, collisions[COLLISION_LEFT], "Should collide with invisible wall when crouching");
+  }
 
+  @Test
+  @Disabled("Crouching unimplemented so far")
+  public void testInvisibleWallRoomBeastCrouching() {
+    float tileSize = Stage.getTileSize();
+    player.setPos(new Vector2(29 * tileSize, 5 * tileSize));
+    setDirection(player, RIGHT);
+    setCrouch(player, true);
+
+    // In ROOM_BEAST, at row 5, columns 28-31 should not collide
+    int crouchTileY = (int) ((player.getPos().y() + 16) / tileSize);
+    setTile(stage, 28, crouchTileY, 1);
+    setTile(stage, 29, crouchTileY, 1);
+    setTile(stage, 30, crouchTileY, 1);
+    setTile(stage, 31, crouchTileY, 1);
+
+    player.update();
+    var collisions = player.getCollisions();
+    assertEquals(1, collisions[COLLISION_RIGHT], "Should collide with invisible wall");
+  }
+
+  @Test
+  public void testRoofCollisionDuringJump() {
+    // Make basic field
+    var yCell = 12;
+    setFloor(stage, yCell + 3);
+
+    setSolidLevel(stage, yCell - 3, yCell - 2, false);
+
+    float tileSize = Stage.getTileSize();
+    var xCell = 10;
+
+    player.setPos(new Vector2(xCell * tileSize, yCell * tileSize));
+    setJump(player, JUMP);
+    setHeight(player, 20); // Player is in mid-jump
+
+    player.update();
+    var collisions = player.getCollisions();
+    assertEquals(0, collisions[COLLISION_UP], "Should not detect collision with roof yet");
+    player.update();
+    collisions = player.getCollisions();
+    assertEquals(0, collisions[COLLISION_UP], "Should not detect collision with roof yet");
+
+    player.update();
+    collisions = player.getCollisions();
     assertEquals(1, collisions[COLLISION_UP], "Should detect collision with roof during jump");
   }
 

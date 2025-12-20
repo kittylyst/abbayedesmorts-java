@@ -13,7 +13,6 @@ import abbaye.AbbayeMain;
 import abbaye.basic.Vector2;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /** Tests for Player collision detection that are currently passing */
@@ -87,7 +86,6 @@ public class TestPlayerCollisionPassing {
     player.update();
     player.update();
     collisions = player.getCollisions();
-    System.out.println(player);
     assertEquals(1, collisions[COLLISION_RIGHT], "Should detect collision to right");
   }
 
@@ -179,47 +177,6 @@ public class TestPlayerCollisionPassing {
     // Player should fall through platform when moving right
     assertTrue(
         posAfter.y() > posBefore.y(), "Player should fall through platform 38 when moving right");
-  }
-
-  @Test
-  @Disabled("Crouching unimplemented so far")
-  public void testInvisibleWallRoomCaveCrouching() {
-    stage.toWaypoint(new Player.Waypoint(2, 2, 0, 0));
-
-    float tileSize = Stage.getTileSize();
-    player.setPos(new Vector2(2 * tileSize, 5 * tileSize));
-    setDirection(player, LEFT);
-    setCrouch(player, true);
-
-    // In ROOM_CAVE, at row 5, columns 0-1 should not collide
-    int crouchTileY = (int) ((player.getPos().y() + 16) / tileSize);
-    setTile(stage, 0, crouchTileY, 1);
-    setTile(stage, 1, crouchTileY, 1);
-
-    player.update();
-    var collisions = player.getCollisions();
-    assertEquals(
-        1, collisions[COLLISION_LEFT], "Should collide with invisible wall when crouching");
-  }
-
-  @Test
-  @Disabled("Crouching unimplemented so far")
-  public void testInvisibleWallRoomBeastCrouching() {
-    float tileSize = Stage.getTileSize();
-    player.setPos(new Vector2(29 * tileSize, 5 * tileSize));
-    setDirection(player, RIGHT);
-    setCrouch(player, true);
-
-    // In ROOM_BEAST, at row 5, columns 28-31 should not collide
-    int crouchTileY = (int) ((player.getPos().y() + 16) / tileSize);
-    setTile(stage, 28, crouchTileY, 1);
-    setTile(stage, 29, crouchTileY, 1);
-    setTile(stage, 30, crouchTileY, 1);
-    setTile(stage, 31, crouchTileY, 1);
-
-    player.update();
-    var collisions = player.getCollisions();
-    assertEquals(1, collisions[COLLISION_RIGHT], "Should collide with invisible wall");
   }
 
   @Test

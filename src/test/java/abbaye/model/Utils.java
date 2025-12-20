@@ -43,16 +43,24 @@ public class Utils {
 
   /** Helper to set the floor in the current room */
   static void setFloor(Stage stage, final int floorLevel) {
+    setSolidLevel(stage, floorLevel, NUM_ROWS, true);
+  }
+
+  /** Helper to set the floor in the current room */
+  static void setSolidLevel(
+      Stage stage, final int levelStart, final int levelEnd, boolean hasSoil) {
     int room = stage.getRoom();
     var stagedata = stage.getScreen(room);
-    // y == 16 special case - topsoil
-    for (int x = 0; x < NUM_COLUMNS; x += 1) {
-      stagedata[floorLevel][x] = x % 2 == 0 ? TILE_TOPSOIL1 : TILE_TOPSOIL2;
-    }
     // Bedrock
-    for (int y = floorLevel + 1; y < NUM_ROWS; y += 1) {
+    for (int y = levelStart; y < levelEnd; y += 1) {
       for (int x = 0; x < NUM_COLUMNS; x += 1) {
         stagedata[y][x] = x % 2 == 0 ? TILE_BEDROCK1 : TILE_BEDROCK2;
+      }
+    }
+    if (hasSoil) {
+      // Special case - topsoil
+      for (int x = 0; x < NUM_COLUMNS; x += 1) {
+        stagedata[levelStart][x] = x % 2 == 0 ? TILE_TOPSOIL1 : TILE_TOPSOIL2;
       }
     }
   }

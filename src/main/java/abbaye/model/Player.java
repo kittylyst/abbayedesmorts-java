@@ -63,10 +63,6 @@ public final class Player implements Actor {
   private static final int COLLISION_BOTTOM_EDGE_OFFSET = 23;
   private static final int COLLISION_CROUCH_HEIGHT_OFFSET = 16;
 
-  // Position calculation offsets
-  private static final int WALL_COLLISION_LEFT_OFFSET = 7;
-  private static final int WALL_COLLISION_RIGHT_OFFSET = 15;
-
   private static final int PLAYER_HEIGHT_PIXELS = 24;
   private static final int GROUND_SNAP_OFFSET_MULTIPLIER = 3;
   private static final int PLATFORM_FALL_THRESHOLD_X = 5;
@@ -620,19 +616,20 @@ public final class Player implements Actor {
       blroof[1] = currentRoomData[ypoints[0] - 1][xpoints[3]];
 
       if (((blroof[0] > 0)
-              && (blroof[0] < TILE_SOLID_MAX)
+              && (blroof[0] < 105)
               && (blroof[0] != TILE_PASSABLE)
               && (blroof[0] != TILE_PLATFORM)
               && (blroof[0] != TILE_PASSABLE_VARIANT_1))
           || ((blroof[1] > 0)
-              && (blroof[1] < TILE_SOLID_MAX)
+              && (blroof[1] < 105)
               && (blroof[1] != TILE_PASSABLE)
               && (blroof[1] != TILE_PLATFORM)
               && (blroof[1] != TILE_PASSABLE_VARIANT_1))) {
-        if ((pos.y() - 1) - ((ypoints[0] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
-            < COLLISION_ROOF_DISTANCE_THRESHOLD) {
-          collision[COLLISION_UP] = 1;
-        }
+        // FIXME Need to get closer to the roof before colliding
+        //        if ((pos.y() - 1) - ((ypoints[0] - 1) * tileSize) <
+        // COLLISION_ROOF_DISTANCE_THRESHOLD) {
+        collision[COLLISION_UP] = 1;
+        //        }
       }
     }
   }
