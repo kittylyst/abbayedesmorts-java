@@ -61,8 +61,8 @@ public final class Stage implements Renderable {
 
   private int[][][] stagedata = new int[NUM_SCREENS][NUM_ROWS][NUM_COLUMNS];
   // Initial room coordinates
-  private int roomx = 0;
-  private int roomy = 1;
+  private int roomx = 2; // 0
+  private int roomy = 0; // 1
 
   private Map<Integer, Corners> cache = new HashMap<>();
 
