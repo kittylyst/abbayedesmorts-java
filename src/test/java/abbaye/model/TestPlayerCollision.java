@@ -1,4 +1,4 @@
-/* Copyright (C) The Authors 2025 */
+/* Copyright (C) The Authors 2025-2026 */
 package abbaye.model;
 
 import static abbaye.model.Facing.LEFT;
@@ -31,7 +31,6 @@ public class TestPlayerCollision {
   public void setUp() {
     // Create a test stage with empty tiles (0 = empty)
     stage = new Stage();
-    stage.load();
     layer = new Layer();
     player = Player.of(layer, stage);
     layer.setPlayer(player);
@@ -62,20 +61,13 @@ public class TestPlayerCollision {
     setCrouch(player, false);
     setPrivateField(player, "walk", true);
 
-    int[] collisions;
     float xPos = 2 * tileSize;
-    for (int i = 63; i >= 0; i -= 1) {
-      player.setPos(new Vector2(xPos, yCell * tileSize));
-      player.calculateCollision();
-      collisions = player.getCollisions();
-      assertEquals(0, collisions[COLLISION_LEFT], "Should not detect collision to left");
-
-      xPos += 1;
-    }
-
-    xPos = tileSize;
     player.setPos(new Vector2(xPos, yCell * tileSize));
-    player.calculateCollision();
+    player.update();
+    var collisions = player.getCollisions();
+    assertEquals(0, collisions[COLLISION_LEFT], "Should not detect collision to left");
+
+    player.update();
     collisions = player.getCollisions();
 
     assertEquals(1, collisions[COLLISION_LEFT], "Should detect collision with left wall");
@@ -84,7 +76,7 @@ public class TestPlayerCollision {
   @Test
   public void testGroundCollisionSnapsToGround() {
     float tileSize = Stage.getTileSize();
-    float gravity = 16.0f;
+
     // Position player just above ground within snap distance
     // Ensure points[0] > 0 to avoid array bounds in wall collision check
     // points[0] = (pos.x() + 8) / tileSize, so need pos.x() > -8
@@ -111,7 +103,7 @@ public class TestPlayerCollision {
     }
 
     Vector2 posBefore = player.getPos();
-    player.checkCollision();
+    player.update();
     Vector2 posAfter = player.getPos();
 
     // Player should snap to ground (position should change and be closer to ground)
@@ -129,7 +121,7 @@ public class TestPlayerCollision {
     // No ground below - all empty
 
     Vector2 posBefore = player.getPos();
-    player.checkCollision();
+    player.update();
     Vector2 posAfter = player.getPos();
 
     // Player should fall (gravity applied)
@@ -138,30 +130,71 @@ public class TestPlayerCollision {
   }
 
   @Test
-  @Disabled("Roof collision unimplemented so far")
-  public void testRoofCollisionDuringJump() {
+  @Disabled("Crouching unimplemented so far")
+  public void testInvisibleWallRoomCaveCrouching() {
+    stage.toWaypoint(new Player.Waypoint(2, 2, 0, 0));
+
     float tileSize = Stage.getTileSize();
-    // Position player very close to roof to satisfy distance check
-    // Distance check: (pos.y() - 1) - ((points[4] - 1) * PIXELS_PER_TILE + 7) < 1
-    // points[4] = (pos.y() + 8) / tileSize
-    float yPos = 10 * tileSize;
-    player.setPos(new Vector2(10 * tileSize, yPos));
+    player.setPos(new Vector2(2 * tileSize, 5 * tileSize));
+    setDirection(player, LEFT);
+    setCrouch(player, true);
+
+    // In ROOM_CAVE, at row 5, columns 0-1 should not collide
+    int crouchTileY = (int) ((player.getPos().y() + 16) / tileSize);
+    setTile(stage, 0, crouchTileY, 1);
+    setTile(stage, 1, crouchTileY, 1);
+
+    player.update();
+    var collisions = player.getCollisions();
+    assertEquals(
+        1, collisions[COLLISION_LEFT], "Should collide with invisible wall when crouching");
+  }
+
+  @Test
+  @Disabled("Crouching unimplemented so far")
+  public void testInvisibleWallRoomBeastCrouching() {
+    float tileSize = Stage.getTileSize();
+    player.setPos(new Vector2(29 * tileSize, 5 * tileSize));
+    setDirection(player, RIGHT);
+    setCrouch(player, true);
+
+    // In ROOM_BEAST, at row 5, columns 28-31 should not collide
+    int crouchTileY = (int) ((player.getPos().y() + 16) / tileSize);
+    setTile(stage, 28, crouchTileY, 1);
+    setTile(stage, 29, crouchTileY, 1);
+    setTile(stage, 30, crouchTileY, 1);
+    setTile(stage, 31, crouchTileY, 1);
+
+    player.update();
+    var collisions = player.getCollisions();
+    assertEquals(1, collisions[COLLISION_RIGHT], "Should collide with invisible wall");
+  }
+
+  @Test
+  public void testRoofCollisionDuringJump() {
+    // Make basic field
+    var yCell = 12;
+    setFloor(stage, yCell + 3);
+
+    setSolidLevel(stage, yCell - 3, yCell - 2, false);
+
+    float tileSize = Stage.getTileSize();
+    var xCell = 10;
+
+    player.setPos(new Vector2(xCell * tileSize, yCell * tileSize));
     setJump(player, JUMP);
-    setHeight(player, 20); // Mid-jump
+    setHeight(player, 20); // Player is in mid-jump
 
-    // Place roof above player - collision checks stagedata[points[4] - 1][points[0]] and
-    // [points[3]]
-    int roofY = (int) ((yPos + 1 * PIXELS_PER_TILE) / tileSize) - 1;
-    if (roofY >= 0) {
-      int checkX1 = (int) ((10 * tileSize + 1 * PIXELS_PER_TILE) / tileSize);
-      int checkX2 = (int) ((10 * tileSize + 13 * PIXELS_PER_TILE) / tileSize);
-      setTile(stage, checkX1, roofY, 1);
-      setTile(stage, checkX2, roofY, 1);
-    }
+    player.update();
+    var collisions = player.getCollisions();
+    assertEquals(0, collisions[COLLISION_UP], "Should not detect collision with roof yet");
+    player.update();
+    collisions = player.getCollisions();
+    assertEquals(0, collisions[COLLISION_UP], "Should not detect collision with roof yet");
 
-    boolean hasCollision = player.checkCollision();
-
-    assertTrue(hasCollision, "Should detect collision with roof during jump");
+    player.update();
+    collisions = player.getCollisions();
+    assertEquals(1, collisions[COLLISION_UP], "Should detect collision with roof during jump");
   }
 
   @Test
@@ -185,9 +218,10 @@ public class TestPlayerCollision {
       setTile(stage, checkX, crouchTileY, 1);
     }
 
-    boolean hasCollision = player.checkCollision();
+    player.update();
+    var collisions = player.getCollisions();
 
-    assertTrue(hasCollision, "Should detect left wall collision when crouching");
+    assertEquals(1, collisions[COLLISION_LEFT], "Should detect left wall collision when crouching");
   }
 
   @Test
@@ -213,9 +247,11 @@ public class TestPlayerCollision {
       setTile(stage, checkX, crouchTileY, 1);
     }
 
-    boolean hasCollision = player.checkCollision();
+    player.update();
+    var collisions = player.getCollisions();
 
-    assertTrue(hasCollision, "Should detect right wall collision when crouching");
+    assertEquals(
+        1, collisions[COLLISION_RIGHT], "Should detect right wall collision when crouching");
   }
 
   @Test
@@ -241,9 +277,10 @@ public class TestPlayerCollision {
       }
     }
 
-    boolean hasCollision = player.checkCollision();
+    player.update();
+    var collisions = player.getCollisions();
 
-    assertTrue(hasCollision, "Should detect collision with special tile 128");
+    assertEquals(1, collisions[COLLISION_LEFT], "Should detect collision with special tile 128");
   }
 
   @Test
@@ -267,7 +304,7 @@ public class TestPlayerCollision {
     float xPos = 1792.0f;
     for (int i = 0; i < 64; i += 1) {
       player.setPos(new Vector2(xPos, yCell * tileSize));
-      player.calculateCollision();
+      player.checkCollisions();
       collisions = player.getCollisions();
       assertEquals(0, collisions[COLLISION_RIGHT], "Should not detect collision to right");
 
@@ -276,7 +313,7 @@ public class TestPlayerCollision {
 
     xPos = 1857.0f;
     player.setPos(new Vector2(xPos, yCell * tileSize));
-    player.calculateCollision();
+    player.checkCollisions();
     collisions = player.getCollisions();
     assertEquals(
         1, collisions[COLLISION_RIGHT], "Should detect collision to right with special tile 344");
@@ -307,7 +344,7 @@ public class TestPlayerCollision {
     for (int dx = 63; dx >= 0; dx -= 1) {
 
       player.setPos(new Vector2(xPos, yCell * tileSize));
-      player.calculateCollision();
+      player.checkCollisions();
       collisions = player.getCollisions();
       assertEquals(0, collisions[COLLISION_LEFT], "Should not detect collision to right");
 
@@ -316,27 +353,24 @@ public class TestPlayerCollision {
 
     xPos = 3 * tileSize - 1.0f;
     player.setPos(new Vector2(xPos, yCell * tileSize));
-    player.calculateCollision();
+    player.checkCollisions();
     collisions = player.getCollisions();
 
     assertEquals(1, collisions[COLLISION_LEFT], "Should detect collision with special tile 348");
   }
 
+  // What is this test supposed to do?
   @Test
   @Disabled
   public void testSmallPlatformTile38FallLeft() {
-    // Make basic field
-    var yCell = 12;
-    setFloor(stage, yCell + 3);
     float tileSize = Stage.getTileSize();
-
-    var xCell = 10;
+    int yCell = 10;
 
     // Position player on platform, moving left
-    // Platform check: blground[3] == 38 && (pos.x() + 13) < (points[3] * PIXELS_PER_TILE + 5)
-    // blground[3] = stagedata[points[7] + 1][points[3]]
-    float xPos = 10 * tileSize;
-    float yPos = 10 * tileSize;
+    // rightFootX = pos.x() + 13*8 must be < tileStartX + 5 for the sampled tile.
+    // For tile 10 start at 640, choose rightFootX=644 => pos.x()=540.
+    float xPos = 540.0f;
+    float yPos = yCell * tileSize;
     player.setPos(new Vector2(xPos, yPos));
     setDirection(player, LEFT);
     setJump(player, NEUTRAL);
@@ -350,7 +384,7 @@ public class TestPlayerCollision {
     }
 
     Vector2 posBefore = player.getPos();
-    player.checkCollision();
+    player.update();
     Vector2 posAfter = player.getPos();
 
     // Player should fall through platform when moving left
@@ -373,7 +407,7 @@ public class TestPlayerCollision {
     setJump(player, NEUTRAL);
 
     Vector2 posBefore = player.getPos();
-    player.checkCollision();
+    player.update();
     Vector2 posAfter = player.getPos();
 
     // Player should fall (invisible ground means no ground collision)
@@ -405,7 +439,7 @@ public class TestPlayerCollision {
       if (checkX4 >= 0 && checkX4 < NUM_COLUMNS) setTile(stage, checkX4, groundTileY, 1);
     }
 
-    player.checkCollision();
+    player.update();
     Vector2 posAfter = player.getPos();
 
     // Player should snap to ground or fall - verify position changed
@@ -430,6 +464,38 @@ public class TestPlayerCollision {
 
     // Should use special ground value (300 * PIXELS_PER_TILE) when points[7] + 1 > 21
     // But we position so points[7] + 1 = 21 to avoid array bounds
-    assertDoesNotThrow(() -> player.checkCollision(), "Should handle bottom edge boundary");
+    assertDoesNotThrow(() -> player.update(), "Should handle bottom edge boundary");
+  }
+
+  @Test
+  public void testStaticHazardCheckBottomEdgeDoesNotThrow() {
+    float tileSize = Stage.getTileSize();
+    // Position player so tileY + 3 maps beyond last row (22) in the old code path.
+    // With tile size 64 and 22 rows, y = 19 * 64 gives tileY = 19.
+    player.setPos(new Vector2(10 * tileSize, 19 * tileSize));
+    setJump(player, NEUTRAL);
+
+    // Place a hazard on the last valid row where bottom sampling is clamped.
+    setTile(stage, 10, NUM_ROWS - 1, TILE_STATIC_HAZARD);
+
+    assertDoesNotThrow(
+        () -> player.update(),
+        "Static hazard check should handle bottom edge without out-of-bounds");
+  }
+
+  @Test
+  public void testTileGridSamplingBottomRightEdgeDoesNotThrow() {
+    float tileSize = Stage.getTileSize();
+
+    // Position at extreme in-room bottom-right so grid sampling probes past bounds.
+    player.setPos(
+        new Vector2((NUM_COLUMNS - 2) * tileSize, (NUM_ROWS - 3) * tileSize + tileSize - 0.1f));
+    setDirection(player, RIGHT);
+    setJump(player, NEUTRAL);
+    setPrivateField(player, "walk", true);
+
+    assertDoesNotThrow(
+        () -> player.update(),
+        "Tile grid sampling at bottom-right edge should not throw out-of-bounds");
   }
 }

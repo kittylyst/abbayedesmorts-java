@@ -1,4 +1,4 @@
-/* Copyright (C) The Authors 2024-2025 */
+/* Copyright (C) The Authors 2024-2026 */
 package abbaye.basic;
 
 /** The fundamental interface for game objects that will be rendered via OpenGL */
@@ -10,7 +10,7 @@ public interface Renderable {
    *
    * @return false if the object is to be deleted
    */
-  // FIXME: Check the "return false to delete" contract is honoured
+  // FIXME: Migrate this to return void
   boolean render();
 
   /**
