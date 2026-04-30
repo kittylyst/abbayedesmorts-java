@@ -359,21 +359,18 @@ public class TestPlayerCollision {
     assertEquals(1, collisions[COLLISION_LEFT], "Should detect collision with special tile 348");
   }
 
+  // What is this test supposed to do?
   @Test
   @Disabled
   public void testSmallPlatformTile38FallLeft() {
-    // Make basic field
-    var yCell = 12;
-    setFloor(stage, yCell + 3);
     float tileSize = Stage.getTileSize();
-
-    var xCell = 10;
+    int yCell = 10;
 
     // Position player on platform, moving left
-    // Platform check: blground[3] == 38 && (pos.x() + 13) < (points[3] * PIXELS_PER_TILE + 5)
-    // blground[3] = stagedata[points[7] + 1][points[3]]
-    float xPos = 10 * tileSize;
-    float yPos = 10 * tileSize;
+    // rightFootX = pos.x() + 13*8 must be < tileStartX + 5 for the sampled tile.
+    // For tile 10 start at 640, choose rightFootX=644 => pos.x()=540.
+    float xPos = 540.0f;
+    float yPos = yCell * tileSize;
     player.setPos(new Vector2(xPos, yPos));
     setDirection(player, LEFT);
     setJump(player, NEUTRAL);
@@ -468,5 +465,37 @@ public class TestPlayerCollision {
     // Should use special ground value (300 * PIXELS_PER_TILE) when points[7] + 1 > 21
     // But we position so points[7] + 1 = 21 to avoid array bounds
     assertDoesNotThrow(() -> player.update(), "Should handle bottom edge boundary");
+  }
+
+  @Test
+  public void testStaticHazardCheckBottomEdgeDoesNotThrow() {
+    float tileSize = Stage.getTileSize();
+    // Position player so tileY + 3 maps beyond last row (22) in the old code path.
+    // With tile size 64 and 22 rows, y = 19 * 64 gives tileY = 19.
+    player.setPos(new Vector2(10 * tileSize, 19 * tileSize));
+    setJump(player, NEUTRAL);
+
+    // Place a hazard on the last valid row where bottom sampling is clamped.
+    setTile(stage, 10, NUM_ROWS - 1, TILE_STATIC_HAZARD);
+
+    assertDoesNotThrow(
+        () -> player.update(),
+        "Static hazard check should handle bottom edge without out-of-bounds");
+  }
+
+  @Test
+  public void testTileGridSamplingBottomRightEdgeDoesNotThrow() {
+    float tileSize = Stage.getTileSize();
+
+    // Position at extreme in-room bottom-right so grid sampling probes past bounds.
+    player.setPos(
+        new Vector2((NUM_COLUMNS - 2) * tileSize, (NUM_ROWS - 3) * tileSize + tileSize - 0.1f));
+    setDirection(player, RIGHT);
+    setJump(player, NEUTRAL);
+    setPrivateField(player, "walk", true);
+
+    assertDoesNotThrow(
+        () -> player.update(),
+        "Tile grid sampling at bottom-right edge should not throw out-of-bounds");
   }
 }

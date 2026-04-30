@@ -421,25 +421,27 @@ public final class Player implements Actor {
 
     out[0] =
         new int[] {
-          currentRoomData[topY][leftX], currentRoomData[topY][midX], currentRoomData[topY][rightX]
+          tileAt(currentRoomData, topY, leftX),
+          tileAt(currentRoomData, topY, midX),
+          tileAt(currentRoomData, topY, rightX)
         };
     out[1] =
         new int[] {
-          currentRoomData[upperMidY][leftX],
-          currentRoomData[upperMidY][midX],
-          currentRoomData[upperMidY][rightX]
+          tileAt(currentRoomData, upperMidY, leftX),
+          tileAt(currentRoomData, upperMidY, midX),
+          tileAt(currentRoomData, upperMidY, rightX)
         };
     out[2] =
         new int[] {
-          currentRoomData[lowerMidY][leftX],
-          currentRoomData[lowerMidY][midX],
-          currentRoomData[lowerMidY][rightX]
+          tileAt(currentRoomData, lowerMidY, leftX),
+          tileAt(currentRoomData, lowerMidY, midX),
+          tileAt(currentRoomData, lowerMidY, rightX)
         };
     out[3] =
         new int[] {
-          currentRoomData[bottomY][leftX],
-          currentRoomData[bottomY][midX],
-          currentRoomData[bottomY][rightX]
+          tileAt(currentRoomData, bottomY, leftX),
+          tileAt(currentRoomData, bottomY, midX),
+          tileAt(currentRoomData, bottomY, rightX)
         };
     return out;
   }
@@ -546,10 +548,10 @@ public final class Player implements Actor {
     int[] blroof = {0, 0};
 
     /* Touch ground collision */
-    blground[0] = currentRoomData[ypoints[3] + 1][xpoints[0]];
-    blground[1] = currentRoomData[ypoints[3] + 1][xpoints[1]];
-    blground[2] = currentRoomData[ypoints[3] + 1][xpoints[2]];
-    blground[3] = currentRoomData[ypoints[3] + 1][xpoints[3]];
+    blground[0] = tileAt(currentRoomData, ypoints[3] + 1, xpoints[0]);
+    blground[1] = tileAt(currentRoomData, ypoints[3] + 1, xpoints[1]);
+    blground[2] = tileAt(currentRoomData, ypoints[3] + 1, xpoints[2]);
+    blground[3] = tileAt(currentRoomData, ypoints[3] + 1, xpoints[3]);
 
     if (jump != JUMP) {
       /* Invisible ground - in CAVE or LAKE only */
@@ -592,18 +594,20 @@ public final class Player implements Actor {
 
     /* Check small platforms */
     if (direction == LEFT) {
+      float rightFootX = pos.x() + COLLISION_RIGHT_EDGE_OFFSET * PIXELS_PER_TILE;
+      float rightTileStartX = xpoints[3] * tileSize;
       if ((blground[3] == TILE_PLATFORM)
-          && ((pos.x() + COLLISION_RIGHT_EDGE_OFFSET * PIXELS_PER_TILE)
-              < (xpoints[3] * PIXELS_PER_TILE + PLATFORM_FALL_THRESHOLD_X))
+          && (rightFootX < rightTileStartX + PLATFORM_FALL_THRESHOLD_X)
           && (jump == NEUTRAL)) {
         pos = new Vector2(pos.x(), pos.y() + gravity);
         jump = FALL;
       }
     }
     if (direction == RIGHT) {
+      float leftFootX = pos.x() + PLATFORM_CHECK_X_OFFSET_RIGHT * PIXELS_PER_TILE;
+      float leftTileStartX = xpoints[0] * tileSize;
       if ((blground[0] == TILE_PLATFORM)
-          && ((pos.x() + PLATFORM_CHECK_X_OFFSET_RIGHT * PIXELS_PER_TILE)
-              > (xpoints[0] * PIXELS_PER_TILE + PLATFORM_FALL_OFFSET_X * PIXELS_PER_TILE))
+          && (leftFootX > leftTileStartX + PLATFORM_FALL_OFFSET_X * PIXELS_PER_TILE)
           && (jump == NEUTRAL)) {
         pos = new Vector2(pos.x(), pos.y() + gravity);
         jump = FALL;
@@ -612,8 +616,8 @@ public final class Player implements Actor {
 
     if ((jump == JUMP) && (ypoints[0] > 0)) {
       /* Touch roof collision */
-      blroof[0] = currentRoomData[ypoints[0] - 1][xpoints[0]];
-      blroof[1] = currentRoomData[ypoints[0] - 1][xpoints[3]];
+      blroof[0] = tileAt(currentRoomData, ypoints[0] - 1, xpoints[0]);
+      blroof[1] = tileAt(currentRoomData, ypoints[0] - 1, xpoints[3]);
 
       if (((blroof[0] > 0)
               && (blroof[0] < 105)
