@@ -1,4 +1,4 @@
-/* Copyright (C) The Authors 2025 */
+/* Copyright (C) The Authors 2025-2026 */
 package abbaye.model;
 
 import static abbaye.model.Facing.LEFT;
@@ -639,14 +639,16 @@ public final class Player implements Actor {
    */
   public boolean checkStaticHazard() {
     var stagedata = stage.getScreen(stage.getRoom());
+    int baseTileX = pos.tileX();
+    int baseTileY = pos.tileY();
 
     /* Touch static hazard */
-    if (stagedata[1 + pos.tileY()][pos.tileX()] == TILE_STATIC_HAZARD
-        || stagedata[1 + pos.tileY()][1 + pos.tileX()] == TILE_STATIC_HAZARD
-        || stagedata[2 + pos.tileY()][pos.tileX()] == TILE_STATIC_HAZARD
-        || stagedata[2 + pos.tileY()][1 + pos.tileX()] == TILE_STATIC_HAZARD
-        || stagedata[3 + pos.tileY()][pos.tileX()] == TILE_STATIC_HAZARD
-        || stagedata[3 + pos.tileY()][1 + pos.tileX()] == TILE_STATIC_HAZARD) {
+    if (tileAt(stagedata, baseTileY + 1, baseTileX) == TILE_STATIC_HAZARD
+        || tileAt(stagedata, baseTileY + 1, baseTileX + 1) == TILE_STATIC_HAZARD
+        || tileAt(stagedata, baseTileY + 2, baseTileX) == TILE_STATIC_HAZARD
+        || tileAt(stagedata, baseTileY + 2, baseTileX + 1) == TILE_STATIC_HAZARD
+        || tileAt(stagedata, baseTileY + 3, baseTileX) == TILE_STATIC_HAZARD
+        || tileAt(stagedata, baseTileY + 3, baseTileX + 1) == TILE_STATIC_HAZARD) {
       return true;
     }
 
@@ -656,13 +658,13 @@ public final class Player implements Actor {
   public boolean checkStaticObject() {
     int room = stage.getRoom();
     var stagedata = stage.getScreen(room);
+    int baseTileX = pos.tileX();
+    int baseTileY = pos.tileY();
 
     /* Touch hearts */
     if (room == ROOM_ASHES.index()) {
-      if (((stagedata[1 + pos.tileY()][pos.tileX()] > 400)
-              && (stagedata[1 + pos.tileY()][pos.tileX()] < 405))
-          || ((stagedata[1 + pos.tileY()][1 + pos.tileX()] > 400)
-              && (stagedata[1 + pos.tileY()][1 + pos.tileX()] < 405))) {
+      if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 400, 405))
+          || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 400, 405))) {
         if (pos.tileX() > 160) {
           stagedata[7][23] = 0;
           stagedata[7][24] = 0;
@@ -681,10 +683,8 @@ public final class Player implements Actor {
         return true;
       }
     } else {
-      if (((stagedata[1 + pos.tileY()][pos.tileX()] > 400)
-              && (stagedata[1 + pos.tileY()][pos.tileX()] < 405))
-          || ((stagedata[1 + pos.tileY()][1 + pos.tileX()] > 400)
-              && (stagedata[1 + pos.tileY()][1 + pos.tileX()] < 405))) {
+      if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 400, 405))
+          || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 400, 405))) {
         for (var v = 0; v < 22; v++) {
           for (var h = 0; h < 32; h++) {
             if ((stagedata[v][h] > 400) && (stagedata[v][h] < 405)) stagedata[v][h] = 0;
@@ -699,10 +699,8 @@ public final class Player implements Actor {
     }
 
     /* Touch crosses */
-    if (((stagedata[1 + pos.tileY()][pos.tileX()] > 408)
-            && (stagedata[1 + pos.tileY()][pos.tileX()] < 413))
-        || ((stagedata[1 + pos.tileY()][1 + pos.tileX()] > 408)
-            && (stagedata[1 + pos.tileY()][1 + pos.tileX()] < 413))) {
+    if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 408, 413))
+        || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 408, 413))) {
       for (var v = 0; v < 22; v++) {
         for (var h = 0; h < 32; h++) {
           if ((stagedata[v][h] > 408) && (stagedata[v][h] < 413)) stagedata[v][h] = 0;
@@ -716,10 +714,8 @@ public final class Player implements Actor {
 
     // 321 - 326
     /* Touch waypoint crosses */
-    if (((stagedata[1 + pos.tileY()][pos.tileX()] > 320)
-            && (stagedata[1 + pos.tileY()][pos.tileX()] < 327))
-        || ((stagedata[1 + pos.tileY()][1 + pos.tileX()] > 320)
-            && (stagedata[1 + pos.tileY()][1 + pos.tileX()] < 327))) {
+    if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 320, 327))
+        || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 320, 327))) {
       for (var v = 0; v < 22; v++) {
         for (var h = 0; h < 32; h++) {
           // FIXME - Don't nuke the waypoint cross, toggle instead.
@@ -735,6 +731,16 @@ public final class Player implements Actor {
     }
 
     return false;
+  }
+
+  private static boolean isBetweenExclusive(int value, int lowerBound, int upperBound) {
+    return value > lowerBound && value < upperBound;
+  }
+
+  private static int tileAt(int[][] roomData, int row, int col) {
+    int safeRow = Math.max(0, Math.min(row, roomData.length - 1));
+    int safeCol = Math.max(0, Math.min(col, roomData[safeRow].length - 1));
+    return roomData[safeRow][safeCol];
   }
 
   public static class PlayerSerializer extends JsonSerializer<Player> {

@@ -1,4 +1,4 @@
-/* Copyright (C) The Authors 2024-2025 */
+/* Copyright (C) The Authors 2024-2026 */
 package abbaye.basic;
 
 /** The fundamental interface for game objects that will be rendered via OpenGL */

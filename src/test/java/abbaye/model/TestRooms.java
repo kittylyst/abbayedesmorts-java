@@ -1,4 +1,4 @@
-/* Copyright (C) The Authors 2025 */
+/* Copyright (C) The Authors 2025-2026 */
 package abbaye.model;
 
 import static abbaye.model.Facing.LEFT;
