@@ -1,4 +1,4 @@
-/* Copyright (C) The Authors 2025 */
+/* Copyright (C) The Authors 2025-2026 */
 package abbaye.model;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -25,6 +25,7 @@ public final class Stage implements Renderable {
   public static final int LEFT_EDGE = 0;
   public static final int TOP_EDGE = 0;
   // Tile type IDs
+  static final int TILE_EMPTY = 0;
   static final int TILE_PASSABLE = 16;
   static final int TILE_PASSABLE_VARIANT_1 = 37;
   static final int TILE_PLATFORM = 38;
@@ -43,6 +44,13 @@ public final class Stage implements Renderable {
   static final int TILE_SPECIAL_RIGHT_MAX = 347; // Exclusive upper bound for crouch range check
   static final int TILE_SPECIAL_LEFT_MIN = 346;
   static final int TILE_SPECIAL_LEFT_MAX = 351;
+  static final int TILE_CROSS_BRIGHTNESS = 84;
+  static final int TILE_TRAP_DOOR = 99;
+  static final int TILE_DOOR = 154;
+  static final int TILE_TORCH_LIT = 136;
+  static final int TILE_TORCH_DIM = 137;
+  static final int TILE_FLAME = 152;
+  static final int TILE_CUP = 650;
   // Room-specific collision constants
   static final int INVISIBLE_WALL_CROUCH_ROW = 5;
   static final int INVISIBLE_GROUND_ROW_THRESHOLD = 19;
@@ -53,8 +61,8 @@ public final class Stage implements Renderable {
 
   private int[][][] stagedata = new int[NUM_SCREENS][NUM_ROWS][NUM_COLUMNS];
   // Initial room coordinates
-  private int roomx = 0;
-  private int roomy = 1;
+  private int roomx = 2; // 0
+  private int roomy = 0; // 1
 
   private Map<Integer, Corners> cache = new HashMap<>();
 
@@ -211,19 +219,19 @@ public final class Stage implements Renderable {
 
     // When we want to generalize this game, we can move this logic into a separate remapper.
     var srctiles = new SDLRect(0, 0, 8, 8);
-    if (tileType == 0) {
+    if (tileType == TILE_EMPTY) {
       srctiles = new SDLRect(992, 0, 8, 8);
-    } else if (tileType != 99) {
+    } else if (tileType != TILE_TRAP_DOOR) {
       if (tileType < 200) {
         srctiles.w = 8;
         srctiles.h = 8;
         if (tileType < 101) {
           srctiles.y = 0;
-          if (tileType == 84) /* Cross brightness */
+          if (tileType == TILE_CROSS_BRIGHTNESS) /* Cross brightness */
             srctiles.x = (tileType - 1) * 8 + (counter[0] / 8 * 8);
           else srctiles.x = (tileType - 1) * 8;
         } else {
-          if (tileType == 154) {
+          if (tileType == TILE_DOOR) {
             /* Door */
             srctiles.x = 600 + ((counter[0] / 8) * 16);
             srctiles.y = 0;
@@ -249,8 +257,10 @@ public final class Stage implements Renderable {
         /* Door movement */
         //                        if ((room == ROOM_CHURCH) && ((counter[1] > 59) && (counter[1] <
         // 71))) {
-        //                            if ((tileType == 347) || (tileType == 348) || (tileType ==
-        // 349) || (tileType == 350)) {
+        //                            if ((tileType == TILE_SPECIAL_RIGHT_MAX)
+        //                                || (tileType == TILE_SPECIAL_LEFT)
+        //                                || (tileType == TILE_SPECIAL_LEFT + 1)
+        //                                || (tileType == TILE_SPECIAL_LEFT + 2)) {
         //                                destiles.x += 2;
         //                            }
         //                        }
@@ -282,14 +292,16 @@ public final class Stage implements Renderable {
         srctiles.w = 8;
         srctiles.h = 8;
       }
-      if (tileType == 650) {
+      if (tileType == TILE_CUP) {
         /* Cup */
         srctiles.x = 584;
         srctiles.y = 87;
         srctiles.w = 16;
         srctiles.h = 16;
       }
-      if ((tileType == 152) || (tileType == 137) || (tileType == 136)) {
+      if ((tileType == TILE_FLAME)
+          || (tileType == TILE_TORCH_DIM)
+          || (tileType == TILE_TORCH_LIT)) {
         if (!changeflag) {
           srctiles.y = srctiles.y + (is16Bit ? 120 : 0);
         }

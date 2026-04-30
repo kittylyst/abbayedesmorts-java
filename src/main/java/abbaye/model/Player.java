@@ -98,7 +98,7 @@ public final class Player implements Actor {
 
   /* Collisions in directions UDLR - D is unused and handled by gravity effects */
   private int[] collision = {0, 0, 0, 0};
-  private Waypoint last = new Waypoint(0, 1, 192.0f, 1088.0f); // x = 100.0f
+  private Waypoint last = new Waypoint(0, 1, 192.0f, 1088.0f);
 
   private int crosses = 0; // (previously state[1])
   private int lives = 5;
@@ -531,13 +531,19 @@ public final class Player implements Actor {
     } else {
       for (var y = 0; y < 4; y++) {
         var tile = points[y][0];
-        if (tile > 0 && (tile < TILE_SOLID_MAX) && (tile != TILE_PASSABLE_VARIANT_1)
+        if (tile > 0
+                && (tile < TILE_SOLID_MAX)
+                && (tile != TILE_PASSABLE)
+                && (tile != TILE_PASSABLE_VARIANT_1)
             || ((tile == TILE_SPECIAL_COLLISION)
                 || ((tile > TILE_SPECIAL_LEFT_MIN) && (tile < TILE_SPECIAL_LEFT_MAX)))) {
           collision[COLLISION_LEFT] = 1;
         }
         tile = points[y][2];
-        if (((tile > 0) && (tile < TILE_SOLID_MAX) && (tile != TILE_PASSABLE_VARIANT_1))
+        if (((tile > 0)
+                && (tile < TILE_SOLID_MAX)
+                && (tile != TILE_PASSABLE)
+                && (tile != TILE_PASSABLE_VARIANT_1))
             || ((tile > TILE_SPECIAL_RIGHT_MIN) && (tile < TILE_SPECIAL_RIGHT_MAX))) {
           collision[COLLISION_RIGHT] = 1;
         }
@@ -566,10 +572,18 @@ public final class Player implements Actor {
       } else {
         // Main branch
         // points[3]
-        if (((blground[0] > 0) && (blground[0] < TILE_SOLID_MAX))
-            || ((blground[1] > 0) && (blground[1] < TILE_SOLID_MAX))
-            || ((blground[2] > 0) && (blground[2] < TILE_SOLID_MAX))
-            || ((blground[3] > 0) && (blground[3] < TILE_SOLID_MAX))) {
+        if (((blground[0] > 0)
+                && (blground[0] < TILE_SOLID_MAX)
+                && (blground[0] != TILE_PASSABLE_VARIANT_1))
+            || ((blground[1] > 0)
+                && (blground[1] < TILE_SOLID_MAX)
+                && (blground[1] != TILE_PASSABLE_VARIANT_1))
+            || ((blground[2] > 0)
+                && (blground[2] < TILE_SOLID_MAX)
+                && (blground[2] != TILE_PASSABLE_VARIANT_1))
+            || ((blground[3] > 0)
+                && (blground[3] < TILE_SOLID_MAX)
+                && (blground[3] != TILE_PASSABLE_VARIANT_1))) {
           ground = (int) ((ypoints[3] + 1) * tileSize);
           if (ypoints[3] + 1 > SCREEN_BOTTOM_ROW_THRESHOLD) {
             /* Dirty trick to make Jean go bottom of the screen */
@@ -757,8 +771,8 @@ public final class Player implements Actor {
   private Player(Layer layer, Stage stage) {
     this.layer = layer;
     this.stage = stage;
-    this.pos =
-        last.getPos(); // new Vector2(Config.config().getScreenWidth() / 2, 1088.0f); // FIXME
+    this.pos = last.getPos();
+    // new Vector2(Config.config().getScreenWidth() / 2, 1088.0f); // FIXME
   }
 
   public static Player of(Layer layer, Stage stage) {

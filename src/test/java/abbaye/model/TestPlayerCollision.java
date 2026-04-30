@@ -451,6 +451,27 @@ public class TestPlayerCollision {
   }
 
   @Test
+  public void testPassableTile16ActsAsGround() {
+    float tileSize = Stage.getTileSize();
+    float startY = 10 * tileSize;
+    float xPos = 10 * tileSize;
+    player.setPos(new Vector2(xPos, startY));
+    setJump(player, NEUTRAL);
+
+    int points7 = (int) ((startY + 23 * PIXELS_PER_TILE) / tileSize);
+    int groundTileY = points7 + 1;
+    int checkX = (int) ((xPos + 8 * PIXELS_PER_TILE) / tileSize);
+    setTile(stage, checkX, groundTileY, TILE_PASSABLE);
+
+    Vector2 posBefore = player.getPos();
+    player.update();
+    Vector2 posAfter = player.getPos();
+
+    assertTrue(posAfter.y() <= posBefore.y(), "Player should not fall through passable tile 16");
+    assertEquals(NEUTRAL, getJump(player), "Player should remain grounded over passable tile 16");
+  }
+
+  @Test
   public void testBoundaryConditionsBottomEdge() {
     float tileSize = Stage.getTileSize();
     // The code accesses stagedata[points[7] + 1][x] without bounds checking

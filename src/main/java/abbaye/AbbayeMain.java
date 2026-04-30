@@ -1,4 +1,4 @@
-/* Copyright (C) The Authors 2025 */
+/* Copyright (C) The Authors 2025-2026 */
 package abbaye;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
@@ -40,6 +40,7 @@ public final class AbbayeMain {
     AbbayeMain.glEnabled = glEnabled;
   }
 
+  /** Returns thread-safe cached ObjectMapper with game serializers */
   public static synchronized ObjectMapper getMapper() {
     if (mapper != null) {
       return mapper;
@@ -83,6 +84,7 @@ public final class AbbayeMain {
     cleanup();
   }
 
+  /** Initializes OpenGL context, input callbacks, layers, and clock */
   void init() {
     try {
       glStaticInit();
@@ -108,6 +110,7 @@ public final class AbbayeMain {
     Clock.updateTimer();
   }
 
+  /** Sets GLFW error handling and core OpenGL context hints */
   public static void glStaticInit() {
     GLFWErrorCallback.createPrint(System.err).set();
 
