@@ -1,4 +1,4 @@
-/* Copyright (C) The Authors 2025 */
+/* Copyright (C) The Authors 2025-2026 */
 package abbaye;
 
 import static abbaye.graphics.GLManager.*;
@@ -17,6 +17,10 @@ import java.nio.IntBuffer;
 import org.lwjgl.system.MemoryStack;
 
 public class GameDialog {
+  static final float SPLASH_PAGE_DURATION_SECONDS = 5.0f;
+  private static final Corners INTRO_PAGE_1 = new Corners(-1.0f, 0.5f, 2.0f, 2.0f);
+  private static final Corners INTRO_PAGE_2 = new Corners(-1.0f, -1.0f, 2.0f, 0.5f);
+
   public enum State {
     INACTIVE,
     START,
@@ -29,6 +33,7 @@ public class GameDialog {
 
   private State state;
   private Player player;
+  private double splashStartTimeSeconds;
 
   public GameDialog(Player pl, AbbayeMain main) {
     player = pl;
@@ -75,7 +80,8 @@ public class GameDialog {
         glManager.bindTexture("introSplash");
         glBindVertexArray(glManager.getVAO());
 
-        glManager.renderTile(new Corners(-1.0f, -1.0f, 2.0f, 0.5f), PROJECTION_MATRIX);
+        int splashPage = currentSplashPage(glfwGetTime() - splashStartTimeSeconds);
+        glManager.renderTile(splashPage == 0 ? INTRO_PAGE_1 : INTRO_PAGE_2, PROJECTION_MATRIX);
       }
       case END -> {
         // Used for testing
@@ -97,6 +103,7 @@ public class GameDialog {
 
   public void reset() {
     state = State.START;
+    splashStartTimeSeconds = glfwGetTime();
   }
 
   public void startTurn() {
@@ -110,5 +117,10 @@ public class GameDialog {
 
   public boolean isActive() {
     return !(state == State.INACTIVE);
+  }
+
+  static int currentSplashPage(double elapsedSeconds) {
+    int page = (int) (Math.max(0.0, elapsedSeconds) / SPLASH_PAGE_DURATION_SECONDS);
+    return page % 2;
   }
 }
