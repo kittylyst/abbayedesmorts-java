@@ -20,6 +20,10 @@ Mid-stage work-in-progress:
 
 - [x] Basic collision detection
 - [x] Player control
+- [x] Input decoupled from domain (P1 — `InputEvent` enum + `InputHandler`)
+- [x] `Vector2` decoupled from `Stage` (P2 — `Stage.toTileX/Y` helpers)
+- [x] `GLManager` static initialiser removed (P3 — explicit `GLManager.initAll()`)
+- [x] Cross-platform Maven build (Mac arm64/x86_64, Linux x86_64/arm64 profiles)
 - [ ] Enemy behaviour
 - [ ] Animation system
 - [ ] Full game completion / polish
@@ -29,7 +33,7 @@ Mid-stage work-in-progress:
 | Concern | Technology |
 |---------|-----------|
 | Language | Java 17 |
-| Build | Maven |
+| Build | Maven (cross-platform profiles) |
 | Windowing / OpenGL | LWJGL3 3.3.6 (GLFW, OpenGL, OpenAL, STB, Assimp) |
 | Audio | OpenAL via LWJGL3 |
 | Data (maps/config) | Jackson 2.18 (JSON), plain-text map files |
@@ -45,11 +49,36 @@ but the architecture is pragmatic rather than a strict data-oriented ECS framewo
 
 | Package | Responsibility |
 |---------|---------------|
-| `abbaye` | Entry point (`AbbayeMain`), top-level config (`Config`), dialog (`GameDialog`) |
+| `abbaye` | Entry point (`AbbayeMain`), top-level config (`Config`), dialog (`GameDialog`), input translation (`InputHandler`) |
 | `abbaye.basic` | Core value types: `Actor`, `BoundingBox2`, `Vector2/3f/4f`, `Corners`, `Renderable`, `Clock` |
-| `abbaye.model` | Game entities: `Player`, `Enemy`, `Room`, `Stage`, `Layer`, `StatusDisplay`, enums (`Facing`, `Vertical`) |
+| `abbaye.model` | Game entities: `Player`, `Enemy`, `Room`, `Stage`, `Layer`, `StatusDisplay`, enums (`Facing`, `Vertical`, `InputEvent`) |
 | `abbaye.graphics` | Rendering: `GLManager`, `StageRenderer`, `Texture`, `Color` |
 | `abbaye.logs` | Logger abstraction: `GameLogger`, `JulLogger`, `NoopLogger`, `StdoutLogger` |
+
+### Input Architecture (post-P1)
+
+```
+GLFW key event
+      │
+      ▼
+InputHandler          ← sole owner of GLFWKeyCallbackI; lives in abbaye package
+      │
+      ├─ ESC          → glfwSetWindowShouldClose
+      ├─ TAB/SPACE    → GameDialog.startTurn()
+      └─ arrows/down  → Player.handleInput(InputEvent)
+                               │
+                               ▼
+                        Player internal state
+                        (walk, direction, crouch, jump)
+                        — no GLFW import in Player
+```
+
+### Key Design Invariants
+
+- `Player`, `Enemy`, and all `abbaye.model` / `abbaye.basic` classes **must not import GLFW types**.
+- `Vector2` **must not import** `abbaye.model.Stage`. Use `Stage.toTileX(float)` / `Stage.toTileY(float)` for pixel→tile conversion.
+- `GLManager.initAll()` **must be called after** `GL.createCapabilities()` in `AbbayeMain.glInit()`. Never call it from a static initialiser.
+- All game-logic tests **must run headless** (no OpenGL/GLFW context). Follow `TestPlayerCollision`, `TestPlayerInput` patterns.
 
 ### Key Resources
 
@@ -60,9 +89,20 @@ but the architecture is pragmatic rather than a strict data-oriented ECS framewo
 
 ### Test Structure
 
-Tests live in `src/test/java/abbaye/`. Game-logic tests (especially collision) run **headless**
-(no OpenGL context required). See `TestPlayerCollision`, `TestPlayerCollisionPassing`, `TestRooms`, `TestStage`.
-A shared `Utils` test helper exists for common setup.
+Tests live in `src/test/java/abbaye/`. Game-logic tests run **headless** (no OpenGL context required).
+
+| Test class | What it covers |
+|---|---|
+| `TestPlayerCollision` | Wall, roof, ground, platform collision |
+| `TestPlayerCollisionPassing` | Pass-through tile behaviour |
+| `TestPlayerInput` | `InputEvent` → `Player` state (headless, no GLFW) |
+| `TestRooms` | Room navigation (2 pre-existing failures, unrelated to recent work) |
+| `TestStage` | Stage loading and tile data |
+| `Utils` | Shared test helpers (reflection-based field access, tile setup) |
+
+## Known Pre-existing Issues
+
+- `TestRooms.testRoomSwitchRightLeft` and `testRoomNoSwitchLeft` fail with a room-coordinate mismatch. These predate the current work branch and are not regressions.
 
 ## Key Stakeholders / Users
 

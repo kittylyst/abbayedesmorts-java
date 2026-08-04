@@ -640,15 +640,15 @@ public final class Player implements Actor {
       if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 400, 405))
           || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 400, 405))) {
         if (Stage.toTileX(pos.x()) > 160) {
-          stagedata[7][23] = 0;
-          stagedata[7][24] = 0;
-          stagedata[8][23] = 0;
-          stagedata[8][24] = 0;
+          stage.clearTile(room, 7, 23);
+          stage.clearTile(room, 7, 24);
+          stage.clearTile(room, 8, 23);
+          stage.clearTile(room, 8, 24);
         } else {
-          stagedata[18][8] = 0;
-          stagedata[18][9] = 0;
-          stagedata[19][8] = 0;
-          stagedata[19][9] = 0;
+          stage.clearTile(room, 18, 8);
+          stage.clearTile(room, 18, 9);
+          stage.clearTile(room, 19, 8);
+          stage.clearTile(room, 19, 9);
         }
         if (lives < 9) {
           lives += 1;
@@ -659,11 +659,7 @@ public final class Player implements Actor {
     } else {
       if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 400, 405))
           || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 400, 405))) {
-        for (var v = 0; v < 22; v++) {
-          for (var h = 0; h < 32; h++) {
-            if ((stagedata[v][h] > 400) && (stagedata[v][h] < 405)) stagedata[v][h] = 0;
-          }
-        }
+        stage.clearTilesWhere(room, t -> t > 400 && t < 405);
         if (lives < 9) {
           lives += 1;
           //        Mix_PlayChannel(-1, fx[2], 0);
@@ -675,14 +671,9 @@ public final class Player implements Actor {
     /* Touch crosses */
     if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 408, 413))
         || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 408, 413))) {
-      for (var v = 0; v < 22; v++) {
-        for (var h = 0; h < 32; h++) {
-          if ((stagedata[v][h] > 408) && (stagedata[v][h] < 413)) stagedata[v][h] = 0;
-        }
-      }
+      stage.clearTilesWhere(room, t -> t > 408 && t < 413);
       crosses += 1;
       //        Mix_PlayChannel(-1, fx[2], 0);
-
       return true;
     }
 
@@ -690,17 +681,12 @@ public final class Player implements Actor {
     /* Touch waypoint crosses */
     if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 320, 327))
         || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 320, 327))) {
-      for (var v = 0; v < 22; v++) {
-        for (var h = 0; h < 32; h++) {
-          // FIXME - Don't nuke the waypoint cross, toggle instead.
-          if ((stagedata[v][h] > 320) && (stagedata[v][h] < 327)) stagedata[v][h] = 0;
-        }
-      }
+      // FIXME - Don't nuke the waypoint cross, toggle instead.
+      stage.clearTilesWhere(room, t -> t > 320 && t < 327);
       // Update waypoint
       logger.info("Updating waypoint here: " + last);
       last = new Waypoint(stage.getRoomX(), stage.getRoomY(), pos);
       //        Mix_PlayChannel(-1, fx[2], 0);
-
       return true;
     }
 

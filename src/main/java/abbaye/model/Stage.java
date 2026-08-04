@@ -8,8 +8,8 @@ import abbaye.basic.Corners;
 import abbaye.basic.Renderable;
 import abbaye.graphics.StageRenderer;
 import java.io.*;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.function.IntPredicate;
 
 /** The stage shows the layout of the furniture of the current screen */
 public final class Stage implements Renderable {
@@ -64,11 +64,9 @@ public final class Stage implements Renderable {
   private int roomx = 2; // 0
   private int roomy = 0; // 1
 
-  private Map<Integer, Corners> cache = new HashMap<>();
+  private final TileAtlas atlas = new TileAtlas();
 
   private StageRenderer renderer;
-  private boolean is16Bit = false;
-  private boolean changeflag = false;
 
   public void load(long window) {
     this.renderer = new StageRenderer(window);
@@ -124,6 +122,43 @@ public final class Stage implements Renderable {
    */
   public int[][] getScreen(int level) {
     return stagedata[level];
+  }
+
+  /**
+   * Clears a single tile in the given screen by setting it to {@code TILE_EMPTY}. Prefer this over
+   * direct array writes so that Stage remains the sole mutator of tile data.
+   *
+   * @param screen screen index (0 .. NUM_SCREENS-1)
+   * @param row row index (0 .. NUM_ROWS-1)
+   * @param col column index (0 .. NUM_COLUMNS-1)
+   */
+  public void clearTile(int screen, int row, int col) {
+    if (screen >= 0
+        && screen < NUM_SCREENS
+        && row >= 0
+        && row < NUM_ROWS
+        && col >= 0
+        && col < NUM_COLUMNS) {
+      stagedata[screen][row][col] = TILE_EMPTY;
+    }
+  }
+
+  /**
+   * Clears every tile in the given screen that satisfies {@code predicate}, setting matching cells
+   * to {@code TILE_EMPTY}. Used for sweep-clear operations (e.g. collecting all hearts or crosses).
+   *
+   * @param screen screen index (0 .. NUM_SCREENS-1)
+   * @param predicate test applied to the current tile-type value; matching tiles are cleared
+   */
+  public void clearTilesWhere(int screen, IntPredicate predicate) {
+    var screenData = stagedata[screen];
+    for (int row = 0; row < NUM_ROWS; row++) {
+      for (int col = 0; col < NUM_COLUMNS; col++) {
+        if (predicate.test(screenData[row][col])) {
+          screenData[row][col] = TILE_EMPTY;
+        }
+      }
+    }
   }
 
   public int getRoom() {
@@ -192,141 +227,21 @@ public final class Stage implements Renderable {
     roomy = waypoint.roomY();
   }
 
-  private static class SDLRect {
-    public int x;
-    public int y;
-    public int w;
-    public int h;
-
-    public SDLRect(int x, int y, int w, int h) {
-      this.x = x;
-      this.y = y;
-      this.w = w;
-      this.h = h;
-    }
-
-    @Override
-    public String toString() {
-      return "SDLRect{" + "posX=" + 8 * x + ", posY=" + 8 * y + ", w=" + w + ", h=" + h + '}';
-    }
-  }
-
   public Map<Integer, Corners> getCache() {
-    return cache;
+    return atlas.getCache();
   }
 
   public Corners getCorners(int x, int y) {
     var tileType = stagedata[roomy * SCREENS_X + roomx][y][x];
-    if (cache.containsKey(tileType)) {
-      return cache.get(tileType);
-    }
-
-    return getCorners(tileType);
+    return atlas.getCorners(tileType);
   }
 
   public Corners getCorners(int tileType) {
-    int[] counter = new int[2];
+    return atlas.getCorners(tileType);
+  }
 
-    // When we want to generalize this game, we can move this logic into a separate remapper.
-    var srctiles = new SDLRect(0, 0, 8, 8);
-    if (tileType == TILE_EMPTY) {
-      srctiles = new SDLRect(992, 0, 8, 8);
-    } else if (tileType != TILE_TRAP_DOOR) {
-      if (tileType < 200) {
-        srctiles.w = 8;
-        srctiles.h = 8;
-        if (tileType < 101) {
-          srctiles.y = 0;
-          if (tileType == TILE_CROSS_BRIGHTNESS) /* Cross brightness */
-            srctiles.x = (tileType - 1) * 8 + (counter[0] / 8 * 8);
-          else srctiles.x = (tileType - 1) * 8;
-        } else {
-          if (tileType == TILE_DOOR) {
-            /* Door */
-            srctiles.x = 600 + ((counter[0] / 8) * 16);
-            srctiles.y = 0;
-            srctiles.w = 16;
-            srctiles.h = 24;
-          } else {
-            srctiles.y = 8;
-            srctiles.x = (tileType - 101) * 8;
-          }
-        }
-      }
-      if ((tileType > 199) && (tileType < 300)) {
-        srctiles.x = (tileType - 201) * 48;
-        srctiles.y = 16;
-        srctiles.w = 48;
-        srctiles.h = 48;
-      }
-      if ((tileType > 299) && (tileType < 399)) {
-        srctiles.x = 96 + ((tileType - 301) * 8);
-        srctiles.y = 16;
-        srctiles.w = 8;
-        srctiles.h = 8;
-        /* Door movement */
-        //                        if ((room == ROOM_CHURCH) && ((counter[1] > 59) && (counter[1] <
-        // 71))) {
-        //                            if ((tileType == TILE_SPECIAL_RIGHT_MAX)
-        //                                || (tileType == TILE_SPECIAL_LEFT)
-        //                                || (tileType == TILE_SPECIAL_LEFT + 1)
-        //                                || (tileType == TILE_SPECIAL_LEFT + 2)) {
-        //                                destiles.x += 2;
-        //                            }
-        //                        }
-      }
-      /* Hearts */
-      if ((tileType > 399) && (tileType < 405)) {
-        srctiles.x = 96 + ((tileType - 401) * 8) + (32 * (counter[0] / 15));
-        srctiles.y = 24;
-        srctiles.w = 8;
-        srctiles.h = 8;
-      }
-      /* Crosses */
-      if ((tileType > 408) && (tileType < 429)) {
-        srctiles.x = 96 + ((tileType - 401) * 8) + (32 * (counter[1] / 23));
-        srctiles.y = 24;
-        srctiles.w = 8;
-        srctiles.h = 8;
-      }
-
-      if ((tileType > 499) && (tileType < 599)) {
-        srctiles.x = 96 + ((tileType - 501) * 8);
-        srctiles.y = 32;
-        srctiles.w = 8;
-        srctiles.h = 8;
-      }
-      if ((tileType > 599) && (tileType < 650)) {
-        srctiles.x = 96 + ((tileType - 601) * 8);
-        srctiles.y = 56;
-        srctiles.w = 8;
-        srctiles.h = 8;
-      }
-      if (tileType == TILE_CUP) {
-        /* Cup */
-        srctiles.x = 584;
-        srctiles.y = 87;
-        srctiles.w = 16;
-        srctiles.h = 16;
-      }
-      if ((tileType == TILE_FLAME)
-          || (tileType == TILE_TORCH_DIM)
-          || (tileType == TILE_TORCH_LIT)) {
-        if (!changeflag) {
-          srctiles.y = srctiles.y + (is16Bit ? 120 : 0);
-        }
-      } else {
-        srctiles.y = srctiles.y + (is16Bit ? 120 : 0);
-      }
-    }
-
-    float u1 = (float) srctiles.x / (8 * TILES_PER_ROW);
-    float v1 = (float) srctiles.y / (8 * TILES_PER_COL);
-    float u2 = (float) (srctiles.x + srctiles.w) / (8 * TILES_PER_ROW);
-    float v2 = (float) (srctiles.y + srctiles.h) / (8 * TILES_PER_COL);
-
-    var out = new Corners(u1, 1 - v1, u2, 1 - v2);
-    cache.putIfAbsent(tileType, out);
-    return out;
+  /** Exposes the atlas for testing and future animation wiring. */
+  TileAtlas getAtlas() {
+    return atlas;
   }
 }
