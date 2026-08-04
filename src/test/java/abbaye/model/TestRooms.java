@@ -53,12 +53,12 @@ public class TestRooms {
     player.update();
     collisions = player.getCollisions();
     assertEquals(0, collisions[COLLISION_RIGHT], "Should not detect collision to right");
-    assertEquals(5, stage.getRoom(), "Should be in Room 5");
+    assertEquals(2, stage.getRoom(), "Should still be in Room 2");
 
     player.update();
     collisions = player.getCollisions();
     assertEquals(0, collisions[COLLISION_LEFT], "Should not detect collision to left");
-    assertEquals(6, stage.getRoom(), "Should be in Room 6");
+    assertEquals(3, stage.getRoom(), "Should be in Room 3");
 
     assertEquals(0.0f, player.getPos().x(), "Should be at x-pos 0");
   }
@@ -82,15 +82,15 @@ public class TestRooms {
     player.update();
     collisions = player.getCollisions();
     assertEquals(0, collisions[COLLISION_LEFT], "Should not detect collision to left");
-    assertEquals(5, stage.getRoom(), "Should be in Room 5");
+    assertEquals(2, stage.getRoom(), "Should still be in Room 2");
 
     player.update();
     player.update();
     player.update();
     collisions = player.getCollisions();
     assertEquals(0, collisions[COLLISION_LEFT], "Should not detect collision to left");
-    assertEquals(5, stage.getRoom(), "Should be in Room 5");
+    assertEquals(1, stage.getRoom(), "Should be in Room 1");
 
-    assertEquals(0.0f, player.getPos().x(), "Should be at x-pos 0");
+    assertEquals(1920.0f, player.getPos().x(), "Should be at x-pos 1920");
   }
 }
