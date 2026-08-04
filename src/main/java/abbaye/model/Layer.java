@@ -1,7 +1,6 @@
-/* Copyright (C) The Authors 2025 */
+/* Copyright (C) The Authors 2025-2026 */
 package abbaye.model;
 
-import abbaye.AbbayeMain;
 import abbaye.Config;
 import abbaye.basic.Actor;
 import abbaye.basic.Renderable;
@@ -9,7 +8,6 @@ import abbaye.logs.GameLogger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.lwjgl.glfw.GLFWKeyCallbackI;
 
 public class Layer {
   private final List<Renderable> misc = new ArrayList<>();
@@ -47,10 +45,6 @@ public class Layer {
     for (var gObj : misc) {
       gObj.render();
     }
-  }
-
-  public GLFWKeyCallbackI moveCallback() {
-    return oPlayer.map(Player::moveCallback).orElse(AbbayeMain.ESC_QUITS_GAME);
   }
 
   /**

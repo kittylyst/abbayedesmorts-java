@@ -169,6 +169,16 @@ public final class Stage implements Renderable {
     return 64.0f;
   }
 
+  /** Converts a pixel x-coordinate to a tile column index. */
+  public static int toTileX(float px) {
+    return (int) (px / getTileSize());
+  }
+
+  /** Converts a pixel y-coordinate to a tile row index. */
+  public static int toTileY(float px) {
+    return (int) (px / getTileSize());
+  }
+
   public int getRoomX() {
     return roomx;
   }

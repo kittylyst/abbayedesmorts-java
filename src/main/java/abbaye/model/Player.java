@@ -6,7 +6,6 @@ import static abbaye.model.Facing.RIGHT;
 import static abbaye.model.Room.*;
 import static abbaye.model.Stage.*;
 import static abbaye.model.Vertical.*;
-import static org.lwjgl.glfw.GLFW.*;
 
 import abbaye.AbbayeMain;
 import abbaye.Config;
@@ -18,7 +17,6 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
 import java.util.Arrays;
-import org.lwjgl.glfw.GLFWKeyCallbackI;
 
 public final class Player implements Actor {
 
@@ -332,72 +330,30 @@ public final class Player implements Actor {
     return true;
   }
 
-  public GLFWKeyCallbackI moveCallback() {
-    return (window, key, scancode, action, mods) -> {
-      if (action == GLFW_PRESS) {
-        switch (key) {
-          case GLFW_KEY_RIGHT:
-            {
-              direction = RIGHT;
-              walk = true;
-              break;
-            }
-          case GLFW_KEY_LEFT:
-            {
-              direction = LEFT;
-              walk = true;
-              break;
-            }
-          case GLFW_KEY_DOWN:
-            {
-              crouch = true;
-              break;
-            }
-          case GLFW_KEY_UP:
-            {
-              jump = JUMP;
-              break;
-            }
-        }
+  public void handleInput(InputEvent event) {
+    switch (event) {
+      case MOVE_RIGHT_START -> {
+        direction = RIGHT;
+        walk = true;
       }
-      if (action == GLFW_RELEASE) {
-        switch (key) {
-          case GLFW_KEY_ESCAPE:
-            {
-              glfwSetWindowShouldClose(window, true);
-              break;
-            }
-          case GLFW_KEY_TAB:
-            {
-              logger.info(this.toString());
-              break;
-            }
-          case GLFW_KEY_RIGHT:
-            {
-              direction = RIGHT;
-              walk = false;
-              break;
-            }
-          case GLFW_KEY_LEFT:
-            {
-              direction = LEFT;
-              walk = false;
-              break;
-            }
-          case GLFW_KEY_DOWN:
-            {
-              crouch = false;
-              break;
-            }
-          case GLFW_KEY_UP:
-            {
-              jump = NEUTRAL;
-              break;
-            }
-          default:
-        }
+      case MOVE_RIGHT_END -> {
+        direction = RIGHT;
+        walk = false;
       }
-    };
+      case MOVE_LEFT_START -> {
+        direction = LEFT;
+        walk = true;
+      }
+      case MOVE_LEFT_END -> {
+        direction = LEFT;
+        walk = false;
+      }
+      case CROUCH_START -> crouch = true;
+      case CROUCH_END -> crouch = false;
+      case JUMP_START -> jump = JUMP;
+      case JUMP_END -> jump = NEUTRAL;
+      case DEBUG_DUMP -> logger.info(this.toString());
+    }
   }
 
   public boolean checkHit() {
@@ -657,8 +613,8 @@ public final class Player implements Actor {
    */
   public boolean checkStaticHazard() {
     var stagedata = stage.getScreen(stage.getRoom());
-    int baseTileX = pos.tileX();
-    int baseTileY = pos.tileY();
+    int baseTileX = Stage.toTileX(pos.x());
+    int baseTileY = Stage.toTileY(pos.y());
 
     /* Touch static hazard */
     if (tileAt(stagedata, baseTileY + 1, baseTileX) == TILE_STATIC_HAZARD
@@ -676,14 +632,14 @@ public final class Player implements Actor {
   public boolean checkStaticObject() {
     int room = stage.getRoom();
     var stagedata = stage.getScreen(room);
-    int baseTileX = pos.tileX();
-    int baseTileY = pos.tileY();
+    int baseTileX = Stage.toTileX(pos.x());
+    int baseTileY = Stage.toTileY(pos.y());
 
     /* Touch hearts */
     if (room == ROOM_ASHES.index()) {
       if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 400, 405))
           || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 400, 405))) {
-        if (pos.tileX() > 160) {
+        if (Stage.toTileX(pos.x()) > 160) {
           stagedata[7][23] = 0;
           stagedata[7][24] = 0;
           stagedata[8][23] = 0;

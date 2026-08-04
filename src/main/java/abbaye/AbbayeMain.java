@@ -8,6 +8,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 import abbaye.basic.Clock;
+import abbaye.graphics.GLManager;
 import abbaye.model.*;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,7 +17,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import java.nio.IntBuffer;
 import java.util.Optional;
 import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWKeyCallbackI;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
@@ -30,6 +30,7 @@ public final class AbbayeMain {
   private final String windowTitle = "Abbaye Des Mortes";
   private Layer layer = new Layer();
   private GameDialog gameDialog;
+  private InputHandler inputHandler;
   private long window;
 
   public static boolean isGlEnabled() {
@@ -57,13 +58,6 @@ public final class AbbayeMain {
     mapper = newMapper;
     return mapper;
   }
-
-  public static final GLFWKeyCallbackI ESC_QUITS_GAME =
-      (w, key, scancode, action, mods) -> {
-        if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-          glfwSetWindowShouldClose(w, true);
-        }
-      };
 
   public static void main(String[] args) {
     Optional<String> oPath = Optional.empty();
@@ -94,16 +88,10 @@ public final class AbbayeMain {
       System.exit(1);
     }
     gameDialog = new GameDialog(null, this);
-    glfwSetKeyCallback(
-        window,
-        (w, key, scancode, action, mods) -> {
-          if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
-            glfwSetWindowShouldClose(w, true);
-          }
-          if ((key == GLFW_KEY_TAB || key == GLFW_KEY_SPACE) && action == GLFW_RELEASE) {
-            gameDialog.startTurn();
-          }
-        });
+    inputHandler = new InputHandler(window, gameDialog, null);
+    var cb = inputHandler.keyCallback();
+    glfwSetKeyCallback(window, cb);
+    gameDialog.setOnTurnStart(() -> glfwSetKeyCallback(window, cb));
 
     initLayer();
     Clock.init();
@@ -171,6 +159,9 @@ public final class AbbayeMain {
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Initialise GL managers now that the context is current
+    GLManager.initAll();
   }
 
   /** Main game loop method */
@@ -216,6 +207,7 @@ public final class AbbayeMain {
     layer.init();
 
     gameDialog.setPlayer(p);
+    inputHandler.setPlayer(p);
   }
 
   private void cleanup() {
