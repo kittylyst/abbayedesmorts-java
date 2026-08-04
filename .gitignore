@@ -20,3 +20,5 @@ hs_err_*.log
 .classpath
 
 .idea/
+.bob/
+.vscode/

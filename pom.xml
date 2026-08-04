@@ -11,7 +11,7 @@
     <maven.compiler.target>17</maven.compiler.target>
     <!-- Library versions -->
     <lwjgl.version>3.3.6</lwjgl.version>
-    <lwjgl.natives>natives-macos-arm64</lwjgl.natives>
+    <!-- lwjgl.natives is set per-platform in <profiles> below -->
     <jackson-core.version>2.18.0</jackson-core.version>
     <!-- Test versions -->
     <junit.version>5.9.2</junit.version>
@@ -25,8 +25,7 @@
     <!--      <checkstyle.version>10.6.0</checkstyle.version>-->
     <!--      <checkstyle-plugin.version>3.2.1</checkstyle-plugin.version>-->
     <jacoco-plugin.version>0.8.9</jacoco-plugin.version>
-    <!-- Custom JVM arguments for surefire (will be combined with JaCoCo argLine) -->
-    <surefire.jvm.args>-XstartOnFirstThread -javaagent:${org.mockito:mockito-core:jar} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</surefire.jvm.args>
+    <!-- surefire.jvm.args is set per-platform in <profiles> below -->
   </properties>
 
   <dependencyManagement>
@@ -283,4 +282,69 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <!-- ─── macOS (arm64) ─────────────────────────────────────────────── -->
+    <profile>
+      <id>mac-arm64</id>
+      <activation>
+        <os>
+          <family>mac</family>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <lwjgl.natives>natives-macos-arm64</lwjgl.natives>
+        <surefire.jvm.args>-XstartOnFirstThread -javaagent:${org.mockito:mockito-core:jar} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</surefire.jvm.args>
+      </properties>
+    </profile>
+
+    <!-- ─── macOS (x86_64) ───────────────────────────────────────────── -->
+    <profile>
+      <id>mac-x86_64</id>
+      <activation>
+        <os>
+          <family>mac</family>
+          <arch>x86_64</arch>
+        </os>
+      </activation>
+      <properties>
+        <lwjgl.natives>natives-macos</lwjgl.natives>
+        <surefire.jvm.args>-XstartOnFirstThread -javaagent:${org.mockito:mockito-core:jar} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</surefire.jvm.args>
+      </properties>
+    </profile>
+
+    <!-- ─── Linux (x86_64) ───────────────────────────────────────────── -->
+    <profile>
+      <id>linux-x86_64</id>
+      <activation>
+        <os>
+          <name>Linux</name>
+          <family>unix</family>
+          <arch>amd64</arch>
+        </os>
+      </activation>
+      <properties>
+        <lwjgl.natives>natives-linux</lwjgl.natives>
+        <surefire.jvm.args>-javaagent:${org.mockito:mockito-core:jar} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</surefire.jvm.args>
+      </properties>
+    </profile>
+
+    <!-- ─── Linux (arm64) ────────────────────────────────────────────── -->
+    <profile>
+      <id>linux-arm64</id>
+      <activation>
+        <os>
+          <name>Linux</name>
+          <family>unix</family>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <lwjgl.natives>natives-linux-arm64</lwjgl.natives>
+        <surefire.jvm.args>-javaagent:${org.mockito:mockito-core:jar} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</surefire.jvm.args>
+      </properties>
+    </profile>
+  </profiles>
+
 </project>
