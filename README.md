@@ -20,7 +20,12 @@ mvn clean spotless:apply package
 java -XstartOnFirstThread -jar target/abbayedesmorts-1.0.0-SNAPSHOT.jar
 ```
 
-The -XstartOnFirstThread flag is required on Mac
+or
+```
+mvn exec:java
+```
+
+The -XstartOnFirstThread flag is only required on Mac
 
 ## CREDITS
 
