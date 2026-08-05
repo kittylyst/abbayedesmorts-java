@@ -2,6 +2,7 @@
 package abbaye.model;
 
 import static abbaye.model.Stage.*;
+import static abbaye.model.TileAtlas.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import abbaye.AbbayeMain;

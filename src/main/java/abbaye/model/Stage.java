@@ -1,6 +1,7 @@
 /* Copyright (C) The Authors 2025-2026 */
 package abbaye.model;
 
+import static abbaye.model.TileAtlas.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 import abbaye.AbbayeMain;
@@ -24,34 +25,8 @@ public final class Stage implements Renderable {
 
   public static final int LEFT_EDGE = 0;
   public static final int TOP_EDGE = 0;
-  // Tile type IDs
-  static final int TILE_EMPTY = 0;
-  static final int TILE_PASSABLE = 16;
-  static final int TILE_PASSABLE_VARIANT_1 = 37;
-  static final int TILE_PLATFORM = 38;
 
-  static final int TILE_BEDROCK1 = 101;
-  static final int TILE_BEDROCK2 = 102;
-  static final int TILE_TOPSOIL1 = 103;
-  static final int TILE_TOPSOIL2 = 104;
-
-  static final int TILE_STATIC_HAZARD = 5;
-  static final int TILE_SOLID_MAX = 100;
-  static final int TILE_SPECIAL_COLLISION = 128;
-  static final int TILE_SPECIAL_RIGHT = 344;
-  static final int TILE_SPECIAL_LEFT = 348;
-  static final int TILE_SPECIAL_RIGHT_MIN = 342;
-  static final int TILE_SPECIAL_RIGHT_MAX = 347; // Exclusive upper bound for crouch range check
-  static final int TILE_SPECIAL_LEFT_MIN = 346;
-  static final int TILE_SPECIAL_LEFT_MAX = 351;
-  static final int TILE_CROSS_BRIGHTNESS = 84;
-  static final int TILE_TRAP_DOOR = 99;
-  static final int TILE_DOOR = 154;
-  static final int TILE_TORCH_LIT = 136;
-  static final int TILE_TORCH_DIM = 137;
-  static final int TILE_FLAME = 152;
-  static final int TILE_CUP = 650;
-  // Room-specific collision constants
+  // Room-specific collision constants (screen/room geometry — stay on Stage)
   static final int INVISIBLE_WALL_CROUCH_ROW = 5;
   static final int INVISIBLE_GROUND_ROW_THRESHOLD = 19;
   static final int INVISIBLE_GROUND_COLUMN = 2;

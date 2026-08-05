@@ -15,6 +15,39 @@ import java.util.Map;
  */
 public final class TileAtlas {
 
+  // ── Tile-type IDs ──────────────────────────────────────────────────────────
+  // Canonical home for all tile-type integer constants. Used for both collision
+  // detection (Player, Stage) and UV-coordinate lookup (TileAtlas.getCorners).
+
+  public static final int TILE_EMPTY = 0;
+  public static final int TILE_STATIC_HAZARD = 5;
+  public static final int TILE_PASSABLE = 16;
+  public static final int TILE_PASSABLE_VARIANT_1 = 37;
+  public static final int TILE_PLATFORM = 38;
+  public static final int TILE_SOLID_MAX = 100;
+  public static final int TILE_TRAP_DOOR = 99;
+
+  public static final int TILE_BEDROCK1 = 101;
+  public static final int TILE_BEDROCK2 = 102;
+  public static final int TILE_TOPSOIL1 = 103;
+  public static final int TILE_TOPSOIL2 = 104;
+
+  public static final int TILE_CROSS_BRIGHTNESS = 84;
+  public static final int TILE_SPECIAL_COLLISION = 128;
+  public static final int TILE_TORCH_LIT = 136;
+  public static final int TILE_TORCH_DIM = 137;
+  public static final int TILE_FLAME = 152;
+  public static final int TILE_DOOR = 154;
+
+  public static final int TILE_SPECIAL_RIGHT_MIN = 342;
+  public static final int TILE_SPECIAL_RIGHT = 344;
+  public static final int TILE_SPECIAL_LEFT_MIN = 346;
+  public static final int TILE_SPECIAL_LEFT = 348;
+  public static final int TILE_SPECIAL_LEFT_MAX = 351; // Exclusive upper bound for range check
+  public static final int TILE_SPECIAL_RIGHT_MAX = 347; // Exclusive upper bound for range check
+
+  public static final int TILE_CUP = 650;
+
   /** Pixel-space rectangle into the source sprite sheet (8-px grid). */
   private static final class SDLRect {
     int x, y, w, h;

@@ -5,6 +5,7 @@ import static abbaye.model.Facing.LEFT;
 import static abbaye.model.Facing.RIGHT;
 import static abbaye.model.Room.*;
 import static abbaye.model.Stage.*;
+import static abbaye.model.TileAtlas.*;
 import static abbaye.model.Vertical.*;
 
 import abbaye.AbbayeMain;
@@ -23,12 +24,7 @@ public final class Player implements Actor {
   private static final float PLAYER_CROUCH_WALK_SPEED = 0.30f;
   private static final float PLAYER_NORMAL_WALK_SPEED = 1.0f;
 
-  // FIXME Retire this
   static final int PIXELS_PER_TILE = 8;
-
-  public int[] getCollisions() {
-    return collision;
-  }
 
   public record Waypoint(int roomX, int roomY, float x, float y) {
     Waypoint(int roomX, int roomY, Vector2 pos) {
@@ -781,6 +777,22 @@ public final class Player implements Actor {
   @Override
   public Facing getDirection() {
     return direction;
+  }
+
+  public boolean isCollidingUp() {
+    return collision[COLLISION_UP] != 0;
+  }
+
+  public boolean isCollidingDown() {
+    return collision[COLLISION_DOWN] != 0;
+  }
+
+  public boolean isCollidingLeft() {
+    return collision[COLLISION_LEFT] != 0;
+  }
+
+  public boolean isCollidingRight() {
+    return collision[COLLISION_RIGHT] != 0;
   }
 
   public int getLives() {

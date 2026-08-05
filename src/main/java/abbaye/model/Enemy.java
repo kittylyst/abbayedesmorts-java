@@ -1,4 +1,4 @@
-/* Copyright (C) The Authors 2025 */
+/* Copyright (C) The Authors 2025-2026 */
 package abbaye.model;
 
 import static abbaye.model.Facing.RIGHT;
@@ -11,6 +11,8 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
 
 public final class Enemy implements Actor {
+
+  private final EnemyType type;
 
   // Physicality
   private Vector2 pos = new Vector2(0, 0);
@@ -39,9 +41,17 @@ public final class Enemy implements Actor {
     return direction;
   }
 
+  private Enemy(EnemyType type) {
+    this.type = type;
+  }
+
+  public static Enemy of(EnemyType type) {
+    return new Enemy(type);
+  }
+
   @Override
   public Vector2 getSize() {
-    return null;
+    return type.getSize();
   }
 
   @Override

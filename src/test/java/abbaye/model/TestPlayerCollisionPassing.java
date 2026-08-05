@@ -3,8 +3,9 @@ package abbaye.model;
 
 import static abbaye.model.Facing.LEFT;
 import static abbaye.model.Facing.RIGHT;
-import static abbaye.model.Player.*;
+import static abbaye.model.Player.PIXELS_PER_TILE;
 import static abbaye.model.Stage.*;
+import static abbaye.model.TileAtlas.*;
 import static abbaye.model.Utils.*;
 import static abbaye.model.Vertical.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -46,15 +47,11 @@ public class TestPlayerCollisionPassing {
     // No walls around
 
     player.update();
-    var collisions = player.getCollisions();
 
-    assertEquals(
-        0,
-        (collisions[COLLISION_UP]
-            + collisions[COLLISION_DOWN]
-            + collisions[COLLISION_LEFT]
-            + collisions[COLLISION_RIGHT]),
-        "Should not detect collision in empty space");
+    assertFalse(player.isCollidingUp(), "Should not detect collision in empty space");
+    assertFalse(player.isCollidingDown(), "Should not detect collision in empty space");
+    assertFalse(player.isCollidingLeft(), "Should not detect collision in empty space");
+    assertFalse(player.isCollidingRight(), "Should not detect collision in empty space");
   }
 
   @Test
@@ -78,15 +75,13 @@ public class TestPlayerCollisionPassing {
     float xPos = xCell * tileSize - 1; // Close to wall but not touching
     player.setPos(new Vector2(xPos, yCell * tileSize));
     player.update();
-    var collisions = player.getCollisions();
-    assertEquals(0, collisions[COLLISION_RIGHT], "Should not detect collision to right");
+    assertFalse(player.isCollidingRight(), "Should not detect collision to right");
 
     // Make player walk
     setPrivateField(player, "walk", true);
     player.update();
     player.update();
-    collisions = player.getCollisions();
-    assertEquals(1, collisions[COLLISION_RIGHT], "Should detect collision to right");
+    assertTrue(player.isCollidingRight(), "Should detect collision to right");
   }
 
   @Test
@@ -103,18 +98,15 @@ public class TestPlayerCollisionPassing {
     setCrouch(player, false);
     setPrivateField(player, "walk", true);
 
-    int[] collisions;
     float xPos = 1088;
     player.setPos(new Vector2(xPos, yCell * tileSize));
     player.update();
-    collisions = player.getCollisions();
-    assertEquals(0, collisions[COLLISION_RIGHT], "Should not detect collision to right");
+    assertFalse(player.isCollidingRight(), "Should not detect collision to right");
 
     player.update();
     player.update();
     player.update();
-    collisions = player.getCollisions();
-    assertEquals(1, collisions[COLLISION_RIGHT], "Should detect collision to right");
+    assertTrue(player.isCollidingRight(), "Should detect collision to right");
   }
 
   @Test
@@ -131,8 +123,7 @@ public class TestPlayerCollisionPassing {
     setTiles(stage, playerTileX + 1, playerTileY, playerTileX + 1, playerTileY + 3, 16);
 
     player.update();
-    var collisions = player.getCollisions();
-    assertEquals(0, collisions[COLLISION_RIGHT], "Should not collide with passable tile 16");
+    assertFalse(player.isCollidingRight(), "Should not collide with passable tile 16");
   }
 
   @Test
@@ -152,8 +143,7 @@ public class TestPlayerCollisionPassing {
     setJump(player, NEUTRAL);
 
     player.update();
-    var collisions = player.getCollisions();
-    assertEquals(0, collisions[COLLISION_UP], "Should not check roof collision when not jumping");
+    assertFalse(player.isCollidingUp(), "Should not check roof collision when not jumping");
   }
 
   @Test
@@ -183,7 +173,6 @@ public class TestPlayerCollisionPassing {
   public void testInvisibleGroundRoomLake() {
     float tileSize = Stage.getTileSize();
     var xCell = 2;
-    var yCell = 2;
 
     // Position player high up (y/8 < 4) at column 2
     player.setPos(new Vector2(xCell * tileSize, xCell * tileSize));
