@@ -24,6 +24,8 @@ Mid-stage work-in-progress:
 - [x] `Vector2` decoupled from `Stage` (P2 — `Stage.toTileX/Y` helpers)
 - [x] `GLManager` static initialiser removed (P3 — explicit `GLManager.initAll()`)
 - [x] Cross-platform Maven build (Mac arm64/x86_64, Linux x86_64/arm64 profiles)
+- [x] Build toolchain upgraded to Java 21 / compiler-plugin 3.13.0 / JaCoCo 0.8.12
+- [x] Test coverage expanded: `BoundingBox2`, `Vector2`, `Config` (54 new tests)
 - [ ] Enemy behaviour
 - [ ] Animation system
 - [ ] Full game completion / polish
@@ -32,13 +34,13 @@ Mid-stage work-in-progress:
 
 | Concern | Technology |
 |---------|-----------|
-| Language | Java 17 |
-| Build | Maven (cross-platform profiles) |
+| Language | Java 21 |
+| Build | Maven (cross-platform profiles); requires `JAVA_HOME=/opt/jdk-21.0.2+13` on this machine |
 | Windowing / OpenGL | LWJGL3 3.3.6 (GLFW, OpenGL, OpenAL, STB, Assimp) |
 | Audio | OpenAL via LWJGL3 |
 | Data (maps/config) | Jackson 2.18 (JSON), plain-text map files |
 | Formatting | Spotless + Google Java Format 1.23.0 |
-| Testing | JUnit Jupiter 5.9.2, Mockito 5.15.2, JaCoCo |
+| Testing | JUnit Jupiter 5.9.2, Mockito 5.15.2, JaCoCo 0.8.12 |
 
 ## Architecture
 
@@ -93,16 +95,30 @@ Tests live in `src/test/java/abbaye/`. Game-logic tests run **headless** (no Ope
 
 | Test class | What it covers |
 |---|---|
-| `TestPlayerCollision` | Wall, roof, ground, platform collision |
+| `TestBoundingBox2` | `left/right/top/bottom` edges, `overlaps` (all cases), record equality |
+| `TestConfig` | Default properties, all getters/defaults, all logger sinks, level/highScore mutation, headless override, singleton guards |
+| `TestPlayerCollision` | Wall, roof, ground, platform collision (5 tests `@Disabled` pending crouch implementation) |
 | `TestPlayerCollisionPassing` | Pass-through tile behaviour |
 | `TestPlayerInput` | `InputEvent` → `Player` state (headless, no GLFW) |
-| `TestRooms` | Room navigation (2 pre-existing failures, unrelated to recent work) |
+| `TestRooms` | Room navigation (all passing) |
 | `TestStage` | Stage loading and tile data |
+| `TestStageMutation` | Stage tile mutation helpers |
+| `TestTileAtlas` | UV range, caching, specific tile mappings |
+| `TestVector2` | `magnitude`, `normalize`, `scale`, record equality |
 | `Utils` | Shared test helpers (reflection-based field access, tile setup) |
+
+### Disabled Tests
+
+5 tests in `TestPlayerCollision` are `@Disabled`:
+
+- 4 × crouching collision tests — blocked on `Player.checkCollisions()` crouch branch being commented out
+- 1 × `testSmallPlatformTile38FallLeft` — needs a clear contract before re-enabling
+
+These are **not regressions**; they are intentionally deferred until crouching is implemented.
 
 ## Known Pre-existing Issues
 
-- `TestRooms.testRoomSwitchRightLeft` and `testRoomNoSwitchLeft` fail with a room-coordinate mismatch. These predate the current work branch and are not regressions.
+- ~~`TestRooms.testRoomSwitchRightLeft` and `testRoomNoSwitchLeft` fail with a room-coordinate mismatch~~ — **resolved**: both tests pass as of the `bob_initial_refactor` branch.
 
 ## Key Stakeholders / Users
 

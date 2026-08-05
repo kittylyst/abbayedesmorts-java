@@ -22,3 +22,4 @@ hs_err_*.log
 .idea/
 .bob/
 .vscode/
+.mvn/

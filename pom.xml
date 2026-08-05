@@ -7,8 +7,8 @@
   <packaging>jar</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
     <!-- Library versions -->
     <lwjgl.version>3.3.6</lwjgl.version>
     <!-- lwjgl.natives is set per-platform in <profiles> below -->
@@ -19,12 +19,12 @@
     <!-- Plugin versions-->
     <google-java-format.version>1.23.0</google-java-format.version>
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
-    <compiler-plugin.version>3.8.0</compiler-plugin.version>
+    <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <surefire-plugin.version>3.5.2</surefire-plugin.version>
     <shade-plugin.version>3.6.0</shade-plugin.version>
     <!--      <checkstyle.version>10.6.0</checkstyle.version>-->
     <!--      <checkstyle-plugin.version>3.2.1</checkstyle-plugin.version>-->
-    <jacoco-plugin.version>0.8.9</jacoco-plugin.version>
+    <jacoco-plugin.version>0.8.12</jacoco-plugin.version>
     <!-- surefire.jvm.args is set per-platform in <profiles> below -->
   </properties>
 
@@ -151,10 +151,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${compiler-plugin.version}</version>
         <configuration>
-          <compilerVersion>17</compilerVersion>
-          <release>17</release>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
+          <release>21</release>
         </configuration>
       </plugin>
       <plugin>
