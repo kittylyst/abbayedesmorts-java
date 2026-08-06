@@ -10,7 +10,7 @@
 - **License header**: Every Java file must start with `/* Copyright (C) The Authors $YEAR */` — Spotless enforces this
 - **Architecture**: Loose ECS — entities as Java objects with components; pragmatic, not dogmatic
 - **Naming**: Follow Google Java Style (camelCase methods/fields, PascalCase classes, UPPER_SNAKE constants)
-- **No magic numbers**: See `MAGIC_NUMBERS_CATALOG.md` for catalogued constants; extract new ones with named constants
+- **No magic numbers**: All known constants have been extracted into `Player.java` and `TileAtlas.java`; extract new ones with named constants
 
 ## Testing Standards
 
