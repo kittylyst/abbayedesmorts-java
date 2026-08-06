@@ -1,20 +1,15 @@
-/* Copyright (C) The Authors 2025 */
+/* Copyright (C) The Authors 2025-2026 */
 package abbaye.graphics;
 
 import static abbaye.graphics.GLManager.*;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-import abbaye.AbbayeMain;
-import abbaye.Config;
 import org.junit.jupiter.api.Test;
 
 public class TestGLManager {
 
   @Test
   public void testMatrices() {
-    Config.config().setHeadless(true);
-    AbbayeMain.glStaticInit();
-
     var tileSize = 0.7f;
     var x = 0.6f;
     var y = 0.4f;

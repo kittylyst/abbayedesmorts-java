@@ -37,8 +37,10 @@ public final class InputHandler {
         return;
       }
 
-      // Dialog controls (TAB / SPACE advance the intro splash)
-      if ((key == GLFW_KEY_TAB || key == GLFW_KEY_SPACE) && action == GLFW_RELEASE) {
+      // Dialog controls (TAB / SPACE advance the intro splash — only when dialog is active)
+      if ((key == GLFW_KEY_TAB || key == GLFW_KEY_SPACE)
+          && action == GLFW_RELEASE
+          && gameDialog.isActive()) {
         gameDialog.startTurn();
         return;
       }
