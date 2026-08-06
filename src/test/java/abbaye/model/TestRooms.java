@@ -3,10 +3,8 @@ package abbaye.model;
 
 import static abbaye.model.Facing.LEFT;
 import static abbaye.model.Facing.RIGHT;
-import static abbaye.model.Player.COLLISION_LEFT;
-import static abbaye.model.Player.COLLISION_RIGHT;
 import static abbaye.model.Utils.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import abbaye.AbbayeMain;
 import abbaye.basic.Vector2;
@@ -48,17 +46,14 @@ public class TestRooms {
     setCrouch(player, false);
     setPrivateField(player, "walk", true);
 
-    int[] collisions;
     player.setPos(new Vector2(xCell * tileSize, yCell * tileSize));
     player.update();
-    collisions = player.getCollisions();
-    assertEquals(0, collisions[COLLISION_RIGHT], "Should not detect collision to right");
-    assertEquals(5, stage.getRoom(), "Should be in Room 5");
+    assertFalse(player.isCollidingRight(), "Should not detect collision to right");
+    assertEquals(2, stage.getRoom(), "Should still be in Room 2");
 
     player.update();
-    collisions = player.getCollisions();
-    assertEquals(0, collisions[COLLISION_LEFT], "Should not detect collision to left");
-    assertEquals(6, stage.getRoom(), "Should be in Room 6");
+    assertFalse(player.isCollidingLeft(), "Should not detect collision to left");
+    assertEquals(3, stage.getRoom(), "Should be in Room 3");
 
     assertEquals(0.0f, player.getPos().x(), "Should be at x-pos 0");
   }
@@ -77,20 +72,17 @@ public class TestRooms {
     setCrouch(player, false);
     setPrivateField(player, "walk", true);
 
-    int[] collisions;
     player.setPos(new Vector2(xCell * tileSize, yCell * tileSize));
     player.update();
-    collisions = player.getCollisions();
-    assertEquals(0, collisions[COLLISION_LEFT], "Should not detect collision to left");
-    assertEquals(5, stage.getRoom(), "Should be in Room 5");
+    assertFalse(player.isCollidingLeft(), "Should not detect collision to left");
+    assertEquals(2, stage.getRoom(), "Should still be in Room 2");
 
     player.update();
     player.update();
     player.update();
-    collisions = player.getCollisions();
-    assertEquals(0, collisions[COLLISION_LEFT], "Should not detect collision to left");
-    assertEquals(5, stage.getRoom(), "Should be in Room 5");
+    assertFalse(player.isCollidingLeft(), "Should not detect collision to left");
+    assertEquals(1, stage.getRoom(), "Should be in Room 1");
 
-    assertEquals(0.0f, player.getPos().x(), "Should be at x-pos 0");
+    assertEquals(1920.0f, player.getPos().x(), "Should be at x-pos 1920");
   }
 }

@@ -5,8 +5,8 @@ import static abbaye.model.Facing.LEFT;
 import static abbaye.model.Facing.RIGHT;
 import static abbaye.model.Room.*;
 import static abbaye.model.Stage.*;
+import static abbaye.model.TileAtlas.*;
 import static abbaye.model.Vertical.*;
-import static org.lwjgl.glfw.GLFW.*;
 
 import abbaye.AbbayeMain;
 import abbaye.Config;
@@ -18,19 +18,13 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import java.io.IOException;
 import java.util.Arrays;
-import org.lwjgl.glfw.GLFWKeyCallbackI;
 
 public final class Player implements Actor {
 
   private static final float PLAYER_CROUCH_WALK_SPEED = 0.30f;
   private static final float PLAYER_NORMAL_WALK_SPEED = 1.0f;
 
-  // FIXME Retire this
   static final int PIXELS_PER_TILE = 8;
-
-  public int[] getCollisions() {
-    return collision;
-  }
 
   public record Waypoint(int roomX, int roomY, float x, float y) {
     Waypoint(int roomX, int roomY, Vector2 pos) {
@@ -332,72 +326,30 @@ public final class Player implements Actor {
     return true;
   }
 
-  public GLFWKeyCallbackI moveCallback() {
-    return (window, key, scancode, action, mods) -> {
-      if (action == GLFW_PRESS) {
-        switch (key) {
-          case GLFW_KEY_RIGHT:
-            {
-              direction = RIGHT;
-              walk = true;
-              break;
-            }
-          case GLFW_KEY_LEFT:
-            {
-              direction = LEFT;
-              walk = true;
-              break;
-            }
-          case GLFW_KEY_DOWN:
-            {
-              crouch = true;
-              break;
-            }
-          case GLFW_KEY_UP:
-            {
-              jump = JUMP;
-              break;
-            }
-        }
+  public void handleInput(InputEvent event) {
+    switch (event) {
+      case MOVE_RIGHT_START -> {
+        direction = RIGHT;
+        walk = true;
       }
-      if (action == GLFW_RELEASE) {
-        switch (key) {
-          case GLFW_KEY_ESCAPE:
-            {
-              glfwSetWindowShouldClose(window, true);
-              break;
-            }
-          case GLFW_KEY_TAB:
-            {
-              logger.info(this.toString());
-              break;
-            }
-          case GLFW_KEY_RIGHT:
-            {
-              direction = RIGHT;
-              walk = false;
-              break;
-            }
-          case GLFW_KEY_LEFT:
-            {
-              direction = LEFT;
-              walk = false;
-              break;
-            }
-          case GLFW_KEY_DOWN:
-            {
-              crouch = false;
-              break;
-            }
-          case GLFW_KEY_UP:
-            {
-              jump = NEUTRAL;
-              break;
-            }
-          default:
-        }
+      case MOVE_RIGHT_END -> {
+        direction = RIGHT;
+        walk = false;
       }
-    };
+      case MOVE_LEFT_START -> {
+        direction = LEFT;
+        walk = true;
+      }
+      case MOVE_LEFT_END -> {
+        direction = LEFT;
+        walk = false;
+      }
+      case CROUCH_START -> crouch = true;
+      case CROUCH_END -> crouch = false;
+      case JUMP_START -> jump = JUMP;
+      case JUMP_END -> jump = NEUTRAL;
+      case DEBUG_DUMP -> logger.info(this.toString());
+    }
   }
 
   public boolean checkHit() {
@@ -657,8 +609,8 @@ public final class Player implements Actor {
    */
   public boolean checkStaticHazard() {
     var stagedata = stage.getScreen(stage.getRoom());
-    int baseTileX = pos.tileX();
-    int baseTileY = pos.tileY();
+    int baseTileX = Stage.toTileX(pos.x());
+    int baseTileY = Stage.toTileY(pos.y());
 
     /* Touch static hazard */
     if (tileAt(stagedata, baseTileY + 1, baseTileX) == TILE_STATIC_HAZARD
@@ -676,23 +628,23 @@ public final class Player implements Actor {
   public boolean checkStaticObject() {
     int room = stage.getRoom();
     var stagedata = stage.getScreen(room);
-    int baseTileX = pos.tileX();
-    int baseTileY = pos.tileY();
+    int baseTileX = Stage.toTileX(pos.x());
+    int baseTileY = Stage.toTileY(pos.y());
 
     /* Touch hearts */
     if (room == ROOM_ASHES.index()) {
       if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 400, 405))
           || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 400, 405))) {
-        if (pos.tileX() > 160) {
-          stagedata[7][23] = 0;
-          stagedata[7][24] = 0;
-          stagedata[8][23] = 0;
-          stagedata[8][24] = 0;
+        if (Stage.toTileX(pos.x()) > 160) {
+          stage.clearTile(room, 7, 23);
+          stage.clearTile(room, 7, 24);
+          stage.clearTile(room, 8, 23);
+          stage.clearTile(room, 8, 24);
         } else {
-          stagedata[18][8] = 0;
-          stagedata[18][9] = 0;
-          stagedata[19][8] = 0;
-          stagedata[19][9] = 0;
+          stage.clearTile(room, 18, 8);
+          stage.clearTile(room, 18, 9);
+          stage.clearTile(room, 19, 8);
+          stage.clearTile(room, 19, 9);
         }
         if (lives < 9) {
           lives += 1;
@@ -703,11 +655,7 @@ public final class Player implements Actor {
     } else {
       if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 400, 405))
           || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 400, 405))) {
-        for (var v = 0; v < 22; v++) {
-          for (var h = 0; h < 32; h++) {
-            if ((stagedata[v][h] > 400) && (stagedata[v][h] < 405)) stagedata[v][h] = 0;
-          }
-        }
+        stage.clearTilesWhere(room, t -> t > 400 && t < 405);
         if (lives < 9) {
           lives += 1;
           //        Mix_PlayChannel(-1, fx[2], 0);
@@ -719,14 +667,9 @@ public final class Player implements Actor {
     /* Touch crosses */
     if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 408, 413))
         || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 408, 413))) {
-      for (var v = 0; v < 22; v++) {
-        for (var h = 0; h < 32; h++) {
-          if ((stagedata[v][h] > 408) && (stagedata[v][h] < 413)) stagedata[v][h] = 0;
-        }
-      }
+      stage.clearTilesWhere(room, t -> t > 408 && t < 413);
       crosses += 1;
       //        Mix_PlayChannel(-1, fx[2], 0);
-
       return true;
     }
 
@@ -734,17 +677,12 @@ public final class Player implements Actor {
     /* Touch waypoint crosses */
     if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 320, 327))
         || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 320, 327))) {
-      for (var v = 0; v < 22; v++) {
-        for (var h = 0; h < 32; h++) {
-          // FIXME - Don't nuke the waypoint cross, toggle instead.
-          if ((stagedata[v][h] > 320) && (stagedata[v][h] < 327)) stagedata[v][h] = 0;
-        }
-      }
+      // FIXME - Don't nuke the waypoint cross, toggle instead.
+      stage.clearTilesWhere(room, t -> t > 320 && t < 327);
       // Update waypoint
       logger.info("Updating waypoint here: " + last);
       last = new Waypoint(stage.getRoomX(), stage.getRoomY(), pos);
       //        Mix_PlayChannel(-1, fx[2], 0);
-
       return true;
     }
 
@@ -839,6 +777,22 @@ public final class Player implements Actor {
   @Override
   public Facing getDirection() {
     return direction;
+  }
+
+  public boolean isCollidingUp() {
+    return collision[COLLISION_UP] != 0;
+  }
+
+  public boolean isCollidingDown() {
+    return collision[COLLISION_DOWN] != 0;
+  }
+
+  public boolean isCollidingLeft() {
+    return collision[COLLISION_LEFT] != 0;
+  }
+
+  public boolean isCollidingRight() {
+    return collision[COLLISION_RIGHT] != 0;
   }
 
   public int getLives() {

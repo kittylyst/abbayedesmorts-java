@@ -31,6 +31,9 @@ public class GameDialog {
   private final GLManager glManager;
   private final long window;
 
+  /** Called when the splash ends to re-register the game key callback. */
+  private Runnable onTurnStart;
+
   private State state;
   private Player player;
   private double splashStartTimeSeconds;
@@ -42,6 +45,10 @@ public class GameDialog {
     state = State.INACTIVE;
     window = main.getWindow();
     reset();
+  }
+
+  public void setOnTurnStart(Runnable onTurnStart) {
+    this.onTurnStart = onTurnStart;
   }
 
   private static float[] PROJECTION_MATRIX = {
@@ -108,7 +115,9 @@ public class GameDialog {
 
   public void startTurn() {
     state = State.INACTIVE;
-    glfwSetKeyCallback(window, mainClass.getLayer().moveCallback());
+    if (onTurnStart != null) {
+      onTurnStart.run();
+    }
   }
 
   public void setPlayer(Player player) {

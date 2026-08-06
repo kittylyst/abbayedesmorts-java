@@ -7,11 +7,11 @@
   <packaging>jar</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
     <!-- Library versions -->
     <lwjgl.version>3.3.6</lwjgl.version>
-    <lwjgl.natives>natives-macos-arm64</lwjgl.natives>
+    <!-- lwjgl.natives is set per-platform in <profiles> below -->
     <jackson-core.version>2.18.0</jackson-core.version>
     <!-- Test versions -->
     <junit.version>5.9.2</junit.version>
@@ -19,14 +19,13 @@
     <!-- Plugin versions-->
     <google-java-format.version>1.23.0</google-java-format.version>
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
-    <compiler-plugin.version>3.8.0</compiler-plugin.version>
+    <compiler-plugin.version>3.13.0</compiler-plugin.version>
     <surefire-plugin.version>3.5.2</surefire-plugin.version>
     <shade-plugin.version>3.6.0</shade-plugin.version>
     <!--      <checkstyle.version>10.6.0</checkstyle.version>-->
     <!--      <checkstyle-plugin.version>3.2.1</checkstyle-plugin.version>-->
-    <jacoco-plugin.version>0.8.9</jacoco-plugin.version>
-    <!-- Custom JVM arguments for surefire (will be combined with JaCoCo argLine) -->
-    <surefire.jvm.args>-XstartOnFirstThread -javaagent:${org.mockito:mockito-core:jar} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</surefire.jvm.args>
+    <jacoco-plugin.version>0.8.12</jacoco-plugin.version>
+    <!-- surefire.jvm.args is set per-platform in <profiles> below -->
   </properties>
 
   <dependencyManagement>
@@ -152,10 +151,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${compiler-plugin.version}</version>
         <configuration>
-          <compilerVersion>17</compilerVersion>
-          <release>17</release>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
+          <release>21</release>
         </configuration>
       </plugin>
       <plugin>
@@ -188,6 +184,15 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.4.1</version>
+        <configuration>
+          <mainClass>abbaye.AbbayeMain</mainClass>
+          <commandlineArgs>${game.jvm.args}</commandlineArgs>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -283,4 +288,73 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <!-- ─── macOS (arm64) ─────────────────────────────────────────────── -->
+    <profile>
+      <id>mac-arm64</id>
+      <activation>
+        <os>
+          <family>mac</family>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <lwjgl.natives>natives-macos-arm64</lwjgl.natives>
+        <surefire.jvm.args>-XstartOnFirstThread -javaagent:${org.mockito:mockito-core:jar} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</surefire.jvm.args>
+        <game.jvm.args>-XstartOnFirstThread</game.jvm.args>
+      </properties>
+    </profile>
+
+    <!-- ─── macOS (x86_64) ───────────────────────────────────────────── -->
+    <profile>
+      <id>mac-x86_64</id>
+      <activation>
+        <os>
+          <family>mac</family>
+          <arch>x86_64</arch>
+        </os>
+      </activation>
+      <properties>
+        <lwjgl.natives>natives-macos</lwjgl.natives>
+        <surefire.jvm.args>-XstartOnFirstThread -javaagent:${org.mockito:mockito-core:jar} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</surefire.jvm.args>
+        <game.jvm.args>-XstartOnFirstThread</game.jvm.args>
+      </properties>
+    </profile>
+
+    <!-- ─── Linux (x86_64) ───────────────────────────────────────────── -->
+    <profile>
+      <id>linux-x86_64</id>
+      <activation>
+        <os>
+          <name>Linux</name>
+          <family>unix</family>
+          <arch>amd64</arch>
+        </os>
+      </activation>
+      <properties>
+        <lwjgl.natives>natives-linux</lwjgl.natives>
+        <surefire.jvm.args>-javaagent:${org.mockito:mockito-core:jar} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</surefire.jvm.args>
+        <game.jvm.args></game.jvm.args>
+      </properties>
+    </profile>
+
+    <!-- ─── Linux (arm64) ────────────────────────────────────────────── -->
+    <profile>
+      <id>linux-arm64</id>
+      <activation>
+        <os>
+          <name>Linux</name>
+          <family>unix</family>
+          <arch>aarch64</arch>
+        </os>
+      </activation>
+      <properties>
+        <lwjgl.natives>natives-linux-arm64</lwjgl.natives>
+        <surefire.jvm.args>-javaagent:${org.mockito:mockito-core:jar} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED</surefire.jvm.args>
+        <game.jvm.args></game.jvm.args>
+      </properties>
+    </profile>
+  </profiles>
+
 </project>

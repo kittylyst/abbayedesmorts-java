@@ -1,4 +1,4 @@
-/* Copyright (C) The Authors 2025 */
+/* Copyright (C) The Authors 2025-2026 */
 package abbaye.model;
 
 import static abbaye.graphics.GLManager.*;
@@ -22,7 +22,7 @@ public class StatusDisplay implements Renderable {
 
   public record Glyph(String name, int width, int height, Corners corners) {}
 
-  private float GLYPH_HEIGHT = 0.041666668f;
+  private static final float GLYPH_HEIGHT = 0.041666668f;
 
   /** Glyphs for each char (digits) for hearts and crosses */
   private final Map<Character, Glyph> digitGlyphs = new HashMap<>();

@@ -1,10 +1,9 @@
-/* Copyright (C) The Authors 2025 */
+/* Copyright (C) The Authors 2025-2026 */
 package abbaye.graphics;
 
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 
-import abbaye.Config;
 import abbaye.basic.Corners;
 import java.io.IOException;
 import java.util.HashMap;
@@ -40,46 +39,43 @@ public final class GLManager {
     return mgr;
   }
 
-  static {
-    if (Config.config().getGLActive()) {
-      // Splash screen shaders
-      var manager = new GLManager();
-      manager.init("/shaders/splash.vert", "/shaders/splash.frag");
-      // Get locations for uniforms
-      manager.projectionLocation = glGetUniformLocation(manager.shaderProgram, "projection");
-      // Position attribute
-      glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
-      glEnableVertexAttribArray(0);
-
-      // Texture coordinate attribute
-      glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
-      glEnableVertexAttribArray(1);
-
-      manager.textures.put("introSplash", Texture.of("/intro.png", true, true));
-
-      managers.put("dialog", manager);
-
-      // Main game shaders
-      manager = new GLManager();
-      manager.init("/shaders/game.vert", "/shaders/game.frag");
-      // Get locations for uniforms
-      manager.projectionLocation = glGetUniformLocation(manager.shaderProgram, "projection");
-      manager.modelLocation = glGetUniformLocation(manager.shaderProgram, "model");
-
-      // Position attribute
-      glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
-      glEnableVertexAttribArray(0);
-
-      // Texture coordinate attribute
-      glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
-      glEnableVertexAttribArray(1);
-
-      // Game textures
-      manager.textures.put("fonts", Texture.of("/fonts.png", true, true));
-      manager.textures.put("tiles", Texture.of("/tiles.png", true, true));
-
-      managers.put("game", manager);
+  /**
+   * Initialises all shader programs and textures. Must be called once, after the OpenGL context has
+   * been made current (i.e. from AbbayeMain.glInit()). Safe to call multiple times — subsequent
+   * calls are ignored if managers are already populated.
+   */
+  public static synchronized void initAll() {
+    if (!managers.isEmpty()) {
+      return;
     }
+
+    // Splash screen shaders
+    var manager = new GLManager();
+    manager.init("/shaders/splash.vert", "/shaders/splash.frag");
+    manager.projectionLocation = glGetUniformLocation(manager.shaderProgram, "projection");
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
+    glEnableVertexAttribArray(1);
+
+    manager.textures.put("introSplash", Texture.of("/intro.png", true, true));
+    managers.put("dialog", manager);
+
+    // Main game shaders
+    manager = new GLManager();
+    manager.init("/shaders/game.vert", "/shaders/game.frag");
+    manager.projectionLocation = glGetUniformLocation(manager.shaderProgram, "projection");
+    manager.modelLocation = glGetUniformLocation(manager.shaderProgram, "model");
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
+    glEnableVertexAttribArray(1);
+
+    manager.textures.put("fonts", Texture.of("/fonts.png", true, true));
+    manager.textures.put("tiles", Texture.of("/tiles.png", true, true));
+    managers.put("game", manager);
   }
 
   private int shaderProgram;
