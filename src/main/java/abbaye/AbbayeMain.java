@@ -201,9 +201,12 @@ public final class AbbayeMain {
     var status = StatusDisplay.of(p, stage);
     status.init();
 
+    var enemies = stage.buildEnemies(stage.getRoom());
+
     layer.setPlayer(p);
     layer.setStage(stage);
     layer.setStatus(status);
+    layer.setEnemies(enemies);
     layer.init();
 
     gameDialog.setPlayer(p);

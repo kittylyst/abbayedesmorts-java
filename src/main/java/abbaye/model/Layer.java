@@ -15,6 +15,7 @@ public class Layer {
   private Optional<Player> oPlayer = Optional.empty();
   private Optional<Stage> oStage = Optional.empty();
   private Optional<StatusDisplay> oStatus = Optional.empty();
+  private List<Enemy> enemies = new ArrayList<>();
 
   private GameLogger logger = Config.config().getLogger();
 
@@ -38,6 +39,9 @@ public class Layer {
     // Order matters!
     oStage.ifPresent(Stage::render);
     oPlayer.ifPresent(Player::render);
+    for (var enemy : enemies) {
+      enemy.render();
+    }
     // Status display needs to bind a different texture map (the fonts)
     oStatus.ifPresent(StatusDisplay::render);
 
@@ -53,26 +57,20 @@ public class Layer {
    * @return
    */
   public void update() {
-    // FIXME Check for removals first
-
     oPlayer.ifPresent(Player::update);
-    //    oPlayer.ifPresent(p -> System.out.println(p.getPos()));
 
-    // FIXME Update enemies
+    for (var enemy : enemies) {
+      enemy.update();
+    }
 
     debugLogState();
 
-    // Now do collision detection - check if destroyable objects have been hit
-
-    // Player first
+    // Collision detection — check if destroyable objects have been hit
     try {
       oPlayer.filter(Player::checkHit).ifPresent(Player::destroy);
     } catch (Throwable t) {
       oPlayer.ifPresent(p -> logger.error("Player threw: " + p, t));
     }
-
-    // FIXME Now enemies
-
   }
 
   private void debugLogState() {
@@ -98,6 +96,11 @@ public class Layer {
 
   public void setStatus(StatusDisplay status) {
     oStatus = Optional.of(status);
+  }
+
+  /** Replaces the active enemy list. Called by {@code AbbayeMain.initLayer()} after stage load. */
+  public void setEnemies(List<Enemy> enemies) {
+    this.enemies = enemies;
   }
 
   public void cleanup() {

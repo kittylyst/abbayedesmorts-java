@@ -30,12 +30,21 @@ Mid-stage work-in-progress:
 - [x] `TILE_*` constants migrated to `TileAtlas` (public, canonical); removed from `Stage`
 - [x] `TILES_PER_ROW` / `TILES_PER_COL` moved to `TileAtlas`; circular `Stage` ↔ `TileAtlas` import eliminated
 - [x] `Stage` no longer imports GLFW (dead import removed; model invariant now enforced)
-- [x] `EnemyType` enum introduced; `Enemy` wired to it via `Enemy.of(EnemyType)` factory
 - [x] `Player.getCollisions()` removed; replaced with typed `isCollidingUp/Down/Left/Right()` accessors
 - [x] `InputHandler` TAB/SPACE guarded by `gameDialog.isActive()` — no longer fires mid-game; `DEBUG_DUMP` now reachable
 - [x] `Stage.clearTilesWhere()` bounds-checked to match `clearTile()` (consistent, no AIOOBE on bad screen index)
-- [ ] Enemy behaviour (concrete `EnemyType` values, parsing from `enemies.txt`)
-- [ ] Animation system
+- [x] `EnemyType` enum fully populated (13 concrete values + `UNKNOWN`; codes, sizes from C source)
+- [x] `EnemyData` record — raw parsed slot from `enemies.txt`; `fromFields(int[])` factory
+- [x] `Stage.loadEnemies()` — parses all 25 screens × 7 slots; called automatically from `Stage.load()`
+- [x] `Stage.buildEnemies(int screen)` — constructs `List<Enemy>` for a screen, converting C pixel coords to Java world coords
+- [x] `Layer` wired to enemy list — `update()` and `render()` loop over enemies each frame
+- [x] `AbbayeMain.initLayer()` populates enemies from initial room on startup
+- [x] `docs/ENEMIES_FORMAT.md` — authoritative field-by-field format reference decoded from C GPL source
+- [x] 29 new tests: `TestEnemyType` (9), `TestEnemyParsing` (20); test baseline now 141 passing, 5 skipped
+- [ ] Enemy movement behaviour (patrol, gravity, type-specific logic)
+- [ ] Enemy–player collision (contact → life loss, waypoint respawn)
+- [ ] Crouching collision — uncomment branch, fix unit-mismatch bug, re-enable 5 disabled tests
+- [ ] Animation system (player walk/jump/crouch frames; enemy frame cycling)
 - [ ] Full game completion / polish
 
 ## Tech Stack
@@ -108,6 +117,8 @@ Tests live in `src/test/java/abbaye/`. Game-logic tests run **headless** (no Ope
 |---|---|
 | `TestBoundingBox2` | `left/right/top/bottom` edges, `overlaps` (all cases), record equality |
 | `TestConfig` | Default properties, all getters/defaults, all logger sinks, level/highScore mutation, headless override, singleton guards |
+| `TestEnemyParsing` | `Stage.loadEnemies()` slot counts, all 15 field values for key screens, `buildEnemies()` position scaling and direction mapping |
+| `TestEnemyType` | `fromCode()` for all known codes, fallback to `UNKNOWN`, `code` field, sprite sizes for all 5 size categories |
 | `TestPlayerCollision` | Wall, roof, ground, platform collision (5 tests `@Disabled` pending crouch implementation) |
 | `TestPlayerCollisionPassing` | Pass-through tile behaviour |
 | `TestPlayerInput` | `InputEvent` → `Player` state (headless, no GLFW) |
