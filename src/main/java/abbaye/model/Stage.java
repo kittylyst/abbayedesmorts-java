@@ -2,7 +2,6 @@
 package abbaye.model;
 
 import static abbaye.model.TileAtlas.*;
-import static org.lwjgl.glfw.GLFW.*;
 
 import abbaye.AbbayeMain;
 import abbaye.basic.Corners;
@@ -19,9 +18,6 @@ public final class Stage implements Renderable {
   public static final int NUM_SCREENS = SCREENS_X * SCREENS_Y;
   public static final int NUM_COLUMNS = 32;
   public static final int NUM_ROWS = 22;
-
-  public static final int TILES_PER_ROW = 125;
-  public static final int TILES_PER_COL = 30;
 
   public static final int LEFT_EDGE = 0;
   public static final int TOP_EDGE = 0;
@@ -126,6 +122,9 @@ public final class Stage implements Renderable {
    * @param predicate test applied to the current tile-type value; matching tiles are cleared
    */
   public void clearTilesWhere(int screen, IntPredicate predicate) {
+    if (screen < 0 || screen >= NUM_SCREENS) {
+      return;
+    }
     var screenData = stagedata[screen];
     for (int row = 0; row < NUM_ROWS; row++) {
       for (int col = 0; col < NUM_COLUMNS; col++) {

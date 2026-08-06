@@ -635,6 +635,8 @@ public final class Player implements Actor {
     if (room == ROOM_ASHES.index()) {
       if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 400, 405))
           || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 400, 405))) {
+        // FIXME: compares a tile index (0-31) against 160 — always false.
+        // Original C compared pixel coordinates; needs a correct tile-column threshold.
         if (Stage.toTileX(pos.x()) > 160) {
           stage.clearTile(room, 7, 23);
           stage.clearTile(room, 7, 24);

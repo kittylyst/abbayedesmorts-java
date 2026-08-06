@@ -1,8 +1,6 @@
 /* Copyright (C) The Authors 2025-2026 */
 package abbaye.model;
 
-import static abbaye.model.Stage.*;
-
 import abbaye.basic.Corners;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +12,11 @@ import java.util.Map;
  * <p>Results are cached by tile-type ID; the cache is populated on first lookup.
  */
 public final class TileAtlas {
+
+  // ── Texture atlas grid dimensions ──────────────────────────────────────────
+  // Tile sheet is 125 tiles wide × 30 tiles tall (in tile units).
+  public static final int TILES_PER_ROW = 125;
+  public static final int TILES_PER_COL = 30;
 
   // ── Tile-type IDs ──────────────────────────────────────────────────────────
   // Canonical home for all tile-type integer constants. Used for both collision

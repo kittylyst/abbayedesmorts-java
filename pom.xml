@@ -190,9 +190,17 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>3.4.1</version>
         <configuration>
-          <mainClass>abbaye.AbbayeMain</mainClass>
-          <commandlineArgs>${game.jvm.args}</commandlineArgs>
+          <executable>java</executable>
+          <commandlineArgs>${game.jvm.args} -cp %classpath abbaye.AbbayeMain</commandlineArgs>
         </configuration>
+        <executions>
+          <execution>
+            <id>run-game</id>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

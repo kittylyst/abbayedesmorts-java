@@ -13,6 +13,8 @@ buildNumber.properties
 
 hs_err_*.log
 
+.DS_Store
+
 # Eclipse m2e generated files
 # Eclipse Core
 .project
