@@ -31,6 +31,7 @@ public class Layer {
     renderables.addAll(misc);
     oPlayer.ifPresent(renderables::add);
     oStage.ifPresent(renderables::add);
+    renderables.addAll(enemies);
 
     return renderables;
   }

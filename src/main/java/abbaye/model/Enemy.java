@@ -3,10 +3,16 @@ package abbaye.model;
 
 import static abbaye.model.Facing.LEFT;
 import static abbaye.model.Facing.RIGHT;
+import static abbaye.model.TileAtlas.TILES_PER_COL;
+import static abbaye.model.TileAtlas.TILES_PER_ROW;
 
+import abbaye.AbbayeMain;
+import abbaye.Config;
 import abbaye.basic.Actor;
 import abbaye.basic.BoundingBox2;
+import abbaye.basic.Corners;
 import abbaye.basic.Vector2;
+import abbaye.graphics.GLManager;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -24,6 +30,17 @@ public final class Enemy implements Actor {
   // Patrol bounds and speed — stored in Java world pixels
   private final float limitLeft;
   private final float limitRight;
+
+  /**
+   * Sprite atlas source coordinates in C native pixels (as stored in {@code enemies.txt} fields 4
+   * and 5). Used directly to compute UV coordinates for rendering.
+   */
+  private final int tileX;
+
+  private final int tileY;
+
+  // GL rendering
+  private GLManager manager;
 
   /**
    * Patrol speed in Java world pixels per frame. Derived from the C {@code speed} field: {@code
@@ -102,7 +119,9 @@ public final class Enemy implements Actor {
       float adjustX1,
       float adjustX2,
       float adjustY1,
-      float adjustY2) {
+      float adjustY2,
+      int tileX,
+      int tileY) {
     this.type = type;
     this.pos = pos;
     this.direction = direction;
@@ -113,11 +132,13 @@ public final class Enemy implements Actor {
     this.adjustX2 = adjustX2;
     this.adjustY1 = adjustY1;
     this.adjustY2 = adjustY2;
+    this.tileX = tileX;
+    this.tileY = tileY;
   }
 
   /** Creates a bare enemy with default (zero) patrol bounds — used in tests. */
   public static Enemy of(EnemyType type) {
-    return new Enemy(type, new Vector2(0, 0), RIGHT, 0, 0, 0, 0, 0, 0, 0);
+    return new Enemy(type, new Vector2(0, 0), RIGHT, 0, 0, 0, 0, 0, 0, 0, 0, 0);
   }
 
   /**
@@ -138,7 +159,18 @@ public final class Enemy implements Actor {
     float ay1 = data.adjustY1() * scale;
     float ay2 = data.adjustY2() * scale;
     return new Enemy(
-        data.type(), new Vector2(worldX, worldY), dir, ll, lr, speed, ax1, ax2, ay1, ay2);
+        data.type(),
+        new Vector2(worldX, worldY),
+        dir,
+        ll,
+        lr,
+        speed,
+        ax1,
+        ax2,
+        ay1,
+        ay2,
+        data.tileX(),
+        data.tileY());
   }
 
   // ── Game-loop methods ────────────────────────────────────────────────────────
@@ -176,7 +208,50 @@ public final class Enemy implements Actor {
   }
 
   @Override
+  public void init() {
+    if (AbbayeMain.isGlEnabled()) {
+      manager = GLManager.get("game");
+    }
+  }
+
+  @Override
   public boolean render() {
-    return false;
+    if (!Config.config().getGLActive()) {
+      return false;
+    }
+
+    // Atlas dimensions in C-native pixels
+    int atlasW = 8 * TILES_PER_ROW;
+    int atlasH = 8 * TILES_PER_COL;
+
+    // Sprite dimensions in C-native pixels
+    int spriteW = (int) type.getSize().x();
+    int spriteH = (int) type.getSize().y();
+
+    // UV coordinates for the sprite in the atlas (Y flipped for OpenGL)
+    float u1 = (float) tileX / atlasW;
+    float u2 = (float) (tileX + spriteW) / atlasW;
+    float v1 = 1f - (float) tileY / atlasH;
+    float v2 = 1f - (float) (tileY + spriteH) / atlasH;
+
+    // Display dimensions: each C-native pixel maps to (tileSize / PIXELS_PER_TILE) display pixels
+    float scale = Stage.getTileSize() / Player.PIXELS_PER_TILE;
+    float dispW = spriteW * scale;
+    float dispH = spriteH * scale;
+
+    // Flip U horizontally for LEFT-facing sprites
+    Corners tileCoords;
+    if (direction == LEFT) {
+      tileCoords = new Corners(u2, v1, u1, v2);
+    } else {
+      tileCoords = new Corners(u1, v1, u2, v2);
+    }
+
+    float[] translateM = GLManager.createTranslationMatrix(pos.x(), pos.y(), 0);
+    float[] scaleM = GLManager.createScaleMatrix(dispW, dispH, 1);
+    float[] model = GLManager.multiplyMatrices(scaleM, translateM);
+    manager.renderTile(tileCoords, model);
+
+    return true;
   }
 }
