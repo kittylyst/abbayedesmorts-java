@@ -4,7 +4,7 @@ Port of [Abbaye Des Morts GPL version](https://github.com/nevat/abbayedesmorts-g
 
 ## Requirements
 
-* Java 17+
+* Java 21+
 
 * Maven
 
@@ -22,10 +22,10 @@ java -XstartOnFirstThread -jar target/abbayedesmorts-1.0.0-SNAPSHOT.jar
 
 or
 ```
-mvn exec:java
+mvn compile exec:exec
 ```
 
-The -XstartOnFirstThread flag is only required on Mac
+The -XstartOnFirstThread flag is only required on Mac (the `exec:exec` target adds it automatically on macOS)
 
 ## CREDITS
 

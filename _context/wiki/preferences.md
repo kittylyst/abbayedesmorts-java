@@ -6,7 +6,7 @@
   - Apply before committing: `mvn spotless:apply`
   - Full clean build: `mvn clean spotless:apply package`
   - Spotless runs automatically at compile phase (`mvn compile` will fail if unformatted)
-- **Java version**: 17 (use records, sealed classes, pattern matching where appropriate)
+- **Java version**: 21 (use records, sealed classes, pattern matching where appropriate)
 - **License header**: Every Java file must start with `/* Copyright (C) The Authors $YEAR */` — Spotless enforces this
 - **Architecture**: Loose ECS — entities as Java objects with components; pragmatic, not dogmatic
 - **Naming**: Follow Google Java Style (camelCase methods/fields, PascalCase classes, UPPER_SNAKE constants)

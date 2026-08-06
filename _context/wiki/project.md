@@ -26,7 +26,7 @@ Mid-stage work-in-progress:
 - [x] Cross-platform Maven build (Mac arm64/x86_64, Linux x86_64/arm64 profiles)
 - [x] Build toolchain upgraded to Java 21 / compiler-plugin 3.13.0 / JaCoCo 0.8.12
 - [x] Test coverage expanded: `BoundingBox2`, `Vector2`, `Config` (54 new tests)
-- [x] `mvn compile exec:java` target — uses `exec:exec` so `-XstartOnFirstThread` is a real JVM flag (not a program arg) on macOS profiles
+- [x] `mvn compile exec:exec` run target — spawns a fresh `java` process so `-XstartOnFirstThread` is a real JVM flag (not a program arg) on macOS profiles; note `exec:java` no longer works (no `mainClass` configured)
 - [x] `TILE_*` constants migrated to `TileAtlas` (public, canonical); removed from `Stage`
 - [x] `TILES_PER_ROW` / `TILES_PER_COL` moved to `TileAtlas`; circular `Stage` ↔ `TileAtlas` import eliminated
 - [x] `Stage` no longer imports GLFW (dead import removed; model invariant now enforced)
@@ -43,7 +43,7 @@ Mid-stage work-in-progress:
 | Concern | Technology |
 |---------|-----------|
 | Language | Java 21 |
-| Build | Maven (cross-platform profiles); requires `JAVA_HOME=/opt/jdk-21.0.2+13` on this machine; run game with `mvn compile exec:java` |
+| Build | Maven (cross-platform profiles); requires a Java 21 JDK — set `JAVA_HOME` to the local install, whose location is OS- and installation-specific (currently `/Library/Java/JavaVirtualMachines/java21/Contents/Home` on this machine); run game with `mvn compile exec:exec` |
 | Windowing / OpenGL | LWJGL3 3.3.6 (GLFW, OpenGL, OpenAL, STB, Assimp) |
 | Audio | OpenAL via LWJGL3 |
 | Data (maps/config) | Jackson 2.18 (JSON), plain-text map files |
@@ -131,6 +131,7 @@ These are **not regressions**; they are intentionally deferred until crouching i
 
 - ~~`TestRooms.testRoomSwitchRightLeft` and `testRoomNoSwitchLeft` fail with a room-coordinate mismatch~~ — **resolved**: both tests pass as of the `bob_initial_refactor` branch.
 - `Player.checkStaticObject()` line `Stage.toTileX(pos.x()) > 160` compares a tile index (0–31) against 160 — always false. Original C compared pixel coordinates. Marked `// FIXME`; correct tile-column threshold TBD.
+- ~~`TestGLManager.testMatrices()` was not truly headless: it called `AbbayeMain.glStaticInit()` → `glfwInit()`, which needs macOS window-server access, so in a GUI-less environment (CI, sandboxed shell) the suite would *hang* in `[NSApplication run]` rather than fail~~ — **resolved**: the `glStaticInit()`/`setHeadless()` calls were dead weight (the test only exercises pure matrix math) and have been removed; the whole suite is now genuinely headless. Beware reintroducing `glfwInit()` in tests.
 
 ## Key Stakeholders / Users
 
