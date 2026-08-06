@@ -71,6 +71,23 @@ public class Layer {
     } catch (Throwable t) {
       oPlayer.ifPresent(p -> logger.error("Player threw: " + p, t));
     }
+
+    // Enemy–player contact: any overlap kills the player (decrements lives, respawns at waypoint)
+    oPlayer.ifPresent(this::checkEnemyContact);
+  }
+
+  /**
+   * Checks whether any live enemy's hit box overlaps the player's hit box. On contact, delegates to
+   * {@link Player#onEnemyContact()} which mirrors the C {@code jean.death = 1} path.
+   */
+  private void checkEnemyContact(Player player) {
+    var playerBox = player.hitBox();
+    for (var enemy : enemies) {
+      if (enemy.hitBox().overlaps(playerBox)) {
+        player.onEnemyContact();
+        return; // one contact per tick is sufficient
+      }
+    }
   }
 
   private void debugLogState() {

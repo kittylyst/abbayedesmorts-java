@@ -356,6 +356,22 @@ public final class Player implements Actor {
     return false;
   }
 
+  /**
+   * Called by {@code Layer} when an enemy's hit box overlaps this player. Mirrors the C {@code
+   * jean.death = 1} path: decrements lives and respawns at the last waypoint.
+   */
+  void onEnemyContact() {
+    logger.info("Enemy contact");
+    if (lives <= 0) {
+      lives = 5;
+      logger.info("Resetting lives, need to exit game here instead");
+    } else {
+      lives -= 1;
+    }
+    stage.toWaypoint(last);
+    pos = last.getPos();
+  }
+
   int[][] getTileGrid() {
     int[][] out = new int[4][3];
     float resize = Stage.getTileSize();
@@ -774,6 +790,20 @@ public final class Player implements Actor {
   @Override
   public Vector2 getSize() {
     return new Vector2(16, 24);
+  }
+
+  /**
+   * Returns this player's collision bounding box in Java world pixels. The size matches the C
+   * source body box (1..13 wide, 0..22 tall in native pixels, scaled by {@link #PIXELS_PER_TILE}).
+   */
+  BoundingBox2 hitBox() {
+    float scale = PIXELS_PER_TILE;
+    // C body: x+1..x+13 wide (12 px), y..y+22 tall (22 px) in native resolution
+    float w = 12 * scale;
+    float h = 22 * scale;
+    float cx = pos.x() + 1 * scale + w / 2f;
+    float cy = pos.y() + h / 2f;
+    return new BoundingBox2(new Vector2(cx, cy), new Vector2(w, h));
   }
 
   @Override

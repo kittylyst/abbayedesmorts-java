@@ -56,7 +56,7 @@ Mid-stage work-in-progress:
 | Windowing / OpenGL | LWJGL3 3.3.6 (GLFW, OpenGL, OpenAL, STB, Assimp) |
 | Audio | OpenAL via LWJGL3 |
 | Data (maps/config) | Jackson 2.18 (JSON), plain-text map files |
-| Formatting | Spotless + Google Java Format 1.23.0 |
+| Formatting | Spotless 2.44.5 + Google Java Format 1.27.0 |
 | Testing | JUnit Jupiter 5.9.2, Mockito 5.15.2, JaCoCo 0.8.12 |
 
 ## Architecture
