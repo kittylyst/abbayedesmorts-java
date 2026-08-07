@@ -51,6 +51,7 @@ public final class Stage implements Renderable {
   private final TileAtlas atlas = new TileAtlas();
 
   private StageRenderer renderer;
+  private Layer layer;
 
   public Stage() {
     for (int i = 0; i < NUM_SCREENS; i++) {
@@ -59,6 +60,11 @@ public final class Stage implements Renderable {
   }
 
   public void load(long window) {
+    load(window, null);
+  }
+
+  public void load(long window, Layer layer) {
+    this.layer = layer;
     this.renderer = new StageRenderer(window);
     load();
   }
@@ -220,6 +226,7 @@ public final class Stage implements Renderable {
   public boolean moveLeft() {
     if (roomx > 0) {
       roomx -= 1;
+      refreshEnemies();
       return true;
     }
     return false;
@@ -228,6 +235,7 @@ public final class Stage implements Renderable {
   public boolean moveRight() {
     if (roomx < SCREENS_X - 1) {
       roomx += 1;
+      refreshEnemies();
       return true;
     }
     return false;
@@ -236,6 +244,7 @@ public final class Stage implements Renderable {
   public boolean moveUp() {
     if (roomy > 0) {
       roomy -= 1;
+      refreshEnemies();
       return true;
     }
     return false;
@@ -244,6 +253,7 @@ public final class Stage implements Renderable {
   public boolean moveDown() {
     if (roomy < SCREENS_Y - 1) {
       roomy += 1;
+      refreshEnemies();
       return true;
     }
     return false;
@@ -277,6 +287,13 @@ public final class Stage implements Renderable {
   public void toWaypoint(Player.Waypoint waypoint) {
     roomx = waypoint.roomX();
     roomy = waypoint.roomY();
+    refreshEnemies();
+  }
+
+  private void refreshEnemies() {
+    if (layer != null) {
+      layer.setEnemies(buildEnemies(getRoom()));
+    }
   }
 
   public Map<Integer, Corners> getCache() {

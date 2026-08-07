@@ -39,6 +39,7 @@ Mid-stage work-in-progress:
 - [x] `Stage.buildEnemies(int screen)` — constructs `List<Enemy>` for a screen, converting C pixel coords to Java world coords
 - [x] `Layer` wired to enemy list — `update()` and `render()` loop over enemies each frame
 - [x] `AbbayeMain.initLayer()` populates enemies from initial room on startup
+- [x] `Stage` room transitions now refresh the active enemy list — screen changes and waypoint teleports rebuild enemies for the new room and push them into the current `Layer`
 - [x] `docs/ENEMIES_FORMAT.md` — authoritative field-by-field format reference decoded from C GPL source
 - [x] 29 new tests: `TestEnemyType` (9), `TestEnemyParsing` (20); test baseline now 141 passing, 5 skipped
 - [ ] Enemy movement behaviour (patrol, gravity, type-specific logic)

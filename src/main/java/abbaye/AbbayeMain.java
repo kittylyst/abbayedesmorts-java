@@ -193,7 +193,7 @@ public final class AbbayeMain {
 
   void initLayer() {
     var stage = new Stage();
-    stage.load(window);
+    stage.load(window, layer);
 
     var p = Player.of(layer, stage);
     p.init();

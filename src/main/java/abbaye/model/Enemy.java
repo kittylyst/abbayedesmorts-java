@@ -158,19 +158,22 @@ public final class Enemy implements Actor {
     float ax2 = data.adjustX2() * scale;
     float ay1 = data.adjustY1() * scale;
     float ay2 = data.adjustY2() * scale;
-    return new Enemy(
-        data.type(),
-        new Vector2(worldX, worldY),
-        dir,
-        ll,
-        lr,
-        speed,
-        ax1,
-        ax2,
-        ay1,
-        ay2,
-        data.tileX(),
-        data.tileY());
+    var out =
+        new Enemy(
+            data.type(),
+            new Vector2(worldX, worldY),
+            dir,
+            ll,
+            lr,
+            speed,
+            ax1,
+            ax2,
+            ay1,
+            ay2,
+            data.tileX(),
+            data.tileY());
+    out.init();
+    return out;
   }
 
   // ── Game-loop methods ────────────────────────────────────────────────────────
