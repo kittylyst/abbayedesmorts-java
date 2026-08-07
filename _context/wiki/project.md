@@ -42,8 +42,14 @@ Mid-stage work-in-progress:
 - [x] `Stage` room transitions now refresh the active enemy list — screen changes and waypoint teleports rebuild enemies for the new room and push them into the current `Layer`
 - [x] `docs/ENEMIES_FORMAT.md` — authoritative field-by-field format reference decoded from C GPL source
 - [x] 29 new tests: `TestEnemyType` (9), `TestEnemyParsing` (20); test baseline now 141 passing, 5 skipped
-- [ ] Enemy movement behaviour (patrol, gravity, type-specific logic)
-- [ ] Enemy–player collision (contact → life loss, waypoint respawn)
+- [x] `Enemy.update()` — patrol movement for types 1–9: advance in current direction by `patrolSpeed` per tick, reverse at `limitLeft`/`limitRight`; types ≥ 10 are stationary stubs
+- [x] `Enemy.hitBox()` / `Player.hitBox()` — bounding boxes derived from adjust offsets (enemy) and C body dimensions (player); used for contact detection
+- [x] `Player.onEnemyContact()` — decrements lives and respawns player at last waypoint, mirroring C `jean.death = 1` path
+- [x] `Layer.checkEnemyContact()` — per-tick overlap check wired into `Layer.update()`; stops after first contact per tick
+- [x] `GameDialog.currentSplashPage()` extracted as a package-private static pure function (testable without GLFW context)
+- [x] `TestEnemyBehaviour` (9 tests) — patrol direction/reversal, non-patrol no-movement, hit box offsets, contact → life loss, contact → waypoint teleport
+- [x] `TestGameDialog` (1 test) — splash page flip timing; test baseline now 150 passing, 5 skipped
+- [ ] Enemy movement behaviour (gravity, type-specific logic for non-patrol types ≥ 10)
 - [ ] Crouching collision — uncomment branch, fix unit-mismatch bug, re-enable 5 disabled tests
 - [ ] Animation system (player walk/jump/crouch frames; enemy frame cycling)
 - [ ] Full game completion / polish
@@ -118,8 +124,10 @@ Tests live in `src/test/java/abbaye/`. Game-logic tests run **headless** (no Ope
 |---|---|
 | `TestBoundingBox2` | `left/right/top/bottom` edges, `overlaps` (all cases), record equality |
 | `TestConfig` | Default properties, all getters/defaults, all logger sinks, level/highScore mutation, headless override, singleton guards |
+| `TestEnemyBehaviour` | `Enemy.update()` patrol movement (direction, boundary reversal, non-patrol no-move); `Enemy.hitBox()` adjust offsets; `Layer` enemy–player contact → life loss and waypoint teleport |
 | `TestEnemyParsing` | `Stage.loadEnemies()` slot counts, all 15 field values for key screens, `buildEnemies()` position scaling and direction mapping |
 | `TestEnemyType` | `fromCode()` for all known codes, fallback to `UNKNOWN`, `code` field, sprite sizes for all 5 size categories |
+| `TestGameDialog` | `currentSplashPage()` — splash page flip every 5 s, wrap-around at 10 s |
 | `TestPlayerCollision` | Wall, roof, ground, platform collision (5 tests `@Disabled` pending crouch implementation) |
 | `TestPlayerCollisionPassing` | Pass-through tile behaviour |
 | `TestPlayerInput` | `InputEvent` → `Player` state (headless, no GLFW) |
