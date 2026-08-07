@@ -47,6 +47,8 @@ Mid-stage work-in-progress:
 - [x] `Player.onEnemyContact()` — decrements lives and respawns player at last waypoint, mirroring C `jean.death = 1` path
 - [x] `Layer.checkEnemyContact()` — per-tick overlap check wired into `Layer.update()`; stops after first contact per tick
 - [x] `TestEnemyBehaviour` (9 tests) — patrol direction/reversal, non-patrol no-movement, hit box offsets, contact → life loss, contact → waypoint teleport; test baseline now 150 passing, 5 skipped
+- [x] Global state + event system — `GameEvent` enum, `TriggerRegistry` (`EnumMap<GameEvent, List<Runnable>>`), `GameState` (persistent flag set); `Layer` owns both and exposes `onEvent()` / `fireEvent()` / `getGameState()`
+- [x] Bell-ringing trigger — `Player.checkStaticObject()` fires `BELL_RUNG` on contact with tiles 301–304 (Tower of the Bell, screen 2); handler in `AbbayeMain.initLayer()` clears `TILE_DOOR` from `ROOM_BEAST` (screen 10) and `ROOM_RIVER` (screen 19); 10 new tests (`TestTriggerRegistry`, `TestGameState`, `TestBellInteraction`); test baseline now 165 passing, 5 skipped
 - [ ] Enemy movement behaviour (gravity, type-specific logic for non-patrol types ≥ 10)
 - [ ] Crouching collision — uncomment branch, fix unit-mismatch bug, re-enable 5 disabled tests
 - [ ] Animation system (player walk/jump/crouch frames; enemy frame cycling)
@@ -75,7 +77,7 @@ but the architecture is pragmatic rather than a strict data-oriented ECS framewo
 |---------|---------------|
 | `abbaye` | Entry point (`AbbayeMain`), top-level config (`Config`), dialog (`GameDialog`), input translation (`InputHandler`) |
 | `abbaye.basic` | Core value types: `Actor`, `BoundingBox2`, `Vector2/3f/4f`, `Corners`, `Renderable`, `Clock` |
-| `abbaye.model` | Game entities: `Player`, `Enemy`, `Room`, `Stage`, `Layer`, `StatusDisplay`, enums (`EnemyType`, `Facing`, `Vertical`, `InputEvent`) |
+| `abbaye.model` | Game entities: `Player`, `Enemy`, `Room`, `Stage`, `Layer`, `StatusDisplay`, enums (`EnemyType`, `Facing`, `Vertical`, `InputEvent`, `GameEvent`); global state (`GameState`, `TriggerRegistry`) |
 | `abbaye.graphics` | Rendering: `GLManager`, `StageRenderer`, `Texture`, `Color` |
 | `abbaye.logs` | Logger abstraction: `GameLogger`, `JulLogger`, `NoopLogger`, `StdoutLogger` |
 
@@ -95,6 +97,39 @@ InputHandler          ← sole owner of GLFWKeyCallbackI; lives in abbaye packag
                         Player internal state
                         (walk, direction, crouch, jump)
                         — no GLFW import in Player
+```
+
+### Global State & Event Architecture
+
+Introduced alongside the bell mechanic. Three collaborating classes, all in `abbaye.model`:
+
+| Class | Role |
+|---|---|
+| `GameEvent` | Enum naming game-level occurrences (e.g. `BELL_RUNG`). Extend by appending values. |
+| `TriggerRegistry` | `EnumMap<GameEvent, List<Runnable>>` — `register(event, handler)` + `fire(event)`. Handlers called synchronously in registration order. Firing with no handlers is a no-op. |
+| `GameState` | `EnumSet<GameEvent>` of permanently acknowledged flags — `setFlag(event)` / `isFlagSet(event)`. Idempotent; flags are never cleared during play. |
+
+`Layer` owns one `TriggerRegistry` and one `GameState` and exposes:
+- `onEvent(GameEvent, Runnable)` — register a handler (called at init time from `AbbayeMain`)
+- `fireEvent(GameEvent)` — dispatch to all registered handlers (called by entities)
+- `getGameState()` — access the flag store
+
+**Wiring convention:** all handler registrations live in `AbbayeMain.initLayer()`, after entities are constructed but before `layer.init()`. Entities (`Player`, `Enemy`) fire events and read `GameState` flags; they never register handlers and never know what a fired event does.
+
+**Adding a new world-state trigger:**
+1. Add a value to `GameEvent`.
+2. In `Player.checkStaticObject()` (or wherever the detection belongs), call `layer.fireEvent(NEW_EVENT)`.
+3. In `AbbayeMain.initLayer()`, call `layer.onEvent(NEW_EVENT, () -> { ... })` with the side-effect logic.
+
+```
+Player.checkStaticObject()
+  └─ detects bell tiles (301–304)
+  └─ stage.clearTilesWhere(room, bell predicate)   ← single-use: tiles cleared immediately
+  └─ layer.fireEvent(BELL_RUNG)
+        └─ TriggerRegistry dispatches handler (registered in AbbayeMain)
+              ├─ gameState.setFlag(BELL_RUNG)
+              ├─ stage.clearTilesWhere(ROOM_BEAST.index(), t == TILE_DOOR)
+              └─ stage.clearTilesWhere(ROOM_RIVER.index(), t == TILE_DOOR)
 ```
 
 ### Key Design Invariants
@@ -125,7 +160,9 @@ Tests live in `src/test/java/abbaye/`. Game-logic tests run **headless** (no Ope
 | `TestEnemyBehaviour` | `Enemy.update()` patrol movement (direction, boundary reversal, non-patrol no-move); `Enemy.hitBox()` adjust offsets; `Layer` enemy–player contact → life loss and waypoint teleport |
 | `TestEnemyParsing` | `Stage.loadEnemies()` slot counts, all 15 field values for key screens, `buildEnemies()` position scaling and direction mapping |
 | `TestEnemyType` | `fromCode()` for all known codes, fallback to `UNKNOWN`, `code` field, sprite sizes for all 5 size categories |
+| `TestBellInteraction` | Bell tile contact → `BELL_RUNG` fires + `GameState` flag set; tiles cleared after ringing; no event when no tile present |
 | `TestGameDialog` | `currentSplashPage()` — splash page flip every 5 s, wrap-around at 10 s |
+| `TestGameState` | Fresh state has no flags; `setFlag` sets flag; idempotent |
 | `TestPlayerCollision` | Wall, roof, ground, platform collision (5 tests `@Disabled` pending crouch implementation) |
 | `TestPlayerCollisionPassing` | Pass-through tile behaviour |
 | `TestPlayerInput` | `InputEvent` → `Player` state (headless, no GLFW) |
@@ -133,6 +170,7 @@ Tests live in `src/test/java/abbaye/`. Game-logic tests run **headless** (no Ope
 | `TestStage` | Stage loading and tile data |
 | `TestStageMutation` | Stage tile mutation helpers |
 | `TestTileAtlas` | UV range, caching, specific tile mappings |
+| `TestTriggerRegistry` | No-handler no-op; single handler fires once per `fire()`; multiple handlers called in registration order |
 | `TestVector2` | `magnitude`, `normalize`, `scale`, record equality |
 | `Utils` | Shared test helpers (reflection-based field access, tile setup) |
 

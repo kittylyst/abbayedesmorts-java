@@ -43,11 +43,19 @@ public final class TileAtlas {
   public static final int TILE_DOOR = 154;
 
   public static final int TILE_SPECIAL_RIGHT_MIN = 342;
-  public static final int TILE_SPECIAL_RIGHT = 344;
-  public static final int TILE_SPECIAL_LEFT_MIN = 346;
+  public static final int TILE_CLOSED_DOOR1 = 343;
+  public static final int TILE_CLOSED_DOOR2 = 344;
+  public static final int TILE_CLOSED_DOOR3 = 345;
+  public static final int TILE_CLOSED_DOOR4 = 346;
   public static final int TILE_SPECIAL_LEFT = 348;
   public static final int TILE_SPECIAL_LEFT_MAX = 351; // Exclusive upper bound for range check
   public static final int TILE_SPECIAL_RIGHT_MAX = 347; // Exclusive upper bound for range check
+
+  /** Lower bound (exclusive) for the bell sprite tile range (tiles 301–304). */
+  public static final int TILE_BELL_MIN = 300;
+
+  /** Upper bound (exclusive) for the bell sprite tile range (tiles 301–304). */
+  public static final int TILE_BELL_MAX = 305;
 
   public static final int TILE_CUP = 650;
 

@@ -17,6 +17,9 @@ public class Layer {
   private Optional<StatusDisplay> oStatus = Optional.empty();
   private List<Enemy> enemies = new ArrayList<>();
 
+  private final TriggerRegistry triggers = new TriggerRegistry();
+  private final GameState gameState = new GameState();
+
   private GameLogger logger = Config.config().getLogger();
 
   public void init() {
@@ -125,6 +128,27 @@ public class Layer {
   /** Replaces the active enemy list. Called by {@code AbbayeMain.initLayer()} after stage load. */
   public void setEnemies(List<Enemy> enemies) {
     this.enemies = enemies;
+  }
+
+  /**
+   * Registers {@code handler} to be called whenever {@code event} is fired. Wired at init time by
+   * {@code AbbayeMain.initLayer()}.
+   */
+  public void onEvent(GameEvent event, Runnable handler) {
+    triggers.register(event, handler);
+  }
+
+  /**
+   * Fires {@code event}, invoking all registered handlers in registration order. Called by game
+   * entities (e.g. {@link Player}) that detect a triggering condition.
+   */
+  public void fireEvent(GameEvent event) {
+    triggers.fire(event);
+  }
+
+  /** Returns the shared {@link GameState} for this play-through. */
+  public GameState getGameState() {
+    return gameState;
   }
 
   public void cleanup() {
