@@ -106,6 +106,25 @@ public enum EnemyType {
   }
 
   /**
+   * Returns {@code true} if this type should be instantiated as a live {@link Enemy} at room load.
+   *
+   * <p>{@link #CRUSADER_SPAWN} is a data-file marker that the C engine converts to {@link
+   * #CRUSADER} during {@code searchenemies}; it is never rendered or used as a hazard directly.
+   * {@link #UNKNOWN} (code 0) denotes an empty slot.
+   */
+  public boolean isLive() {
+    return this != UNKNOWN && this != CRUSADER_SPAWN;
+  }
+
+  /**
+   * Returns {@code true} if this type patrols vertically (Y axis). Types 4 ({@link #FLOATER_V}) and
+   * 5 ({@link #TALL_FLOATER_V}) use {@code limitLeft}/{@code limitRight} as Y bounds.
+   */
+  public boolean isVerticalPatrol() {
+    return this == FLOATER_V || this == TALL_FLOATER_V;
+  }
+
+  /**
    * Returns the {@code EnemyType} for the given file code, or {@link #UNKNOWN} if the code is not
    * recognised.
    */

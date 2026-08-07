@@ -67,6 +67,12 @@ public final class Player implements Actor {
   private static final int SCREEN_BOTTOM_TELEPORT_TILES = 300;
   private static final int DEBUG_LOG_FREQUENCY = 10;
 
+  /**
+   * Number of ticks the player is invulnerable after enemy contact. Approximates the C death
+   * animation window; prevents multi-life drain while overlapping an enemy hit box.
+   */
+  static final int CONTACT_INVULNERABILITY_TICKS = 60;
+
   // GL fields
   private GLManager manager;
 
@@ -96,6 +102,12 @@ public final class Player implements Actor {
 
   private int crosses = 0; // (previously state[1])
   private int lives = 5;
+
+  /**
+   * Counts down from {@link #CONTACT_INVULNERABILITY_TICKS} after enemy contact; 0 = vulnerable.
+   */
+  private int contactCooldown = 0;
+
   // What does this do?
   private int[] flags = new int[7];
   private boolean walk = false;
@@ -287,6 +299,10 @@ public final class Player implements Actor {
   public boolean update() {
     final var tileSize = Stage.getTileSize();
 
+    if (contactCooldown > 0) {
+      contactCooldown--;
+    }
+
     // First check if we need to change room
     if (pos.x() < LEFT_EDGE) {
       if (stage.moveLeft()) {
@@ -358,7 +374,8 @@ public final class Player implements Actor {
 
   /**
    * Called by {@code Layer} when an enemy's hit box overlaps this player. Mirrors the C {@code
-   * jean.death = 1} path: decrements lives and respawns at the last waypoint.
+   * jean.death = 1} path: decrements lives, respawns at the last waypoint, and starts the
+   * post-contact invulnerability window.
    */
   void onEnemyContact() {
     logger.info("Enemy contact");
@@ -370,6 +387,12 @@ public final class Player implements Actor {
     }
     stage.toWaypoint(last);
     pos = last.getPos();
+    contactCooldown = CONTACT_INVULNERABILITY_TICKS;
+  }
+
+  /** Returns {@code true} if the player can currently be hit by enemy contact. */
+  boolean isVulnerable() {
+    return contactCooldown == 0;
   }
 
   int[][] getTileGrid() {

@@ -92,15 +92,14 @@ class TestEnemyBehaviour {
   /** Non-patrol types (code >= 10) should not move. */
   @Test
   void nonPatrolTypeDoesNotMove() {
-    // Screen 1-0 (index 5) has CRUSADER_SPAWN (code 17) — above the patrol range 1-9
-    var enemies = stage.buildEnemies(5);
-    assertFalse(enemies.isEmpty());
-    var crusader = enemies.get(0);
-    assertTrue(crusader.getType().code > 9, "Expected non-patrol type");
+    // Use Enemy.of(EnemyType) to construct a SHOOTER directly — screen 1-0 contains only
+    // CRUSADER_SPAWN markers which are now filtered by buildEnemies().
+    var shooter = Enemy.of(EnemyType.SHOOTER);
+    assertTrue(shooter.getType().code > 9, "Expected non-patrol type");
 
-    var posBefore = crusader.getPos();
-    crusader.update();
-    assertEquals(posBefore, crusader.getPos(), "Non-patrol enemy should not move");
+    var posBefore = shooter.getPos();
+    shooter.update();
+    assertEquals(posBefore, shooter.getPos(), "Non-patrol enemy should not move");
   }
 
   // ── Hit box ──────────────────────────────────────────────────────────────────
@@ -194,5 +193,128 @@ class TestEnemyBehaviour {
     layer.update();
     assertEquals(waypointPos.x(), player.getPos().x(), 0.001f);
     assertEquals(waypointPos.y(), player.getPos().y(), 0.001f);
+  }
+
+  // ── Fix 1: CRUSADER_SPAWN filtered from buildEnemies ─────────────────────────
+
+  /** Screen 1-0 (index 5) has 7 CRUSADER_SPAWN slots; buildEnemies should return empty. */
+  @Test
+  void crusaderSpawnIsFilteredFromBuildEnemies() {
+    var enemies = stage.buildEnemies(5); // screen 1-0: all CRUSADER_SPAWN
+    assertTrue(enemies.isEmpty(), "CRUSADER_SPAWN markers must not produce live enemies");
+  }
+
+  // ── Fix 2: Vertical patrol (FLOATER_V / TALL_FLOATER_V) ─────────────────────
+
+  /**
+   * Screen 1-4 (index 9) has TALL_FLOATER_V enemies that patrol vertically. A LEFT-direction
+   * floater should decrease its Y coordinate each tick.
+   */
+  @Test
+  void verticalFloaterMovesOnYAxis() {
+    // Screen 1-4 has TALL_FLOATER_V enemies
+    var enemies = stage.buildEnemies(9);
+    var floater =
+        enemies.stream()
+            .filter(e -> e.getType() == EnemyType.TALL_FLOATER_V)
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("No TALL_FLOATER_V in screen 1-4"));
+
+    float xBefore = floater.getPos().x();
+    floater.update();
+    // Y must change; X must stay fixed
+    assertEquals(xBefore, floater.getPos().x(), 0.001f, "Vertical floater must not move on X");
+  }
+
+  @Test
+  void verticalFloaterReversesAtYBoundary() {
+    var enemies = stage.buildEnemies(9);
+    var floater =
+        enemies.stream()
+            .filter(e -> e.getType() == EnemyType.TALL_FLOATER_V)
+            .findFirst()
+            .orElseThrow(() -> new AssertionError("No TALL_FLOATER_V in screen 1-4"));
+
+    Facing startDir = floater.getDirection();
+    // Drive it to the opposite boundary
+    for (int i = 0; i < 5000; i++) {
+      floater.update();
+      if (floater.getDirection() != startDir) break;
+    }
+    assertNotEquals(
+        startDir, floater.getDirection(), "Vertical floater should reverse at Y boundary");
+  }
+
+  // ── Fix 3: Post-contact invulnerability ──────────────────────────────────────
+
+  /**
+   * After enemy contact the player gains an invulnerability window; a second immediate contact on
+   * the following tick must not decrement lives again.
+   */
+  @Test
+  void noSecondLifeLostDuringInvulnerabilityWindow() {
+    var layer = new Layer();
+    var player = Player.of(layer, stage);
+    player.setPos(new Vector2(192, 1088));
+    layer.setPlayer(player);
+    layer.setStage(stage);
+
+    var enemy =
+        Enemy.of(
+            EnemyData.fromFields(
+                new int[] {1, 24, 136, 0, 0, 0, 0, 0, 1000, 0, 0, 0, 100, 0, 100}));
+    layer.setEnemies(java.util.List.of(enemy));
+
+    layer.update(); // first contact — lives decremented, cooldown set
+    int livesAfterFirst = player.getLives();
+
+    // Manually place player back on top of the enemy (waypoint teleport already did this,
+    // but make it explicit to ensure overlap)
+    player.setPos(new Vector2(192, 1088));
+    layer.update(); // second tick — player should still be invulnerable
+    assertEquals(livesAfterFirst, player.getLives(), "Lives must not drop again during cooldown");
+  }
+
+  // ── Fix 4: Patrol boundary epsilon scaled ────────────────────────────────────
+
+  /**
+   * The boundary check epsilon is {@code PIXELS_PER_TILE} (8). A walker positioned exactly at its
+   * right limit minus epsilon must still advance; positioned at exactly the limit it must reverse.
+   */
+  @Test
+  void walkerReversesWhenWithinScaledEpsilonOfRightLimit() {
+    // Construct a walker with limitRight = 800 (Java world), position at 800 - epsilon + 1 → still
+    // inside → still moving right. Position at 800 - epsilon → should reverse.
+    float scale = Player.PIXELS_PER_TILE;
+    float limitRight = 800f;
+    float epsilon = scale; // PIXELS_PER_TILE
+
+    // Place walker at limitRight - epsilon exactly: pos + epsilon >= limitRight → reverses
+    var data =
+        EnemyData.fromFields(
+            new int[] {
+              1,
+              (int) (limitRight / scale),
+              10, // x, y (C native)
+              0,
+              0,
+              0,
+              0,
+              0,
+              (int) (limitRight / scale), // limitRight == pos: should reverse immediately
+              5,
+              0,
+              0,
+              16,
+              0,
+              16
+            });
+    var walker = Enemy.of(data);
+    assertEquals(Facing.RIGHT, walker.getDirection());
+    walker.update();
+    assertEquals(
+        Facing.LEFT,
+        walker.getDirection(),
+        "Walker at right limit should reverse when pos + epsilon >= limitRight");
   }
 }

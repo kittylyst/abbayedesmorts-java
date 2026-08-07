@@ -80,8 +80,14 @@ public class Layer {
   /**
    * Checks whether any live enemy's hit box overlaps the player's hit box. On contact, delegates to
    * {@link Player#onEnemyContact()} which mirrors the C {@code jean.death = 1} path.
+   *
+   * <p>Skipped entirely while the player's post-contact invulnerability window is active,
+   * preventing multi-life drain from sustained overlap.
    */
   private void checkEnemyContact(Player player) {
+    if (!player.isVulnerable()) {
+      return;
+    }
     var playerBox = player.hitBox();
     for (var enemy : enemies) {
       if (enemy.hitBox().overlaps(playerBox)) {

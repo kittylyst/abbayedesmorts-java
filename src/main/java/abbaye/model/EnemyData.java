@@ -60,8 +60,12 @@ record EnemyData(
         fields[14]);
   }
 
-  /** Returns {@code true} if this slot is populated (type code != 0). */
+  /**
+   * Returns {@code true} if this slot should produce a live enemy. Delegates to {@link
+   * EnemyType#isLive()}: empty slots (code 0) and spawn markers ({@link EnemyType#CRUSADER_SPAWN})
+   * both return {@code false}.
+   */
   boolean isPresent() {
-    return type != EnemyType.UNKNOWN;
+    return type.isLive();
   }
 }

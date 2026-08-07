@@ -182,28 +182,52 @@ public final class Enemy implements Actor {
    * Updates this enemy's position for one game tick.
    *
    * <p>Only types 1–9 (standard patrol enemies) are moved; all others are stationary stubs pending
-   * their type-specific implementations in Phase 6. Movement mirrors the C {@code movenemies()}
-   * patrol loop: advance in the current direction by {@link #patrolSpeed} per tick, reverse at
-   * patrol boundaries.
+   * their type-specific implementations. Movement mirrors the C {@code movenemies()} patrol loop:
+   * advance by {@link #patrolSpeed} per tick, reverse at patrol boundaries.
+   *
+   * <p>Types 4–5 ({@link EnemyType#FLOATER_V}, {@link EnemyType#TALL_FLOATER_V}) patrol vertically
+   * (Y axis); all other patrol types move horizontally (X axis). The boundary epsilon is scaled by
+   * {@link Player#PIXELS_PER_TILE} to match Java world coordinates.
    */
   @Override
   public boolean update() {
     if (type.code < 1 || type.code > 9) {
       return true; // non-patrol types: no movement yet
     }
-    switch (direction) {
-      case RIGHT -> {
-        if (pos.x() + 1 < limitRight) {
-          pos = new Vector2(pos.x() + patrolSpeed, pos.y());
-        } else {
-          direction = LEFT;
+    float epsilon = Player.PIXELS_PER_TILE;
+    if (type.isVerticalPatrol()) {
+      // LEFT ≡ UP (decreasing Y), RIGHT ≡ DOWN (increasing Y)
+      switch (direction) {
+        case LEFT -> {
+          if (pos.y() - epsilon > limitLeft) {
+            pos = new Vector2(pos.x(), pos.y() - patrolSpeed);
+          } else {
+            direction = RIGHT;
+          }
+        }
+        case RIGHT -> {
+          if (pos.y() + epsilon < limitRight) {
+            pos = new Vector2(pos.x(), pos.y() + patrolSpeed);
+          } else {
+            direction = LEFT;
+          }
         }
       }
-      case LEFT -> {
-        if (pos.x() - 1 > limitLeft) {
-          pos = new Vector2(pos.x() - patrolSpeed, pos.y());
-        } else {
-          direction = RIGHT;
+    } else {
+      switch (direction) {
+        case RIGHT -> {
+          if (pos.x() + epsilon < limitRight) {
+            pos = new Vector2(pos.x() + patrolSpeed, pos.y());
+          } else {
+            direction = LEFT;
+          }
+        }
+        case LEFT -> {
+          if (pos.x() - epsilon > limitLeft) {
+            pos = new Vector2(pos.x() - patrolSpeed, pos.y());
+          } else {
+            direction = RIGHT;
+          }
         }
       }
     }
@@ -242,9 +266,9 @@ public final class Enemy implements Actor {
     float dispW = spriteW * scale;
     float dispH = spriteH * scale;
 
-    // Flip U horizontally for LEFT-facing sprites
+    // Flip U horizontally for LEFT-facing sprites, except WALKER_NO_FLIP (type 2)
     Corners tileCoords;
-    if (direction == LEFT) {
+    if (direction == LEFT && type != EnemyType.WALKER_NO_FLIP) {
       tileCoords = new Corners(u2, v1, u1, v2);
     } else {
       tileCoords = new Corners(u1, v1, u2, v2);

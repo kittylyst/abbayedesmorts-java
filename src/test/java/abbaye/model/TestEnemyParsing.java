@@ -64,9 +64,12 @@ class TestEnemyParsing {
   }
 
   @Test
-  void screen10HasSevenPresentSlots() {
-    long present = stage.getEnemySlots(SCREEN_1_0).stream().filter(EnemyData::isPresent).count();
-    assertEquals(7, present);
+  void screen10HasSevenRawSlots() {
+    // All 7 slots contain CRUSADER_SPAWN (code 17). isPresent() returns false for spawn markers,
+    // so no live enemies are built — but the raw slot list still has 7 entries.
+    assertEquals(7, stage.getEnemySlots(SCREEN_1_0).size());
+    long live = stage.getEnemySlots(SCREEN_1_0).stream().filter(EnemyData::isPresent).count();
+    assertEquals(0, live);
   }
 
   @Test

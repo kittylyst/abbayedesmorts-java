@@ -46,9 +46,7 @@ Mid-stage work-in-progress:
 - [x] `Enemy.hitBox()` / `Player.hitBox()` — bounding boxes derived from adjust offsets (enemy) and C body dimensions (player); used for contact detection
 - [x] `Player.onEnemyContact()` — decrements lives and respawns player at last waypoint, mirroring C `jean.death = 1` path
 - [x] `Layer.checkEnemyContact()` — per-tick overlap check wired into `Layer.update()`; stops after first contact per tick
-- [x] `GameDialog.currentSplashPage()` extracted as a package-private static pure function (testable without GLFW context)
-- [x] `TestEnemyBehaviour` (9 tests) — patrol direction/reversal, non-patrol no-movement, hit box offsets, contact → life loss, contact → waypoint teleport
-- [x] `TestGameDialog` (1 test) — splash page flip timing; test baseline now 150 passing, 5 skipped
+- [x] `TestEnemyBehaviour` (9 tests) — patrol direction/reversal, non-patrol no-movement, hit box offsets, contact → life loss, contact → waypoint teleport; test baseline now 150 passing, 5 skipped
 - [ ] Enemy movement behaviour (gravity, type-specific logic for non-patrol types ≥ 10)
 - [ ] Crouching collision — uncomment branch, fix unit-mismatch bug, re-enable 5 disabled tests
 - [ ] Animation system (player walk/jump/crouch frames; enemy frame cycling)

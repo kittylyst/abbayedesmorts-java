@@ -1,9 +1,9 @@
 # Code Review: `bob_phase_2` vs `main`
 
-**Date:** 2026-08-07  
-**Branch:** `bob_phase_2` (`8621aaf`)  
-**Base:** `main` (`7a00bf2`)  
-**Scope:** Read-only review — no code changes  
+**Date:** 2026-08-07
+**Branch:** `bob_phase_2` (`8621aaf`)
+**Base:** `main` (`7a00bf2`)
+**Scope:** Read-only review — no code changes
 **Test baseline on branch:** 150 passing, 5 skipped (`mvn -Dspotless.check.skip=true test`)
 
 ## Summary
