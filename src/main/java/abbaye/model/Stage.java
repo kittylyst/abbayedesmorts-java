@@ -8,6 +8,9 @@ import abbaye.basic.Corners;
 import abbaye.basic.Renderable;
 import abbaye.graphics.StageRenderer;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.IntPredicate;
 
@@ -30,7 +33,17 @@ public final class Stage implements Renderable {
   static final int ROOM_BEAST_INVISIBLE_WALL_END = 32;
   static final int SCREEN_BOTTOM_ROW_THRESHOLD = 21;
 
+  /** Number of enemy slots per screen, matching {@code struct enem} array size in the C source. */
+  public static final int ENEMY_SLOTS = 7;
+
   private int[][][] stagedata = new int[NUM_SCREENS][NUM_ROWS][NUM_COLUMNS];
+
+  /**
+   * Enemy data indexed by [screen][slot]. Populated by {@link #loadEnemies()} or {@link
+   * #loadEnemies(String)}.
+   */
+  private final List<List<EnemyData>> enemydata = new ArrayList<>(NUM_SCREENS);
+
   // Initial room coordinates
   private int roomx = 2; // 0
   private int roomy = 0; // 1
@@ -38,8 +51,20 @@ public final class Stage implements Renderable {
   private final TileAtlas atlas = new TileAtlas();
 
   private StageRenderer renderer;
+  private Layer layer;
+
+  public Stage() {
+    for (int i = 0; i < NUM_SCREENS; i++) {
+      enemydata.add(new ArrayList<>(ENEMY_SLOTS));
+    }
+  }
 
   public void load(long window) {
+    load(window, null);
+  }
+
+  public void load(long window, Layer layer) {
+    this.layer = layer;
     this.renderer = new StageRenderer(window);
     load();
   }
@@ -47,6 +72,7 @@ public final class Stage implements Renderable {
   /** Loads stage screens from default location */
   public void load() {
     load("/map/map.txt");
+    loadEnemies();
     if (AbbayeMain.isGlEnabled()) {
       renderer.init(this);
     }
@@ -79,6 +105,64 @@ public final class Stage implements Renderable {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /** Loads enemy data from the default resource location. */
+  public void loadEnemies() {
+    loadEnemies("/map/enemies.txt");
+  }
+
+  /**
+   * Loads enemy data from the supplied classpath resource into {@link #enemydata}.
+   *
+   * <p>Format: 25 sections separated by {@code X-Y} header lines, 7 data lines each, 15
+   * space-separated 3-digit fields per line. Matches {@code int enemydata[25][7][15]} in the C
+   * source.
+   *
+   * @param resource classpath resource path (e.g. {@code "/map/enemies.txt"})
+   */
+  public void loadEnemies(String resource) {
+    var input = Stage.class.getResourceAsStream(resource);
+    try (var br = new BufferedReader(new InputStreamReader(input))) {
+      for (int i = 0; i < NUM_SCREENS; i++) {
+        br.readLine(); // consume "X-Y" header line
+        var slots = enemydata.get(i);
+        slots.clear();
+        for (int j = 0; j < ENEMY_SLOTS; j++) {
+          String line = br.readLine();
+          int[] fields = new int[EnemyData.FIELD_COUNT];
+          for (int k = 0; k < EnemyData.FIELD_COUNT; k++) {
+            fields[k] = Integer.parseInt(line.substring(k * 4, k * 4 + 3).trim());
+          }
+          slots.add(EnemyData.fromFields(fields));
+        }
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Returns an unmodifiable view of the raw enemy slots for the given screen index. Only slots
+   * where {@link EnemyData#isPresent()} is {@code true} are meaningful.
+   *
+   * @param screen screen index (0 .. NUM_SCREENS-1)
+   */
+  List<EnemyData> getEnemySlots(int screen) {
+    return Collections.unmodifiableList(enemydata.get(screen));
+  }
+
+  /**
+   * Builds and returns a list of live {@link Enemy} instances for the given screen, one per present
+   * slot (type code != 0). Positions are converted to Java world pixels.
+   *
+   * @param screen screen index (0 .. NUM_SCREENS-1)
+   */
+  public List<Enemy> buildEnemies(int screen) {
+    return enemydata.get(screen).stream()
+        .filter(EnemyData::isPresent)
+        .map(Enemy::of)
+        .collect(java.util.stream.Collectors.toList());
   }
 
   @Override
@@ -142,6 +226,7 @@ public final class Stage implements Renderable {
   public boolean moveLeft() {
     if (roomx > 0) {
       roomx -= 1;
+      refreshEnemies();
       return true;
     }
     return false;
@@ -150,6 +235,7 @@ public final class Stage implements Renderable {
   public boolean moveRight() {
     if (roomx < SCREENS_X - 1) {
       roomx += 1;
+      refreshEnemies();
       return true;
     }
     return false;
@@ -158,6 +244,7 @@ public final class Stage implements Renderable {
   public boolean moveUp() {
     if (roomy > 0) {
       roomy -= 1;
+      refreshEnemies();
       return true;
     }
     return false;
@@ -166,6 +253,7 @@ public final class Stage implements Renderable {
   public boolean moveDown() {
     if (roomy < SCREENS_Y - 1) {
       roomy += 1;
+      refreshEnemies();
       return true;
     }
     return false;
@@ -199,6 +287,13 @@ public final class Stage implements Renderable {
   public void toWaypoint(Player.Waypoint waypoint) {
     roomx = waypoint.roomX();
     roomy = waypoint.roomY();
+    refreshEnemies();
+  }
+
+  private void refreshEnemies() {
+    if (layer != null) {
+      layer.setEnemies(buildEnemies(getRoom()));
+    }
   }
 
   public Map<Integer, Corners> getCache() {

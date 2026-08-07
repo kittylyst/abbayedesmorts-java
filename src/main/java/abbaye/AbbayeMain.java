@@ -193,7 +193,7 @@ public final class AbbayeMain {
 
   void initLayer() {
     var stage = new Stage();
-    stage.load(window);
+    stage.load(window, layer);
 
     var p = Player.of(layer, stage);
     p.init();
@@ -201,9 +201,12 @@ public final class AbbayeMain {
     var status = StatusDisplay.of(p, stage);
     status.init();
 
+    var enemies = stage.buildEnemies(stage.getRoom());
+
     layer.setPlayer(p);
     layer.setStage(stage);
     layer.setStatus(status);
+    layer.setEnemies(enemies);
     layer.init();
 
     gameDialog.setPlayer(p);

@@ -67,6 +67,12 @@ public final class Player implements Actor {
   private static final int SCREEN_BOTTOM_TELEPORT_TILES = 300;
   private static final int DEBUG_LOG_FREQUENCY = 10;
 
+  /**
+   * Number of ticks the player is invulnerable after enemy contact. Approximates the C death
+   * animation window; prevents multi-life drain while overlapping an enemy hit box.
+   */
+  static final int CONTACT_INVULNERABILITY_TICKS = 60;
+
   // GL fields
   private GLManager manager;
 
@@ -96,6 +102,12 @@ public final class Player implements Actor {
 
   private int crosses = 0; // (previously state[1])
   private int lives = 5;
+
+  /**
+   * Counts down from {@link #CONTACT_INVULNERABILITY_TICKS} after enemy contact; 0 = vulnerable.
+   */
+  private int contactCooldown = 0;
+
   // What does this do?
   private int[] flags = new int[7];
   private boolean walk = false;
@@ -287,6 +299,10 @@ public final class Player implements Actor {
   public boolean update() {
     final var tileSize = Stage.getTileSize();
 
+    if (contactCooldown > 0) {
+      contactCooldown--;
+    }
+
     // First check if we need to change room
     if (pos.x() < LEFT_EDGE) {
       if (stage.moveLeft()) {
@@ -354,6 +370,29 @@ public final class Player implements Actor {
 
   public boolean checkHit() {
     return false;
+  }
+
+  /**
+   * Called by {@code Layer} when an enemy's hit box overlaps this player. Mirrors the C {@code
+   * jean.death = 1} path: decrements lives, respawns at the last waypoint, and starts the
+   * post-contact invulnerability window.
+   */
+  void onEnemyContact() {
+    logger.info("Enemy contact");
+    if (lives <= 0) {
+      lives = 5;
+      logger.info("Resetting lives, need to exit game here instead");
+    } else {
+      lives -= 1;
+    }
+    stage.toWaypoint(last);
+    pos = last.getPos();
+    contactCooldown = CONTACT_INVULNERABILITY_TICKS;
+  }
+
+  /** Returns {@code true} if the player can currently be hit by enemy contact. */
+  boolean isVulnerable() {
+    return contactCooldown == 0;
   }
 
   int[][] getTileGrid() {
@@ -774,6 +813,20 @@ public final class Player implements Actor {
   @Override
   public Vector2 getSize() {
     return new Vector2(16, 24);
+  }
+
+  /**
+   * Returns this player's collision bounding box in Java world pixels. The size matches the C
+   * source body box (1..13 wide, 0..22 tall in native pixels, scaled by {@link #PIXELS_PER_TILE}).
+   */
+  BoundingBox2 hitBox() {
+    float scale = PIXELS_PER_TILE;
+    // C body: x+1..x+13 wide (12 px), y..y+22 tall (22 px) in native resolution
+    float w = 12 * scale;
+    float h = 22 * scale;
+    float cx = pos.x() + 1 * scale + w / 2f;
+    float cy = pos.y() + h / 2f;
+    return new BoundingBox2(new Vector2(cx, cy), new Vector2(w, h));
   }
 
   @Override

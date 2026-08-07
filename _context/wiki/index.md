@@ -13,7 +13,7 @@ Read this first, then follow only the links relevant to your current task.
 ## At a glance
 
 - **Project**: Java/LWJGL3 port of the GPL game *Abbaye Des Morts* (originally C)
-- **Status**: Mid-stage work-in-progress — collision detection and player control done; enemies and animation in progress
+- **Status**: Mid-stage work-in-progress — collision detection, player control, enemy patrol movement, and enemy–player contact done; non-patrol enemy types and animation in progress
 - **Language**: Java 21, Maven build
 - **Key pattern**: Loose Entity-Component System (ECS)
 - **Formatting**: Google Java Format via Spotless (`mvn spotless:apply`)

@@ -15,6 +15,7 @@ public class Layer {
   private Optional<Player> oPlayer = Optional.empty();
   private Optional<Stage> oStage = Optional.empty();
   private Optional<StatusDisplay> oStatus = Optional.empty();
+  private List<Enemy> enemies = new ArrayList<>();
 
   private GameLogger logger = Config.config().getLogger();
 
@@ -30,6 +31,7 @@ public class Layer {
     renderables.addAll(misc);
     oPlayer.ifPresent(renderables::add);
     oStage.ifPresent(renderables::add);
+    renderables.addAll(enemies);
 
     return renderables;
   }
@@ -38,6 +40,9 @@ public class Layer {
     // Order matters!
     oStage.ifPresent(Stage::render);
     oPlayer.ifPresent(Player::render);
+    for (var enemy : enemies) {
+      enemy.render();
+    }
     // Status display needs to bind a different texture map (the fonts)
     oStatus.ifPresent(StatusDisplay::render);
 
@@ -53,26 +58,43 @@ public class Layer {
    * @return
    */
   public void update() {
-    // FIXME Check for removals first
-
     oPlayer.ifPresent(Player::update);
-    //    oPlayer.ifPresent(p -> System.out.println(p.getPos()));
 
-    // FIXME Update enemies
+    for (var enemy : enemies) {
+      enemy.update();
+    }
 
     debugLogState();
 
-    // Now do collision detection - check if destroyable objects have been hit
-
-    // Player first
+    // Collision detection — check if destroyable objects have been hit
     try {
       oPlayer.filter(Player::checkHit).ifPresent(Player::destroy);
     } catch (Throwable t) {
       oPlayer.ifPresent(p -> logger.error("Player threw: " + p, t));
     }
 
-    // FIXME Now enemies
+    // Enemy–player contact: any overlap kills the player (decrements lives, respawns at waypoint)
+    oPlayer.ifPresent(this::checkEnemyContact);
+  }
 
+  /**
+   * Checks whether any live enemy's hit box overlaps the player's hit box. On contact, delegates to
+   * {@link Player#onEnemyContact()} which mirrors the C {@code jean.death = 1} path.
+   *
+   * <p>Skipped entirely while the player's post-contact invulnerability window is active,
+   * preventing multi-life drain from sustained overlap.
+   */
+  private void checkEnemyContact(Player player) {
+    if (!player.isVulnerable()) {
+      return;
+    }
+    var playerBox = player.hitBox();
+    for (var enemy : enemies) {
+      if (enemy.hitBox().overlaps(playerBox)) {
+        player.onEnemyContact();
+        return; // one contact per tick is sufficient
+      }
+    }
   }
 
   private void debugLogState() {
@@ -98,6 +120,11 @@ public class Layer {
 
   public void setStatus(StatusDisplay status) {
     oStatus = Optional.of(status);
+  }
+
+  /** Replaces the active enemy list. Called by {@code AbbayeMain.initLayer()} after stage load. */
+  public void setEnemies(List<Enemy> enemies) {
+    this.enemies = enemies;
   }
 
   public void cleanup() {

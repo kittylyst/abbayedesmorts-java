@@ -30,12 +30,26 @@ Mid-stage work-in-progress:
 - [x] `TILE_*` constants migrated to `TileAtlas` (public, canonical); removed from `Stage`
 - [x] `TILES_PER_ROW` / `TILES_PER_COL` moved to `TileAtlas`; circular `Stage` ↔ `TileAtlas` import eliminated
 - [x] `Stage` no longer imports GLFW (dead import removed; model invariant now enforced)
-- [x] `EnemyType` enum introduced; `Enemy` wired to it via `Enemy.of(EnemyType)` factory
 - [x] `Player.getCollisions()` removed; replaced with typed `isCollidingUp/Down/Left/Right()` accessors
 - [x] `InputHandler` TAB/SPACE guarded by `gameDialog.isActive()` — no longer fires mid-game; `DEBUG_DUMP` now reachable
 - [x] `Stage.clearTilesWhere()` bounds-checked to match `clearTile()` (consistent, no AIOOBE on bad screen index)
-- [ ] Enemy behaviour (concrete `EnemyType` values, parsing from `enemies.txt`)
-- [ ] Animation system
+- [x] `EnemyType` enum fully populated (13 concrete values + `UNKNOWN`; codes, sizes from C source)
+- [x] `EnemyData` record — raw parsed slot from `enemies.txt`; `fromFields(int[])` factory
+- [x] `Stage.loadEnemies()` — parses all 25 screens × 7 slots; called automatically from `Stage.load()`
+- [x] `Stage.buildEnemies(int screen)` — constructs `List<Enemy>` for a screen, converting C pixel coords to Java world coords
+- [x] `Layer` wired to enemy list — `update()` and `render()` loop over enemies each frame
+- [x] `AbbayeMain.initLayer()` populates enemies from initial room on startup
+- [x] `Stage` room transitions now refresh the active enemy list — screen changes and waypoint teleports rebuild enemies for the new room and push them into the current `Layer`
+- [x] `docs/ENEMIES_FORMAT.md` — authoritative field-by-field format reference decoded from C GPL source
+- [x] 29 new tests: `TestEnemyType` (9), `TestEnemyParsing` (20); test baseline now 141 passing, 5 skipped
+- [x] `Enemy.update()` — patrol movement for types 1–9: advance in current direction by `patrolSpeed` per tick, reverse at `limitLeft`/`limitRight`; types ≥ 10 are stationary stubs
+- [x] `Enemy.hitBox()` / `Player.hitBox()` — bounding boxes derived from adjust offsets (enemy) and C body dimensions (player); used for contact detection
+- [x] `Player.onEnemyContact()` — decrements lives and respawns player at last waypoint, mirroring C `jean.death = 1` path
+- [x] `Layer.checkEnemyContact()` — per-tick overlap check wired into `Layer.update()`; stops after first contact per tick
+- [x] `TestEnemyBehaviour` (9 tests) — patrol direction/reversal, non-patrol no-movement, hit box offsets, contact → life loss, contact → waypoint teleport; test baseline now 150 passing, 5 skipped
+- [ ] Enemy movement behaviour (gravity, type-specific logic for non-patrol types ≥ 10)
+- [ ] Crouching collision — uncomment branch, fix unit-mismatch bug, re-enable 5 disabled tests
+- [ ] Animation system (player walk/jump/crouch frames; enemy frame cycling)
 - [ ] Full game completion / polish
 
 ## Tech Stack
@@ -47,7 +61,7 @@ Mid-stage work-in-progress:
 | Windowing / OpenGL | LWJGL3 3.3.6 (GLFW, OpenGL, OpenAL, STB, Assimp) |
 | Audio | OpenAL via LWJGL3 |
 | Data (maps/config) | Jackson 2.18 (JSON), plain-text map files |
-| Formatting | Spotless + Google Java Format 1.23.0 |
+| Formatting | Spotless 2.44.5 + Google Java Format 1.27.0 |
 | Testing | JUnit Jupiter 5.9.2, Mockito 5.15.2, JaCoCo 0.8.12 |
 
 ## Architecture
@@ -108,6 +122,10 @@ Tests live in `src/test/java/abbaye/`. Game-logic tests run **headless** (no Ope
 |---|---|
 | `TestBoundingBox2` | `left/right/top/bottom` edges, `overlaps` (all cases), record equality |
 | `TestConfig` | Default properties, all getters/defaults, all logger sinks, level/highScore mutation, headless override, singleton guards |
+| `TestEnemyBehaviour` | `Enemy.update()` patrol movement (direction, boundary reversal, non-patrol no-move); `Enemy.hitBox()` adjust offsets; `Layer` enemy–player contact → life loss and waypoint teleport |
+| `TestEnemyParsing` | `Stage.loadEnemies()` slot counts, all 15 field values for key screens, `buildEnemies()` position scaling and direction mapping |
+| `TestEnemyType` | `fromCode()` for all known codes, fallback to `UNKNOWN`, `code` field, sprite sizes for all 5 size categories |
+| `TestGameDialog` | `currentSplashPage()` — splash page flip every 5 s, wrap-around at 10 s |
 | `TestPlayerCollision` | Wall, roof, ground, platform collision (5 tests `@Disabled` pending crouch implementation) |
 | `TestPlayerCollisionPassing` | Pass-through tile behaviour |
 | `TestPlayerInput` | `InputEvent` → `Player` state (headless, no GLFW) |
