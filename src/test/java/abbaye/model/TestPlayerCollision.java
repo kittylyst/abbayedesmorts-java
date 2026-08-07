@@ -252,10 +252,10 @@ public class TestPlayerCollision {
     setFloor(stage, yCell + 3);
 
     // Place tile 344 to the right like the door in 1-3
-    setTile(stage, 31, yCell - 1, TILE_SPECIAL_RIGHT);
-    setTile(stage, 31, yCell, TILE_SPECIAL_RIGHT);
-    setTile(stage, 31, yCell + 1, TILE_SPECIAL_RIGHT);
-    setTile(stage, 31, yCell + 2, TILE_SPECIAL_RIGHT);
+    setTile(stage, 31, yCell - 1, TILE_CLOSED_DOOR2);
+    setTile(stage, 31, yCell, TILE_CLOSED_DOOR2);
+    setTile(stage, 31, yCell + 1, TILE_CLOSED_DOOR2);
+    setTile(stage, 31, yCell + 2, TILE_CLOSED_DOOR2);
 
     float tileSize = Stage.getTileSize();
     setDirection(player, RIGHT);

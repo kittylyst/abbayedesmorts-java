@@ -1,6 +1,9 @@
 /* Copyright (C) The Authors 2025-2026 */
 package abbaye;
 
+import static abbaye.model.GameEvent.*;
+import static abbaye.model.Room.*;
+import static abbaye.model.TileAtlas.*;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -207,6 +210,17 @@ public final class AbbayeMain {
     layer.setStage(stage);
     layer.setStatus(status);
     layer.setEnemies(enemies);
+
+    // Register game triggers: bell rung → set flag + open door in ROOM_ALTAR
+    var gs = layer.getGameState();
+    layer.onEvent(
+        BELL_RUNG,
+        () -> {
+          gs.setFlag(BELL_RUNG);
+          stage.clearTilesWhere(
+              ROOM_ALTAR.index(), t -> t >= TILE_CLOSED_DOOR1 && t <= TILE_CLOSED_DOOR4);
+        });
+
     layer.init();
 
     gameDialog.setPlayer(p);
