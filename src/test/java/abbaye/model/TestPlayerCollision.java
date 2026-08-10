@@ -181,7 +181,6 @@ public class TestPlayerCollision {
   }
 
   @Test
-  @Disabled("Crouching unimplemented so far")
   public void testCrouchLeftWallCollision() {
     float tileSize = Stage.getTileSize();
     float xPos = 9 * tileSize + 0.5f;
@@ -201,7 +200,6 @@ public class TestPlayerCollision {
   }
 
   @Test
-  @Disabled("Crouching unimplemented so far")
   public void testCrouchRightWallCollision() {
     float tileSize = Stage.getTileSize();
     float xPos = 15 * tileSize - 0.5f;
