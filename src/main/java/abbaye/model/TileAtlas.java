@@ -59,6 +59,9 @@ public final class TileAtlas {
 
   public static final int TILE_CUP = 650;
 
+  /** Offset to add to bell sprite tile IDs when the bell has been rung. */
+  public static final int BELL_TOWER_OFFSET = 4;
+
   /** Pixel-space rectangle into the source sprite sheet (8-px grid). */
   private static final class SDLRect {
     int x, y, w, h;
