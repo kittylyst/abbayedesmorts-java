@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.IntPredicate;
+import java.util.function.IntUnaryOperator;
 
 /** The stage shows the layout of the furniture of the current screen */
 public final class Stage implements Renderable {
@@ -188,13 +189,26 @@ public final class Stage implements Renderable {
    * @param col column index (0 .. NUM_COLUMNS-1)
    */
   public void clearTile(int screen, int row, int col) {
+    setTile(screen, row, col, TILE_EMPTY);
+  }
+
+  /**
+   * Sets a single tile in the given screen to the specified tile type. Prefer this over direct
+   * array writes so that Stage remains the sole mutator of tile data.
+   *
+   * @param screen
+   * @param row
+   * @param col
+   * @param tileType
+   */
+  public void setTile(int screen, int row, int col, int tileType) {
     if (screen >= 0
         && screen < NUM_SCREENS
         && row >= 0
         && row < NUM_ROWS
         && col >= 0
         && col < NUM_COLUMNS) {
-      stagedata[screen][row][col] = TILE_EMPTY;
+      stagedata[screen][row][col] = tileType;
     }
   }
 
@@ -206,6 +220,18 @@ public final class Stage implements Renderable {
    * @param predicate test applied to the current tile-type value; matching tiles are cleared
    */
   public void clearTilesWhere(int screen, IntPredicate predicate) {
+    transformTilesWhere(screen, predicate, t -> TILE_EMPTY);
+  }
+
+  /**
+   * Applies the given transformation to every tile in the given screen that satisfies {@code
+   * predicate}. Used for sweep-transform operations (e.g. opening all doors in a room).
+   *
+   * @param screen
+   * @param predicate
+   * @param tfm
+   */
+  public void transformTilesWhere(int screen, IntPredicate predicate, IntUnaryOperator tfm) {
     if (screen < 0 || screen >= NUM_SCREENS) {
       return;
     }
@@ -213,7 +239,7 @@ public final class Stage implements Renderable {
     for (int row = 0; row < NUM_ROWS; row++) {
       for (int col = 0; col < NUM_COLUMNS; col++) {
         if (predicate.test(screenData[row][col])) {
-          screenData[row][col] = TILE_EMPTY;
+          screenData[row][col] = tfm.applyAsInt(screenData[row][col]);
         }
       }
     }

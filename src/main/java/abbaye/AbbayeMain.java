@@ -217,6 +217,11 @@ public final class AbbayeMain {
         BELL_RUNG,
         () -> {
           gs.setFlag(BELL_RUNG);
+          stage.transformTilesWhere(
+              ROOM_TOWER.index(),
+              t -> t > TILE_BELL_MIN && t < TILE_BELL_MAX,
+              t -> t + BELL_TOWER_OFFSET);
+
           stage.clearTilesWhere(
               ROOM_ALTAR.index(), t -> t >= TILE_CLOSED_DOOR1 && t <= TILE_CLOSED_DOOR4);
         });
@@ -238,10 +243,6 @@ public final class AbbayeMain {
   public long getWindow() {
     return window;
   }
-
-  //  public Stage getStage() {
-  //    return stage;
-  //  }
 
   public Layer getLayer() {
     return layer;

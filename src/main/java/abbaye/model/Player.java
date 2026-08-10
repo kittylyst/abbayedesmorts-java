@@ -740,7 +740,6 @@ public final class Player implements Actor {
             tileAt(stagedata, baseTileY + 1, baseTileX), TILE_BELL_MIN, TILE_BELL_MAX))
         || (isBetweenExclusive(
             tileAt(stagedata, baseTileY + 1, baseTileX + 1), TILE_BELL_MIN, TILE_BELL_MAX))) {
-      stage.clearTilesWhere(room, t -> t > TILE_BELL_MIN && t < TILE_BELL_MAX);
       layer.fireEvent(GameEvent.BELL_RUNG);
       //        Mix_PlayChannel(-1, fx[2], 0);
       return true;
