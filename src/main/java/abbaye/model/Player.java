@@ -144,6 +144,14 @@ public final class Player implements Actor {
     return new Corners(u1, 1 - v1, u2, 1 - v2);
   }
 
+  // Crouch sprite atlas constants (C source: srcducktile = {448, 88, 18, 13})
+  // Frame 0: tile cols 56-57, row 11-12; frame 1: cols 58-59, row 11-12
+  private static final int CROUCH_SPRITE_COL_FRAME0 = 56;
+  private static final int CROUCH_SPRITE_COL_FRAME1 = 58;
+  private static final int CROUCH_SPRITE_ROW = 11;
+  // C source: desducktile.y = jean->y + 11 (native px -> Java px)
+  private static final int CROUCH_RENDER_Y_OFFSET = 11 * PIXELS_PER_TILE;
+
   @Override
   public boolean render() {
     if (!Config.config().getGLActive()) {
@@ -154,7 +162,40 @@ public final class Player implements Actor {
     float posX, posY;
     Corners tileCoords;
 
-    if (direction == LEFT) {
+    if (crouch) {
+      // 2×2 tile grid; animation cycles between 2 frames (same 0–13 counter as standing)
+      int crouchCol = (animation / 7 == 0) ? CROUCH_SPRITE_COL_FRAME0 : CROUCH_SPRITE_COL_FRAME1;
+      float crouchY = pos.y() + CROUCH_RENDER_Y_OFFSET;
+
+      if (direction == LEFT) {
+        tileCoords = playerCorners(crouchCol, CROUCH_SPRITE_ROW);
+        manager.renderTile(tileCoords, tileDisplaySize, pos.x(), crouchY);
+
+        tileCoords = playerCorners(crouchCol + 1, CROUCH_SPRITE_ROW);
+        manager.renderTile(tileCoords, tileDisplaySize, pos.x() + tileDisplaySize, crouchY);
+
+        tileCoords = playerCorners(crouchCol, CROUCH_SPRITE_ROW + 1);
+        manager.renderTile(tileCoords, tileDisplaySize, pos.x(), crouchY + tileDisplaySize);
+
+        tileCoords = playerCorners(crouchCol + 1, CROUCH_SPRITE_ROW + 1);
+        manager.renderTile(
+            tileCoords, tileDisplaySize, pos.x() + tileDisplaySize, crouchY + tileDisplaySize);
+      } else {
+        // RIGHT — swap columns to mirror, matching the standing sprite convention
+        tileCoords = playerCorners(crouchCol + 1, CROUCH_SPRITE_ROW);
+        manager.renderTile(tileCoords, tileDisplaySize, pos.x(), crouchY);
+
+        tileCoords = playerCorners(crouchCol, CROUCH_SPRITE_ROW);
+        manager.renderTile(tileCoords, tileDisplaySize, pos.x() + tileDisplaySize, crouchY);
+
+        tileCoords = playerCorners(crouchCol + 1, CROUCH_SPRITE_ROW + 1);
+        manager.renderTile(tileCoords, tileDisplaySize, pos.x(), crouchY + tileDisplaySize);
+
+        tileCoords = playerCorners(crouchCol, CROUCH_SPRITE_ROW + 1);
+        manager.renderTile(
+            tileCoords, tileDisplaySize, pos.x() + tileDisplaySize, crouchY + tileDisplaySize);
+      }
+    } else if (direction == LEFT) {
       posX = pos.x();
       posY = pos.y();
       tileCoords = playerCorners(44, 11);
@@ -437,54 +478,6 @@ public final class Player implements Actor {
     return out;
   }
 
-  // Crouched code goes here
-  //      // FIXME Are these directions correct?
-  //      if (((xpoints[0] != 0) && (direction == LEFT))
-  //          || ((xpoints[3] != NUM_COLUMNS - 1) && (direction == RIGHT))) {
-  //        r =
-  //            (int)
-  //                ((pos.y() + COLLISION_CROUCH_HEIGHT_OFFSET * PIXELS_PER_TILE)
-  //                    / Stage.getTileSize());
-  //        tileLeft = currentRoomData[r][xpoints[0] - 1];
-  //        tileRight = currentRoomData[r][xpoints[3] + 1];
-  //        if (((tileLeft > 0) && (tileLeft < TILE_SOLID_MAX) && (tileLeft !=
-  // TILE_PASSABLE_VARIANT_1))
-  //            || ((currentRoomData[r][xpoints[0]] == TILE_SPECIAL_COLLISION)
-  //                || ((tileLeft > TILE_SPECIAL_LEFT_MIN) && (tileLeft <
-  // TILE_SPECIAL_LEFT_MAX)))) {
-  //          if (pos.x() - ((xpoints[0] - 1) * PIXELS_PER_TILE + WALL_COLLISION_LEFT_OFFSET)
-  //              < COLLISION_DISTANCE_THRESHOLD) {
-  //            collision[COLLISION_LEFT] = 1;
-  //          }
-  //        }
-  //        if (((tileRight > 0)
-  //                && (tileRight < TILE_SOLID_MAX)
-  //                && (tileRight != TILE_PASSABLE_VARIANT_1))
-  //            || ((tileRight > TILE_SPECIAL_RIGHT_MIN) && (tileRight <
-  // TILE_SPECIAL_RIGHT_MAX))) {
-  //          if (((xpoints[3] + 1) * PIXELS_PER_TILE)
-  //                  - (pos.x() / PIXELS_PER_TILE + WALL_COLLISION_RIGHT_OFFSET)
-  //              < COLLISION_DISTANCE_THRESHOLD) {
-  //            collision[COLLISION_RIGHT] = 1;
-  //          }
-  //        }
-  //      }
-  //      /* Invisible wall */
-  //      if ((room == ROOM_CAVE.index()) && (r == INVISIBLE_WALL_CROUCH_ROW)) {
-  //        if ((xpoints[0] - 1 == 0) || (xpoints[0] - 1 == 1)) collision[COLLISION_LEFT] = 0;
-  //        if ((xpoints[3] + 1 == 0) || (xpoints[3] + 1 == 1)) collision[COLLISION_RIGHT] = 0;
-  //      }
-  //      if ((room == ROOM_BEAST.index()) && (r == INVISIBLE_WALL_CROUCH_ROW)) {
-  //        if ((xpoints[0] - 1 > ROOM_BEAST_INVISIBLE_WALL_START)
-  //            && (xpoints[0] - 1 < ROOM_BEAST_INVISIBLE_WALL_END)) {
-  //          collision[COLLISION_LEFT] = 0;
-  //        }
-  //        if ((xpoints[3] + 1 > ROOM_BEAST_INVISIBLE_WALL_START)
-  //            && (xpoints[3] + 1 < ROOM_BEAST_INVISIBLE_WALL_END)) {
-  //          collision[COLLISION_RIGHT] = 0;
-  //        }
-  //      }
-
   /** This method confirms collisions with static immovable objects (e.g. walls and roofs) */
   public void checkCollisions() {
     int[] xpoints = {0, 0, 0, 0};
@@ -517,8 +510,23 @@ public final class Player implements Actor {
 
     /* Left & Right collisions */
     if (crouch) {
-      /* Collision with Jean ducking */
-
+      int r = (int) ((pos.y() + 16) / tileSize);
+      if (xpoints[0] != 0) {
+        int tileLeft = tileAt(currentRoomData, r, xpoints[0] - 1);
+        if ((tileLeft > 0 && tileLeft < TILE_SOLID_MAX && tileLeft != TILE_PASSABLE_VARIANT_1)
+            || (tileAt(currentRoomData, r, xpoints[0]) == TILE_SPECIAL_COLLISION)
+            || ((tileLeft > TILE_CLOSED_DOOR4) && (tileLeft < TILE_SPECIAL_LEFT_MAX))) {
+          collision[COLLISION_LEFT] = 1;
+        }
+      }
+      if (xpoints[3] != NUM_COLUMNS - 1) {
+        int tileRight = tileAt(currentRoomData, r, xpoints[3] + 1);
+        if ((tileRight > 0 && tileRight < TILE_SOLID_MAX && tileRight != TILE_PASSABLE_VARIANT_1)
+            || ((tileRight > TILE_SPECIAL_RIGHT_MIN) && (tileRight < TILE_SPECIAL_RIGHT_MAX))) {
+          collision[COLLISION_RIGHT] = 1;
+        }
+      }
+      // TODO: invisible-wall exemptions for ROOM_CAVE and ROOM_BEAST (row 5) need re-analysis
     } else {
       for (var y = 0; y < 4; y++) {
         var tile = points[y][0];

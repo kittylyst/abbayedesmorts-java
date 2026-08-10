@@ -49,8 +49,9 @@ Mid-stage work-in-progress:
 - [x] `TestEnemyBehaviour` (9 tests) — patrol direction/reversal, non-patrol no-movement, hit box offsets, contact → life loss, contact → waypoint teleport; test baseline now 150 passing, 5 skipped
 - [x] Global state + event system — `GameEvent` enum, `TriggerRegistry` (`EnumMap<GameEvent, List<Runnable>>`), `GameState` (persistent flag set); `Layer` owns both and exposes `onEvent()` / `fireEvent()` / `getGameState()`
 - [x] Bell-ringing trigger — `Player.checkStaticObject()` fires `BELL_RUNG` on contact with tiles 301–304 (Tower of the Bell, screen 2); handler in `AbbayeMain.initLayer()` clears `TILE_DOOR` from `ROOM_BEAST` (screen 10) and `ROOM_RIVER` (screen 19); 10 new tests (`TestTriggerRegistry`, `TestGameState`, `TestBellInteraction`); test baseline now 165 passing, 5 skipped
+- [x] Crouching collision (basic) — replaced empty `if (crouch)` stub in `Player.checkCollisions()` with working left/right wall check using `r = (pos.y() + 16) / tileSize`; tile-solidarity conditions identical to standing branch; deleted 48-line dead comment block; 2 tests re-enabled (`testCrouchLeftWallCollision`, `testCrouchRightWallCollision`); test baseline now 167 passing, 3 skipped
+- [ ] Crouching collision (invisible walls) — ROOM_CAVE and ROOM_BEAST row-5 exemption logic conflicts with test assertions; `testInvisibleWallRoomCaveCrouching` and `testInvisibleWallRoomBeastCrouching` remain `@Disabled` pending re-analysis
 - [ ] Enemy movement behaviour (gravity, type-specific logic for non-patrol types ≥ 10)
-- [ ] Crouching collision — uncomment branch, fix unit-mismatch bug, re-enable 5 disabled tests
 - [ ] Animation system (player walk/jump/crouch frames; enemy frame cycling)
 - [ ] Full game completion / polish
 
@@ -176,12 +177,12 @@ Tests live in `src/test/java/abbaye/`. Game-logic tests run **headless** (no Ope
 
 ### Disabled Tests
 
-5 tests in `TestPlayerCollision` are `@Disabled`:
+3 tests in `TestPlayerCollision` are `@Disabled`:
 
-- 4 × crouching collision tests — blocked on `Player.checkCollisions()` crouch branch being commented out
+- 2 × invisible-wall crouching tests (`testInvisibleWallRoomCaveCrouching`, `testInvisibleWallRoomBeastCrouching`) — the ROOM_CAVE / ROOM_BEAST row-5 exemption logic in the original C source conflicts with the test assertions; deferred for re-analysis
 - 1 × `testSmallPlatformTile38FallLeft` — needs a clear contract before re-enabling
 
-These are **not regressions**; they are intentionally deferred until crouching is implemented.
+These are **not regressions**; they are intentionally deferred.
 
 ## Known Pre-existing Issues
 
