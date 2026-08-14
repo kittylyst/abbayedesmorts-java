@@ -736,8 +736,9 @@ public final class Player implements Actor {
     }
 
     /* Ring the bell (tiles 301-304, 2x2 sprite in Tower of the Bell) */
-    if ((isBetweenExclusive(
-            tileAt(stagedata, baseTileY + 1, baseTileX), TILE_BELL_MIN, TILE_BELL_MAX))
+    if (room == ROOM_TOWER.index()
+            && (isBetweenExclusive(
+                tileAt(stagedata, baseTileY + 1, baseTileX), TILE_BELL_MIN, TILE_BELL_MAX))
         || (isBetweenExclusive(
             tileAt(stagedata, baseTileY + 1, baseTileX + 1), TILE_BELL_MIN, TILE_BELL_MAX))) {
       layer.fireEvent(GameEvent.BELL_RUNG);
