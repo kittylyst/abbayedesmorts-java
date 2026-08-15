@@ -2,7 +2,7 @@
 package abbaye;
 
 import static abbaye.model.GameEvent.*;
-import static abbaye.model.GameEventHandlerFactory.bellRungEvent;
+import static abbaye.model.GameEventHandlerFactory.*;
 import static abbaye.model.Room.*;
 import static abbaye.model.TileAtlas.*;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
@@ -213,9 +213,12 @@ public final class AbbayeMain {
     layer.setStatus(status);
     layer.setEnemies(enemies);
 
-    // Register game triggers: bell rung → set flag + open door in ROOM_ALTAR
+    // Register game triggers
     var gs = layer.getGameState();
     layer.onEvent(BELL_RUNG, bellRungEvent(gs, stage));
+    layer.onEvent(HEART_COLLECTED, heartCollectedEvent(stage, p));
+    layer.onEvent(CROSS_COLLECTED, crossCollectedEvent(stage, p));
+    layer.onEvent(WAYPOINT_REACHED, waypointReachedEvent(stage));
 
     layer.init();
 

@@ -8,5 +8,14 @@ package abbaye.model;
  */
 public enum GameEvent {
   /** The player has rung the bell in the Tower of the Bell. */
-  BELL_RUNG
+  BELL_RUNG,
+
+  /** The player has touched a heart collectible tile (401–404). */
+  HEART_COLLECTED,
+
+  /** The player has touched a cross collectible tile (409–412). */
+  CROSS_COLLECTED,
+
+  /** The player has touched a waypoint-cross tile (321–326). */
+  WAYPOINT_REACHED,
 }
