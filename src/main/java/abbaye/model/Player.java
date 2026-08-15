@@ -103,6 +103,18 @@ public final class Player implements Actor {
   private int crosses = 0; // (previously state[1])
   private int lives = 5;
 
+  /** Increments lives (capped at 9). Called by the {@code HEART_COLLECTED} event handler. */
+  void addLife() {
+    if (lives < 9) {
+      lives += 1;
+    }
+  }
+
+  /** Increments the cross count. Called by the {@code CROSS_COLLECTED} event handler. */
+  void addCross() {
+    crosses += 1;
+  }
+
   /**
    * Counts down from {@link #CONTACT_INVULNERABILITY_TICKS} after enemy contact; 0 = vulnerable.
    */
@@ -678,59 +690,38 @@ public final class Player implements Actor {
     int baseTileX = Stage.toTileX(pos.x());
     int baseTileY = Stage.toTileY(pos.y());
 
-    /* Touch hearts */
-    if (room == ROOM_ASHES.index()) {
-      if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 400, 405))
-          || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 400, 405))) {
-        // FIXME: compares a tile index (0-31) against 160 — always false.
-        // Original C compared pixel coordinates; needs a correct tile-column threshold.
-        if (Stage.toTileX(pos.x()) > 160) {
-          stage.clearTile(room, 7, 23);
-          stage.clearTile(room, 7, 24);
-          stage.clearTile(room, 8, 23);
-          stage.clearTile(room, 8, 24);
-        } else {
-          stage.clearTile(room, 18, 8);
-          stage.clearTile(room, 18, 9);
-          stage.clearTile(room, 19, 8);
-          stage.clearTile(room, 19, 9);
-        }
-        if (lives < 9) {
-          lives += 1;
-        }
-        //        Mix_PlayChannel(-1, fx[2], 0);
-        return true;
-      }
-    } else {
-      if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 400, 405))
-          || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 400, 405))) {
-        stage.clearTilesWhere(room, t -> t > 400 && t < 405);
-        if (lives < 9) {
-          lives += 1;
-          //        Mix_PlayChannel(-1, fx[2], 0);
-        }
-        return true;
-      }
-    }
-
-    /* Touch crosses */
-    if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 408, 413))
-        || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 408, 413))) {
-      stage.clearTilesWhere(room, t -> t > 408 && t < 413);
-      crosses += 1;
+    /* Touch hearts (tiles 401–404): sweep-clear all heart tiles in the room, then award a life.
+     * The previous ROOM_ASHES branch used positional clears guarded by a broken tile-column
+     * comparison (always false); unified here to the same sweep-clear used in every other room. */
+    if ((isBetweenExclusive(
+            tileAt(stagedata, baseTileY + 1, baseTileX), TILE_HEART_MIN, TILE_HEART_MAX))
+        || (isBetweenExclusive(
+            tileAt(stagedata, baseTileY + 1, baseTileX + 1), TILE_HEART_MIN, TILE_HEART_MAX))) {
+      layer.fireEvent(GameEvent.HEART_COLLECTED);
       //        Mix_PlayChannel(-1, fx[2], 0);
       return true;
     }
 
-    // 321 - 326
-    /* Touch waypoint crosses */
-    if ((isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX), 320, 327))
-        || (isBetweenExclusive(tileAt(stagedata, baseTileY + 1, baseTileX + 1), 320, 327))) {
-      // FIXME - Don't nuke the waypoint cross, toggle instead.
-      stage.clearTilesWhere(room, t -> t > 320 && t < 327);
-      // Update waypoint
+    /* Touch crosses (tiles 409–412) */
+    if ((isBetweenExclusive(
+            tileAt(stagedata, baseTileY + 1, baseTileX), TILE_CROSS_MIN, TILE_CROSS_MAX))
+        || (isBetweenExclusive(
+            tileAt(stagedata, baseTileY + 1, baseTileX + 1), TILE_CROSS_MIN, TILE_CROSS_MAX))) {
+      layer.fireEvent(GameEvent.CROSS_COLLECTED);
+      //        Mix_PlayChannel(-1, fx[2], 0);
+      return true;
+    }
+
+    /* Touch waypoint crosses (tiles 321–326) */
+    if ((isBetweenExclusive(
+            tileAt(stagedata, baseTileY + 1, baseTileX), TILE_WAYPOINT_MIN, TILE_WAYPOINT_MAX))
+        || (isBetweenExclusive(
+            tileAt(stagedata, baseTileY + 1, baseTileX + 1),
+            TILE_WAYPOINT_MIN,
+            TILE_WAYPOINT_MAX))) {
       logger.info("Updating waypoint here: " + last);
       last = new Waypoint(stage.getRoomX(), stage.getRoomY(), pos);
+      layer.fireEvent(GameEvent.WAYPOINT_REACHED);
       //        Mix_PlayChannel(-1, fx[2], 0);
       return true;
     }

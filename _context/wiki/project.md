@@ -48,7 +48,9 @@ Mid-stage work-in-progress:
 - [x] `Layer.checkEnemyContact()` — per-tick overlap check wired into `Layer.update()`; stops after first contact per tick
 - [x] `TestEnemyBehaviour` (9 tests) — patrol direction/reversal, non-patrol no-movement, hit box offsets, contact → life loss, contact → waypoint teleport; test baseline now 150 passing, 5 skipped
 - [x] Global state + event system — `GameEvent` enum, `TriggerRegistry` (`EnumMap<GameEvent, List<Runnable>>`), `GameState` (persistent flag set); `Layer` owns both and exposes `onEvent()` / `fireEvent()` / `getGameState()`
-- [x] Bell-ringing trigger — `Player.checkStaticObject()` fires `BELL_RUNG` on contact with tiles 301–304 (Tower of the Bell, screen 2); handler in `AbbayeMain.initLayer()` clears `TILE_DOOR` from `ROOM_BEAST` (screen 10) and `ROOM_RIVER` (screen 19); 10 new tests (`TestTriggerRegistry`, `TestGameState`, `TestBellInteraction`); test baseline now 165 passing, 5 skipped
+- [x] Bell-ringing trigger — `Player.checkStaticObject()` fires `BELL_RUNG` on contact with tiles 301–304, now guarded by `room == ROOM_TOWER.index()` to prevent spurious fires in other rooms; handler opens a 2×2 altar hatch in `ROOM_ALTAR` at `[20][26]` (matching C `flags[1]` / `tile[20][26]==7` logic) and visually transforms bell tiles 301–304 → 305–308 (not cleared); `ALTAR_HATCH_ROW/COL` constants in `TileAtlas`; 10 new tests (`TestTriggerRegistry`, `TestGameState`, `TestBellInteraction`); test baseline now 165 passing, 3 skipped
+- [x] `Stage` constructor made private; `Stage.of()` / `Stage.of(int x, int y)` static factory methods introduced — `of()` encapsulates starting coords; `of(x,y)` used in tests needing a specific room; all `new Stage()` call-sites updated
+- [x] `GameEventHandlerFactory` — new class in `abbaye.model` extracts the `BELL_RUNG` handler lambda out of `AbbayeMain` into a named, testable factory method `bellRungEvent(GameState, Stage)`; `TestBellInteraction` now uses the real handler (not a stub); `AbbayeMain.initLayer()` is correspondingly slimmed
 - [x] Crouching collision (basic) — replaced empty `if (crouch)` stub in `Player.checkCollisions()` with working left/right wall check using `r = (pos.y() + 16) / tileSize`; tile-solidarity conditions identical to standing branch; deleted 48-line dead comment block; 2 tests re-enabled (`testCrouchLeftWallCollision`, `testCrouchRightWallCollision`); test baseline now 167 passing, 3 skipped
 - [ ] Crouching collision (invisible walls) — ROOM_CAVE and ROOM_BEAST row-5 exemption logic conflicts with test assertions; `testInvisibleWallRoomCaveCrouching` and `testInvisibleWallRoomBeastCrouching` remain `@Disabled` pending re-analysis
 - [ ] Enemy movement behaviour (gravity, type-specific logic for non-patrol types ≥ 10)
@@ -102,35 +104,37 @@ InputHandler          ← sole owner of GLFWKeyCallbackI; lives in abbaye packag
 
 ### Global State & Event Architecture
 
-Introduced alongside the bell mechanic. Three collaborating classes, all in `abbaye.model`:
+Introduced alongside the bell mechanic. Four collaborating classes, all in `abbaye.model`:
 
 | Class | Role |
 |---|---|
 | `GameEvent` | Enum naming game-level occurrences (e.g. `BELL_RUNG`). Extend by appending values. |
 | `TriggerRegistry` | `EnumMap<GameEvent, List<Runnable>>` — `register(event, handler)` + `fire(event)`. Handlers called synchronously in registration order. Firing with no handlers is a no-op. |
 | `GameState` | `EnumSet<GameEvent>` of permanently acknowledged flags — `setFlag(event)` / `isFlagSet(event)`. Idempotent; flags are never cleared during play. |
+| `GameEventHandlerFactory` | Static factory class — produces `Runnable` handlers for each `GameEvent`. Keeps handler logic out of `AbbayeMain` and makes it independently testable. |
 
 `Layer` owns one `TriggerRegistry` and one `GameState` and exposes:
 - `onEvent(GameEvent, Runnable)` — register a handler (called at init time from `AbbayeMain`)
 - `fireEvent(GameEvent)` — dispatch to all registered handlers (called by entities)
 - `getGameState()` — access the flag store
 
-**Wiring convention:** all handler registrations live in `AbbayeMain.initLayer()`, after entities are constructed but before `layer.init()`. Entities (`Player`, `Enemy`) fire events and read `GameState` flags; they never register handlers and never know what a fired event does.
+**Wiring convention:** all handler registrations live in `AbbayeMain.initLayer()`, after entities are constructed but before `layer.init()`. Handler *logic* lives in `GameEventHandlerFactory`. Entities (`Player`, `Enemy`) fire events and read `GameState` flags; they never register handlers and never know what a fired event does.
 
 **Adding a new world-state trigger:**
 1. Add a value to `GameEvent`.
 2. In `Player.checkStaticObject()` (or wherever the detection belongs), call `layer.fireEvent(NEW_EVENT)`.
-3. In `AbbayeMain.initLayer()`, call `layer.onEvent(NEW_EVENT, () -> { ... })` with the side-effect logic.
+3. Add a factory method `newEvent(...)` in `GameEventHandlerFactory` returning a `Runnable`.
+4. In `AbbayeMain.initLayer()`, call `layer.onEvent(NEW_EVENT, newEvent(...))`.
 
 ```
 Player.checkStaticObject()
-  └─ detects bell tiles (301–304)
-  └─ stage.clearTilesWhere(room, bell predicate)   ← single-use: tiles cleared immediately
+  └─ room guard: only fires in the correct room
   └─ layer.fireEvent(BELL_RUNG)
-        └─ TriggerRegistry dispatches handler (registered in AbbayeMain)
+        └─ TriggerRegistry dispatches handler (produced by GameEventHandlerFactory.bellRungEvent)
               ├─ gameState.setFlag(BELL_RUNG)
-              ├─ stage.clearTilesWhere(ROOM_BEAST.index(), t == TILE_DOOR)
-              └─ stage.clearTilesWhere(ROOM_RIVER.index(), t == TILE_DOOR)
+              ├─ stage.transformTilesWhere(ROOM_TOWER, 301–304 → 305–308)   ← visual rung state
+              ├─ stage.setTile(ROOM_ALTAR, [20][26], TILE_PLATFORM)          ← open hatch
+              └─ stage.clearTile(ROOM_ALTAR, [20][26+1], [21][26], [21][27]) ← clear remaining hatch tiles
 ```
 
 ### Key Design Invariants
@@ -142,6 +146,8 @@ Player.checkStaticObject()
 - All tile-type integer constants (`TILE_*`) live in `TileAtlas` (public). `Stage` imports them via `import static abbaye.model.TileAtlas.*`. Do not re-declare them elsewhere.
 - Texture atlas grid dimensions (`TILES_PER_ROW`, `TILES_PER_COL`) also live in `TileAtlas`. `Stage` does **not** declare them; `TileAtlas` does **not** import `Stage`.
 - `Player` exposes collision state via `isCollidingUp/Down/Left/Right()` boolean accessors. The raw `int[] collision` array is internal; `getCollisions()` has been removed.
+- `Stage` constructor is **private**. Always use `Stage.of()` (default starting room) or `Stage.of(int x, int y)` (explicit coords, for tests). Never call `new Stage()`.
+- Event handler logic lives in `GameEventHandlerFactory`, not inline in `AbbayeMain`. `AbbayeMain.initLayer()` only wires — it does not contain business logic.
 
 ### Key Resources
 
@@ -161,7 +167,7 @@ Tests live in `src/test/java/abbaye/`. Game-logic tests run **headless** (no Ope
 | `TestEnemyBehaviour` | `Enemy.update()` patrol movement (direction, boundary reversal, non-patrol no-move); `Enemy.hitBox()` adjust offsets; `Layer` enemy–player contact → life loss and waypoint teleport |
 | `TestEnemyParsing` | `Stage.loadEnemies()` slot counts, all 15 field values for key screens, `buildEnemies()` position scaling and direction mapping |
 | `TestEnemyType` | `fromCode()` for all known codes, fallback to `UNKNOWN`, `code` field, sprite sizes for all 5 size categories |
-| `TestBellInteraction` | Bell tile contact → `BELL_RUNG` fires + `GameState` flag set; tiles cleared after ringing; no event when no tile present |
+| `TestBellInteraction` | Bell tile contact → `BELL_RUNG` fires + `GameState` flag set; bell tiles transformed (301→305 etc.) not cleared; altar hatch opened; no event when no tile present; uses real `bellRungEvent` handler from `GameEventHandlerFactory` |
 | `TestGameDialog` | `currentSplashPage()` — splash page flip every 5 s, wrap-around at 10 s |
 | `TestGameState` | Fresh state has no flags; `setFlag` sets flag; idempotent |
 | `TestPlayerCollision` | Wall, roof, ground, platform collision (5 tests `@Disabled` pending crouch implementation) |

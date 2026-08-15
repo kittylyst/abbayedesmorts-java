@@ -66,6 +66,31 @@ public final class TileAtlas {
   public static final int ALTAR_HATCH_COL = 26;
   private static final int ALTAR_HATCH_CLOSED_TILE = 7;
 
+  /** Tile range (exclusive bounds) for heart collectibles (tiles 401–404). */
+  public static final int TILE_HEART_MIN = 400;
+
+  public static final int TILE_HEART_MAX = 405;
+
+  /**
+   * In ROOM_ASHES the heart sprite at the right-side position occupies rows 7–8, cols 23–24. The
+   * left-side position occupies rows 18–19, cols 8–9.
+   */
+  public static final int ASHES_HEART_RIGHT_ROW = 7;
+
+  public static final int ASHES_HEART_RIGHT_COL = 23;
+  public static final int ASHES_HEART_LEFT_ROW = 18;
+  public static final int ASHES_HEART_LEFT_COL = 8;
+
+  /** Tile range (exclusive bounds) for cross collectibles (tiles 409–412). */
+  public static final int TILE_CROSS_MIN = 408;
+
+  public static final int TILE_CROSS_MAX = 413;
+
+  /** Tile range (exclusive bounds) for waypoint-cross tiles (tiles 321–326). */
+  public static final int TILE_WAYPOINT_MIN = 320;
+
+  public static final int TILE_WAYPOINT_MAX = 327;
+
   /** Pixel-space rectangle into the source sprite sheet (8-px grid). */
   private static final class SDLRect {
     int x, y, w, h;
