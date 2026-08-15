@@ -1,4 +1,4 @@
-/* Copyright (C) The Authors 2025 */
+/* Copyright (C) The Authors 2025-2026 */
 package abbaye.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -55,7 +55,7 @@ public class TestStage {
 
   @Test
   public void loadMapTestCollision() {
-    final var stage = new Stage();
+    final var stage = Stage.of();
     stage.load();
     final var level4 = stage.getScreen(4);
     assertEquals(22, level4.length);

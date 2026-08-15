@@ -31,7 +31,7 @@ class TestEnemyParsing {
   @BeforeAll
   static void loadStage() {
     AbbayeMain.setGlEnabled(false);
-    stage = new Stage();
+    stage = Stage.of();
     stage.load("/map/map.txt");
     stage.loadEnemies("/map/enemies.txt");
   }

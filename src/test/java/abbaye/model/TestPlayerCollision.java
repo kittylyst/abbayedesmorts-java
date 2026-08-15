@@ -31,7 +31,7 @@ public class TestPlayerCollision {
   @BeforeEach
   public void setUp() {
     // Create a test stage with empty tiles (0 = empty)
-    stage = new Stage();
+    stage = Stage.of();
     layer = new Layer();
     player = Player.of(layer, stage);
     layer.setPlayer(player);

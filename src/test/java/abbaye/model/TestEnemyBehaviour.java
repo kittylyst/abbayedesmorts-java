@@ -27,7 +27,7 @@ class TestEnemyBehaviour {
 
   @BeforeEach
   void loadStage() {
-    stage = new Stage();
+    stage = Stage.of();
     stage.load("/map/map.txt");
     stage.loadEnemies("/map/enemies.txt");
   }
