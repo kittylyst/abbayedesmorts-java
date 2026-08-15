@@ -24,7 +24,7 @@ public class TestRooms {
 
   @BeforeEach
   public void setUp() {
-    stage = new Stage();
+    stage = Stage.of();
     layer = new Layer();
     player = Player.of(layer, stage);
     layer.setPlayer(player);

@@ -2,6 +2,7 @@
 package abbaye.model;
 
 import static abbaye.model.GameEvent.BELL_RUNG;
+import static abbaye.model.GameEventHandlerFactory.bellRungEvent;
 import static abbaye.model.TileAtlas.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,6 +18,8 @@ import org.junit.jupiter.api.Test;
  */
 class TestBellInteraction {
 
+  private static final int BELL_RUNG_TILE_OFFSET = 4;
+
   private Stage stage;
   private Layer layer;
   private Player player;
@@ -28,16 +31,15 @@ class TestBellInteraction {
 
   @BeforeEach
   void setUp() {
-    stage = new Stage();
+    stage = Stage.of(2, 0);
     stage.load("/map/map.txt");
     layer = new Layer();
     player = Player.of(layer, stage);
     layer.setPlayer(player);
     layer.setStage(stage);
 
-    // Register the same handler that AbbayeMain will register at runtime:
-    // set the BELL_RUNG flag in GameState.
-    layer.onEvent(BELL_RUNG, () -> layer.getGameState().setFlag(BELL_RUNG));
+    // Register the same handler that AbbayeMain will register at runtime
+    layer.onEvent(BELL_RUNG, bellRungEvent(layer.getGameState(), stage));
   }
 
   /**
@@ -62,25 +64,35 @@ class TestBellInteraction {
   }
 
   /**
-   * After the bell is rung the bell tiles (301–304) should be cleared from the current room,
+   * After the bell is rung the bell tiles (301–304) should be changed in the current room,
    * preventing the event from firing a second time.
    */
   @Test
-  void bellTilesAreClearedAfterRinging() {
+  void bellTilesAreModifiedAfterRinging() {
     int screen = stage.getRoom();
-    // Place all four bell tile IDs in a 2×2 area at the player's feet
-    stage.getScreen(screen)[1][0] = 301;
-    stage.getScreen(screen)[1][1] = 302;
-    stage.getScreen(screen)[2][0] = 303;
-    stage.getScreen(screen)[2][1] = 304;
-
+    stage.setTile(screen, 1, 0, 301);
+    stage.setTile(screen, 1, 1, 302);
+    stage.setTile(screen, 2, 0, 303);
+    stage.setTile(screen, 2, 1, 304);
     player.setPos(new Vector2(0, 0));
     player.checkStaticObject();
 
-    assertEquals(TILE_EMPTY, stage.getScreen(screen)[1][0], "Bell tile 301 should be cleared");
-    assertEquals(TILE_EMPTY, stage.getScreen(screen)[1][1], "Bell tile 302 should be cleared");
-    assertEquals(TILE_EMPTY, stage.getScreen(screen)[2][0], "Bell tile 303 should be cleared");
-    assertEquals(TILE_EMPTY, stage.getScreen(screen)[2][1], "Bell tile 304 should be cleared");
+    assertEquals(
+        301 + BELL_RUNG_TILE_OFFSET,
+        stage.getScreen(screen)[1][0],
+        "Bell tile 301 should become 305");
+    assertEquals(
+        302 + BELL_RUNG_TILE_OFFSET,
+        stage.getScreen(screen)[1][1],
+        "Bell tile 302 should become 306");
+    assertEquals(
+        303 + BELL_RUNG_TILE_OFFSET,
+        stage.getScreen(screen)[2][0],
+        "Bell tile 303 should become 307");
+    assertEquals(
+        304 + BELL_RUNG_TILE_OFFSET,
+        stage.getScreen(screen)[2][1],
+        "Bell tile 304 should become 308");
   }
 
   /** When no bell tiles are present the event should not fire, leaving the GameState flag unset. */

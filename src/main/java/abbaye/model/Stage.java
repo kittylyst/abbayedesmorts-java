@@ -54,10 +54,22 @@ public final class Stage implements Renderable {
   private StageRenderer renderer;
   private Layer layer;
 
-  public Stage() {
+  private Stage(final int x, final int y) {
+    this.roomx = x;
+    this.roomy = y;
     for (int i = 0; i < NUM_SCREENS; i++) {
       enemydata.add(new ArrayList<>(ENEMY_SLOTS));
     }
+  }
+
+  // For unit tests
+  public static Stage of(final int x, final int y) {
+    return new Stage(x, y);
+  }
+
+  public static Stage of() {
+    return new Stage(2, 0); // Functional Testing
+    //    return new Stage(0, 1); // Prod
   }
 
   public void load(long window) {

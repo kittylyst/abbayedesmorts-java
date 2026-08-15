@@ -23,7 +23,7 @@ public class TestStageMutation {
 
   @BeforeEach
   public void setUp() {
-    stage = new Stage();
+    stage = Stage.of();
     screen = stage.getRoom(); // use the actual initial screen (roomx=2, roomy=0 → screen 2)
     Utils.setTile(stage, 5, 3, 42);
     Utils.setTile(stage, 6, 3, 42);

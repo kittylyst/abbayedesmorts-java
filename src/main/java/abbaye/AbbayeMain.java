@@ -2,6 +2,7 @@
 package abbaye;
 
 import static abbaye.model.GameEvent.*;
+import static abbaye.model.GameEventHandlerFactory.bellRungEvent;
 import static abbaye.model.Room.*;
 import static abbaye.model.TileAtlas.*;
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
@@ -26,6 +27,7 @@ import org.lwjgl.system.MemoryStack;
 
 // Must be run with -Djava.awt.headless=true
 public final class AbbayeMain {
+
   private static ObjectMapper mapper;
   private static volatile boolean glEnabled = true;
 
@@ -195,7 +197,7 @@ public final class AbbayeMain {
   }
 
   void initLayer() {
-    var stage = new Stage();
+    var stage = Stage.of();
     stage.load(window, layer);
 
     var p = Player.of(layer, stage);
@@ -213,24 +215,7 @@ public final class AbbayeMain {
 
     // Register game triggers: bell rung → set flag + open door in ROOM_ALTAR
     var gs = layer.getGameState();
-    layer.onEvent(
-        BELL_RUNG,
-        () -> {
-          gs.setFlag(BELL_RUNG);
-
-          // Visual "rung" state: 301–304 → 305–308 (not cleared)
-          stage.transformTilesWhere(
-              ROOM_TOWER.index(),
-              t -> t > TILE_BELL_MIN && t < TILE_BELL_MAX,
-              t -> t + BELL_TOWER_OFFSET);
-
-          /* Open altar hatch after bell (C game.c: flags[1], room ALTAR, x>15, tile[20][26]==7) */
-          int altar = ROOM_ALTAR.index();
-          stage.setTile(altar, ALTAR_HATCH_ROW, ALTAR_HATCH_COL, TILE_PLATFORM);
-          stage.clearTile(altar, ALTAR_HATCH_ROW, ALTAR_HATCH_COL + 1);
-          stage.clearTile(altar, ALTAR_HATCH_ROW + 1, ALTAR_HATCH_COL);
-          stage.clearTile(altar, ALTAR_HATCH_ROW + 1, ALTAR_HATCH_COL + 1);
-        });
+    layer.onEvent(BELL_RUNG, bellRungEvent(gs, stage));
 
     layer.init();
 
