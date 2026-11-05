@@ -179,7 +179,10 @@ approves removing it.
 (`(float) x / (8 * TILES_PER_ROW)`) to avoid 1-ulp differences. Use the JSON metadata
 values in the same arithmetic.
 
-**Status** — `[ ] pending`
+**Status** — `[x] done` except the oracle keep/remove decision (step 4), awaiting the user.
+`TestTileAtlasParity` added (3 tests). Suite: 161 run, 0 failures, 5 skipped. Parity covers IDs
+0..700 only; the legacy ladder yields meaningless negative-x rects for negative IDs, which the map
+parser cannot produce.
 
 ---
 
@@ -200,7 +203,7 @@ Make sure the wiki matches the final implementation.
 **Relevant Context**
 - `_context/wiki/project.md`, `_context/wiki/index.md`.
 
-**Status** — `[ ] pending`
+**Status** — `[x] done` (wiki updated; legacy oracle and generator kept by user decision)
 
 ---
 

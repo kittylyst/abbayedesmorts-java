@@ -47,6 +47,7 @@ Mid-stage work-in-progress:
 - [x] `Player.onEnemyContact()` — decrements lives and respawns player at last waypoint, mirroring C `jean.death = 1` path
 - [x] `Layer.checkEnemyContact()` — per-tick overlap check wired into `Layer.update()`; stops after first contact per tick
 - [x] `TestEnemyBehaviour` (9 tests) — patrol direction/reversal, non-patrol no-movement, hit box offsets, contact → life loss, contact → waypoint teleport; test baseline now 150 passing, 5 skipped
+- [x] `TileAtlas` tile-ID → atlas-rect mapping moved into `tiles/tile-atlas.json` (see [image-mapping.md](image-mapping.md)); exact-parity tests against a test-only copy of the old algorithm; test baseline now 161 run (156 passing), 5 skipped
 - [ ] Enemy movement behaviour (gravity, type-specific logic for non-patrol types ≥ 10)
 - [ ] Crouching collision — uncomment branch, fix unit-mismatch bug, re-enable 5 disabled tests
 - [ ] Animation system (player walk/jump/crouch frames; enemy frame cycling)
@@ -106,6 +107,7 @@ InputHandler          ← sole owner of GLFWKeyCallbackI; lives in abbaye packag
 - All tile-type integer constants (`TILE_*`) live in `TileAtlas` (public). `Stage` imports them via `import static abbaye.model.TileAtlas.*`. Do not re-declare them elsewhere.
 - Texture atlas grid dimensions (`TILES_PER_ROW`, `TILES_PER_COL`) also live in `TileAtlas`. `Stage` does **not** declare them; `TileAtlas` does **not** import `Stage`.
 - `Player` exposes collision state via `isCollidingUp/Down/Left/Right()` boolean accessors. The raw `int[] collision` array is internal; `getCollisions()` has been removed.
+- `TileAtlas` must keep the 16-bit y-offset exemption for `TILE_EMPTY` and `TILE_TRAP_DOOR` (quirk of the original C code). `abbaye.model` is opened to Jackson in `module-info.java` so the package-private JSON records can be instantiated.
 
 ### Key Resources
 
@@ -113,6 +115,7 @@ InputHandler          ← sole owner of GLFWKeyCallbackI; lives in abbaye packag
 - `src/main/resources/map/enemies.txt` — enemy placement data
 - `src/main/resources/shaders/` — GLSL vertex and fragment shaders (`game.*`, `splash.*`)
 - `src/main/resources/tiles.png` — sprite/tile atlas
+- `src/main/resources/tiles/tile-atlas.json` — tile ID (0..650) → pixel rect table plus atlas metadata, loaded by `TileAtlas`
 
 ### Test Structure
 
@@ -133,6 +136,8 @@ Tests live in `src/test/java/abbaye/`. Game-logic tests run **headless** (no Ope
 | `TestStage` | Stage loading and tile data |
 | `TestStageMutation` | Stage tile mutation helpers |
 | `TestTileAtlas` | UV range, caching, specific tile mappings |
+| `TestTileAtlasParity` | `TileAtlas` vs legacy oracle: exact parity for IDs 0..700 × all flag combinations; constants vs JSON metadata; missing resource fails fast |
+| `TestLegacyTileAtlasReference` | Test-only oracle (old if-ladder) output for known IDs; also used by `TileAtlasJsonGenerator` |
 | `TestVector2` | `magnitude`, `normalize`, `scale`, record equality |
 | `Utils` | Shared test helpers (reflection-based field access, tile setup) |
 
