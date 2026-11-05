@@ -72,6 +72,44 @@ public final class TileAtlas {
   /** Upper bound (exclusive) for the bell sprite tile range (tiles 301–304). */
   public static final int TILE_BELL_MAX = 305;
 
+  // ! Re-add constants accidentally removed during merge/rebase:
+  // ! - BELL_TOWER_OFFSET, ALTAR_HATCH_ROW, ALTAR_HATCH_COL required by GameEventHandlerFactory and
+  // TestBellInteraction
+  // ! - TILE_HEART_MIN, TILE_HEART_MAX, TILE_CROSS_MIN, TILE_CROSS_MAX, TILE_WAYPOINT_MIN,
+  // TILE_WAYPOINT_MAX
+  // !   required by GameEventHandlerFactory, Player, and TestCollectInteractions
+  // ! - ASHES_HEART_* constants for ROOM_ASHES heart coordinates
+  /** Offset to add to bell sprite tile IDs when the bell has been rung. */
+  public static final int BELL_TOWER_OFFSET = 4;
+
+  public static final int ALTAR_HATCH_ROW = 20;
+  public static final int ALTAR_HATCH_COL = 26;
+
+  /** Tile range (exclusive bounds) for heart collectibles (tiles 401–404). */
+  public static final int TILE_HEART_MIN = 400;
+
+  public static final int TILE_HEART_MAX = 405;
+
+  /**
+   * In ROOM_ASHES the heart sprite at the right-side position occupies rows 7–8, cols 23–24. The
+   * left-side position occupies rows 18–19, cols 8–9.
+   */
+  public static final int ASHES_HEART_RIGHT_ROW = 7;
+
+  public static final int ASHES_HEART_RIGHT_COL = 23;
+  public static final int ASHES_HEART_LEFT_ROW = 18;
+  public static final int ASHES_HEART_LEFT_COL = 8;
+
+  /** Tile range (exclusive bounds) for cross collectibles (tiles 409–412). */
+  public static final int TILE_CROSS_MIN = 408;
+
+  public static final int TILE_CROSS_MAX = 413;
+
+  /** Tile range (exclusive bounds) for waypoint-cross tiles (tiles 321–326). */
+  public static final int TILE_WAYPOINT_MIN = 320;
+
+  public static final int TILE_WAYPOINT_MAX = 327;
+
   public static final int TILE_CUP = 650;
 
   /** Pixel-space rectangle into the source sprite sheet. */
