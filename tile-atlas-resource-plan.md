@@ -143,7 +143,9 @@ match).
 - The JSON could be loaded in a static initialiser or per instance. Per instance is simpler
 and `Stage` holds a single `TileAtlas`.
 
-**Status** — `[ ] pending`
+**Status** — `[x] done` (`TileAtlas` now loads `/tiles/tile-atlas.json`; `module-info.java` opens
+`abbaye.model` to Jackson. Suite: 158 run, 0 failures, 5 skipped, identical to the pre-change
+run, so the 165/3 baseline above is stale.)
 
 ---
 
