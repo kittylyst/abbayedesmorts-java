@@ -9,6 +9,7 @@ Read this first, then follow only the links relevant to your current task.
 |------|---------|
 | [project.md](project.md) | What the project is, its goals, architecture, and key modules |
 | [preferences.md](preferences.md) | Working standards, coding style, and AI interaction preferences |
+| [image-mapping.md](image-mapping.md) | Tile-ID to atlas-rect mapping in `tiles/tile-atlas.json`: design, implementation, parity tests, deferred work |
 
 ## At a glance
 
@@ -17,4 +18,4 @@ Read this first, then follow only the links relevant to your current task.
 - **Language**: Java 21, Maven build
 - **Key pattern**: Loose Entity-Component System (ECS)
 - **Formatting**: Google Java Format via Spotless (`mvn spotless:apply`)
-- **Tests**: JUnit 5 + Mockito; game/collision tests run headless
+- **Tests**: JUnit 5 + Mockito; game/collision tests run headless; baseline 161 run (156 passing), 5 skipped
