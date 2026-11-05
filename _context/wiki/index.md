@@ -9,6 +9,7 @@ Read this first, then follow only the links relevant to your current task.
 |------|---------|
 | [project.md](project.md) | What the project is, its goals, architecture, and key modules |
 | [preferences.md](preferences.md) | Working standards, coding style, and AI interaction preferences |
+| [image-mapping.md](image-mapping.md) | Design notes: moving the tile-ID to atlas-rect mapping into a JSON resource (planned) |
 
 ## At a glance
 
